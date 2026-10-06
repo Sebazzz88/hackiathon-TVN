@@ -16,3 +16,6 @@ build/
 *.log
 *.db
 .pytest_cache/
+data/models/
+data/app.db
+frontend/dist/

@@ -37,6 +37,22 @@ class Ficha(BaseModel):  # espejo de fichas.jsonl
     borrador: Optional[dict] = None
     estado_revision: Estado = "nuevo"
     sintetico: bool = False
+    # --- Campos explicativos (opcionales; los llena el agente en modo live) ---
+    tema: str = ""
+    reporta: str = ""                      # qué se reporta
+    reportado_por: list[str] = []          # quién lo reporta
+    respaldado: list[str] = []             # qué está respaldado (con id de evidencia)
+    accion: str = ""                       # acción recomendada al usuario
+    fuentes_independientes: int = 0        # procedencias distintas (agencia replicada = 1)
+    registros: int = 0                     # titulares agrupados (duplicados incluidos)
+    noticias: list[dict] = []              # registros agrupados con medio, fechas y procedencia
+    contexto: list[dict] = []              # indicadores BM / eventos USGS con período y unidad
+    contradicciones: list[dict] = []       # versiones incompatibles visibles (T05)
+    alertas: list[str] = []                # recirculada, posible inyección, etc.
+    justificacion: dict = {}               # explicación de cada componente R,I,U,N,E
+    fecha_primera: str = ""
+    fecha_ultima: str = ""
+    revisiones: list[dict] = []            # historial de revisión humana
 
 
 class QueryIn(BaseModel):
@@ -49,6 +65,9 @@ class QueryOut(BaseModel):
     citas: list[Cita] = []
     ids_fuente: list[str] = []
     faltante: list[str] = []
+    versiones: list[dict] = []   # contradicciones relevantes a la consulta
+    base: str = "titular/metadatos"
+    metodo: str = ""
 
 
 class ReviewIn(BaseModel):

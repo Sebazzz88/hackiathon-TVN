@@ -3,3 +3,9 @@ uvicorn==0.30.6
 pydantic==2.9.2
 httpx==0.27.2
 pytest==8.3.3
+# IA local (embeddings multilingües ONNX, sin PyTorch) — ver docs/09_DECISIONS.md D05
+fastembed==0.8.1
+onnxruntime==1.30.0
+numpy==2.5.3
+# LLM opcional para borradores (SDK oficial de Anthropic); sin clave se usa caché/plantilla
+anthropic==1.11.0

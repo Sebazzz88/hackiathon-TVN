@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Descarga el snapshot público a data/raw/ (solo stdlib).
 Uso: python data/scripts/download_snapshot.py [wb|usgs|news|all]
-Corre en TU máquina (necesita internet). Para noticias de TVN define TVN_RSS_URL."""
+Corre en TU máquina (necesita internet). RSS de TVN: TVN_RSS_URL o, por defecto, la referencia [2] del PDF.
+De TVN solo se guardan metadatos (título, URL, fecha); no se guarda descripción ni cuerpo."""
 import csv, hashlib, json, os, sys, time, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -15,8 +16,11 @@ STAMP = NOW.isoformat(timespec="seconds")
 PAISES = ["PAN", "CRI", "COL", "DOM", "MEX", "GTM"]
 IND = {"NY.GDP.MKTP.KD.ZG": "% anual", "FP.CPI.TOTL.ZG": "% anual", "SL.UEM.TOTL.ZS": "% fuerza laboral",
        "SP.POP.TOTL": "personas", "IT.NET.USER.ZS": "% población", "NE.EXP.GNFS.ZS": "% del PIB"}
-GDELT_Q = ["Panama", "Panama logistica", "Panama canal", "Panama turismo", "Panama economia", "Panama sismo"]
+GDELT_Q = ["Panama", "Panama logistica", "Panama canal", "Panama turismo", "Panama economia", "Panama sismo", "sourcecountry:panama"]
+TVN_RSS_DEFAULT = "https://www.tvn-2.com/rss/"  # referencia [2] de docs/reto_TVN.pdf
+DIAS = int(os.getenv("NEWS_DAYS", "30"))
 CONSULTAS = []
+FALLIDAS = []
 
 
 def get(url):
@@ -54,7 +58,7 @@ def nid(prefix, url):
 
 def news():
     rows, seen = [], set()
-    rss = os.getenv("TVN_RSS_URL")
+    rss = os.getenv("TVN_RSS_URL") or TVN_RSS_DEFAULT
     if rss:
         for it in ET.fromstring(get(rss)).iter("item"):
             url, title = (it.findtext("link") or "").strip(), (it.findtext("title") or "").strip()
@@ -66,16 +70,22 @@ def news():
     else:
         print("AVISO: falta TVN_RSS_URL; el reto exige >=20 registros de TVN.")
     for q in GDELT_Q:
-        for i in range(0, 30, 5):  # ventanas de 5 días (límite 250 por consulta)
+        for i in range(0, DIAS, 5):  # ventanas de 5 días (límite 250 por consulta)
             a, b = NOW - timedelta(days=i + 5), NOW - timedelta(days=i)
             u = "https://api.gdeltproject.org/api/v2/doc/doc?" + urllib.parse.urlencode({
                 "query": q, "mode": "ArtList", "format": "json", "maxrecords": 250,
                 "startdatetime": a.strftime("%Y%m%d%H%M%S"), "enddatetime": b.strftime("%Y%m%d%H%M%S")})
-            try: arts = json.loads(get(u)).get("articles", [])
-            except Exception as e: print("GDELT sin datos:", q, i, e); arts = []
-            time.sleep(5.5)  # cortesía con la API
+            arts = []
+            for intento in range(4):  # GDELT exige >=5 s entre consultas; ante 429 se espera más
+                try:
+                    arts = json.loads(get(u)).get("articles", []); break
+                except Exception as e:
+                    print("GDELT reintento:", q, i, intento, e); time.sleep(15 * (intento + 1))
+            else:
+                FALLIDAS.append(f"{q} ventana {i}-{i + 5} días")
+            time.sleep(6)  # cortesía con la API
             for x in arts:
-                if x["url"] in seen: continue
+                if not x.get("url") or not x.get("title") or x["url"] in seen: continue
                 seen.add(x["url"])
                 det = datetime.strptime(x["seendate"], "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc).isoformat()
                 # GDELT no da fecha de publicación: queda vacía; seendate = detección
@@ -93,9 +103,11 @@ def manifest():
         n = len(json.loads(p.read_text(encoding="utf-8"))["features"]) if p.suffix == ".geojson" else max(0, len(p.read_text(encoding="utf-8").splitlines()) - 1)
         files[p.name] = {"registros": n, "sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
     (RAW / "manifest.json").write_text(json.dumps({
-        "version": "v1", "fecha_corte_UTC": STAMP, "consultas": CONSULTAS, "archivos": files,
+        "version": "v1", "fecha_corte_UTC": STAMP, "consultas": CONSULTAS, "consultas_fallidas": FALLIDAS, "archivos": files,
         "licencia_condiciones": "Banco Mundial CC BY 4.0; USGS y GDELT: revisar condiciones; TVN: solo metadatos, sin republicar contenido",
-        "transformaciones": ["Cuadrícula país×indicador×año completa con nulos explícitos", "Dedupe por URL", "Unidades de indicadores asignadas por tabla fija"]},
+        "ventana_noticias_dias": DIAS,
+        "nota_intervalo": "El PDF propone [2024-01-01, 2025-10-01) pero también 'últimos 30 días'; GDELT DOC solo cubre ~3 meses. Se usa la ventana reciente (ver docs/09_DECISIONS.md).",
+        "transformaciones": ["Cuadrícula país×indicador×año completa con nulos explícitos", "Dedupe por URL", "Unidades de indicadores asignadas por tabla fija", "TVN: solo título/URL/pubDate (sin descripción)", "GDELT: fecha_publicacion vacía; seendate -> fecha_deteccion"]},
         ensure_ascii=False, indent=2), encoding="utf-8")
 
 
