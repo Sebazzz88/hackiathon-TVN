@@ -123,7 +123,7 @@ _NO_SUST = {"para", "desde", "hasta", "entre", "sobre", "segun", "según", "este
 
 
 def cifras(titulo):
-    """[(magnitud, valor)] p. ej. '20 mil clientes' -> ('client', 20000). Se ignoran años y duraciones."""
+    """[(magnitud, valor)] p. ej. '20 mil clientes' -> ('clientes', 20000). Se ignoran años y duraciones."""
     out = []
     for v, escala, u in _RX_NUM.findall(titulo):
         x = float(v.replace(",", "."))
@@ -136,22 +136,24 @@ def cifras(titulo):
             un = norm(escala) if escala else ""
         if not un or un in _IGNORAR:
             continue
-        out.append((un[:6], x))
+        out.append((un, x))
     return out
 
 
 def contradicciones(miembros, proc):
     """Cifras incompatibles para la misma magnitud entre procedencias distintas. No se elige ninguna."""
-    vistos = {}
+    vistos, nombre = {}, {}
     for n in miembros:
-        for clave, x in cifras(n.titulo):
+        for palabra, x in cifras(n.titulo):
+            clave = palabra[:6]  # raíz simple: "vivienda"/"viviendas" son la misma magnitud
+            nombre.setdefault(clave, palabra)
             vistos.setdefault(clave, []).append({"valor": x, "id": n.id, "medio": n.dominio, "procedencia": proc[n.id],
                                                  "titulo": n.titulo})
     out = []
     for clave, vs in vistos.items():
         valores = {v["valor"] for v in vs}
         if len(valores) > 1 and len({v["procedencia"] for v in vs}) > 1:
-            out.append({"magnitud": clave, "versiones": vs,
+            out.append({"magnitud": nombre[clave], "versiones": vs,
                         "nota": "Versiones incompatibles; el sistema no elige una. Requiere verificación con fuente primaria."})
     return out
 

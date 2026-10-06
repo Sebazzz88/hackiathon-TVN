@@ -234,3 +234,18 @@ def test_llm_ruta_completa_con_cliente_simulado(fichas, tmp_path, monkeypatch):
     assert b["meta_llm"]["costo_usd"] > 0
     b2 = draft.generar(f)  # segunda vez: desde caché, sin llamar al modelo
     assert b2["generador"].startswith("cache:") and len(llamadas) == 1
+
+
+# Regresión: titulares legítimos no deben marcarse como inyección (perderían evidencia)
+@pytest.mark.parametrize("t", ["Comunidades de Darién siguen sin fuentes de agua potable",
+                               "Gobierno da prioridad máxima a la vacunación",
+                               "El manglar actúa como un escudo contra tormentas",
+                               "Fábrica de cemento cierra en Colón"])
+def test_titulares_legitimos_no_son_inyeccion(t):
+    from app.agent.security import es_inyeccion
+    assert not es_inyeccion(t)
+
+
+def test_consulta_devuelve_eventos_con_ficha_guardada(fichas):
+    r = query.responder("¿Qué dijo S&P sobre el grado de inversión de Panamá?")
+    assert r.eventos and all(e["id_caso"] in {f.id_caso for f in pipeline.seleccionar(list(fichas.values()))} for e in r.eventos)

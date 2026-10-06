@@ -1,5 +1,5 @@
 {
- "generado_utc": "2026-10-06T21:58:44+00:00",
+ "generado_utc": "2026-10-06T22:16:50+00:00",
  "particiones": {
   "dev": {
    "sustentada": {
@@ -586,7 +586,7 @@
    "emitidas": 10,
    "con_cita_valida": 10,
    "eliminadas": 0,
-   "brief_palabras": 111,
+   "brief_palabras": 118,
    "copy_palabras": 20,
    "guion_s": 58,
    "preguntas": 3,
@@ -599,7 +599,7 @@
    "emitidas": 15,
    "con_cita_valida": 15,
    "eliminadas": 0,
-   "brief_palabras": 149,
+   "brief_palabras": 170,
    "copy_palabras": 18,
    "guion_s": 58,
    "preguntas": 3,
@@ -612,7 +612,7 @@
    "emitidas": 16,
    "con_cita_valida": 16,
    "eliminadas": 0,
-   "brief_palabras": 181,
+   "brief_palabras": 209,
    "copy_palabras": 24,
    "guion_s": 60,
    "preguntas": 3,
@@ -625,7 +625,7 @@
    "emitidas": 13,
    "con_cita_valida": 13,
    "eliminadas": 0,
-   "brief_palabras": 138,
+   "brief_palabras": 166,
    "copy_palabras": 16,
    "guion_s": 50,
    "preguntas": 3,
@@ -664,7 +664,7 @@
    "emitidas": 12,
    "con_cita_valida": 12,
    "eliminadas": 0,
-   "brief_palabras": 126,
+   "brief_palabras": 133,
    "copy_palabras": 23,
    "guion_s": 47,
    "preguntas": 3,
@@ -825,9 +825,9 @@
   "nota": "Falta eval/seleccion_editor.json (selección independiente de un editor). No se reporta Precision@5."
  },
  "tiempos": {
-  "pipeline_s": 4.86,
-  "consulta_mediana_s": 0.005,
-  "consulta_p95_s": 0.015,
+  "pipeline_s": 4.59,
+  "consulta_mediana_s": 0.004,
+  "consulta_p95_s": 0.01,
   "borrador_mediana_s": 0.001,
   "borrador_p95_s": 0.002,
   "n_consultas": 60,
@@ -940,9 +940,9 @@
   },
   {
    "nombre": "Tiempo por consulta (mediana / p95)",
-   "agente": "0.005 s / 0.015 s",
+   "agente": "0.004 s / 0.01 s",
    "baseline": null,
-   "nota": "meta mediana ≤ 15 s; pipeline completo 4.86 s"
+   "nota": "meta mediana ≤ 15 s; pipeline completo 4.59 s"
   },
   {
    "nombre": "Tiempo por borrador (mediana / p95)",

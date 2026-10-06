@@ -41,6 +41,17 @@ def health():
     return {"ok": True, "agent_mode": agent.AGENT_MODE, "reglas": scoring.VERSION, "pesos": scoring.PESOS}
 
 
+@app.get("/api/meta")
+def meta():
+    """Resumen del snapshot para la interfaz: fecha de corte, archivos con SHA-256 y cobertura."""
+    p = db.DATA_DIR / "raw" / "manifest.json"
+    m = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+    return {"version": m.get("version"), "fecha_corte_UTC": m.get("fecha_corte_UTC"), "archivos": m.get("archivos", {}),
+            "consultas": len(m.get("consultas", [])), "consultas_fallidas": len(m.get("consultas_fallidas", [])),
+            "licencia_condiciones": m.get("licencia_condiciones"), "nota_intervalo": m.get("nota_intervalo"),
+            "fichas": len(db.all_fichas()), "agent_mode": agent.AGENT_MODE}
+
+
 @app.get("/api/quality-report")
 def quality_report():
     p = db.DATA_DIR / "processed" / "quality_report.json"

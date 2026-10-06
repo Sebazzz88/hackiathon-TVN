@@ -76,6 +76,13 @@ def hora_pa(s):
     return d.astimezone(PANAMA_TZ).strftime("%d/%m/%Y %H:%M (hora de Panamá)") if d else "fecha no disponible"
 
 
+def cuando(d):
+    """Fecha de publicación y de detección nunca se confunden (seendate de GDELT = detección)."""
+    if d.get("fecha_publicacion"):
+        return f"publicó el {hora_pa(d['fecha_publicacion'])}"
+    return f"(fecha de publicación no disponible; detectado por GDELT el {hora_pa(d['fecha_deteccion'])})"
+
+
 def palabras(t):
     return len(re.findall(r"\w+", t))
 
@@ -201,7 +208,7 @@ def plantilla(f: Ficha, ev):
         if d["_procedencia"] not in vistos:
             vistos.add(d["_procedencia"])
             rep.append((i, d))
-    brief = [{"texto": f"{d['medio']} reportó el {hora_pa(d['fecha_publicacion'] or d['fecha_deteccion'])}: «{d['titulo']}».",
+    brief = [{"texto": f"{d['medio']} {cuando(d)}: «{d['titulo']}».",
               "tipo": "declaracion", "citas": [{"id_evidencia": i, "campo": "titulo"}]} for i, d in rep[:4]]
     if noticias:
         brief.append({"texto": f"Se agruparon {len(noticias)} titulares de {f.fuentes_independientes} procedencia(s) independiente(s); "
