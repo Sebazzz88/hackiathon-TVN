@@ -1,30 +1,17 @@
-# HackIAthon Panamá 2026 — Agente de IA para TVN
-
-Equipo de 3. Agente de IA funcional construido en ~72 h.
-
-> Estado: en análisis del reto. Nada de lo descrito aquí existe hasta que esté en `main` con pruebas.
-
-## Flujo objetivo
-Carga → Consulta → Priorización → Ficha → Borrador → Revisión
-
-## Estructura
-- `src/` código del agente y la app
-- `tests/` pruebas automáticas
-- `eval/` dataset de evaluación, baseline y resultados
-- `data/raw/` datos originales (NO se suben a git)
-- `docs/` documentación 01–12
+# Copiloto editorial TVN — "De la señal a la decisión" (hackIAthon 2026)
 
 ## Ejecutar
-_Se completa cuando exista el primer flujo funcional._
-
-## Equipo
-| Persona | Rol |
-|---|---|
-| _nombre_ | Agente de IA |
-| _nombre_ | Full stack / producto |
-| _nombre_ | Evaluación / seguridad / Notion / pitch |
-
-## Reglas
-- Sin métricas, fuentes ni capacidades inventadas.
-- Sin claves ni datos sensibles en el repo.
-- Todo cambio entra por Pull Request y se anota en `docs/10_CHANGELOG.md`.
+```bash
+cp .env.example .env
+# Backend
+cd backend && python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+uvicorn app.main:app --reload            # http://localhost:8000/docs
+# Frontend (otra terminal)
+cd frontend && npm install && npm run dev  # http://localhost:5173
+# Tests
+cd backend && pytest -q
+# Alternativa: docker compose up --build (solo backend)
+```
+## Datos
+`python data/scripts/download_snapshot.py all` y luego `python data/scripts/validate.py`.
+Estado actual: `AGENT_MODE=stub` usa datos DEMO sintéticos. La IA se conecta en `backend/app/agent_interface.py` (ver `NOTA_PERSONA_1.md`).

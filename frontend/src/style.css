@@ -1,0 +1,21 @@
+:root { --bg:#f2f5f8; --panel:#fff; --ink:#18222f; --mute:#5b6878; --line:#d5dce5; --acc:#1f4e8c; --warn:#a64b00; --bad:#a3231b; --ok:#1d6b45; }
+@media (prefers-color-scheme: dark) { :root { --bg:#10161d; --panel:#18212b; --ink:#e6ebf1; --mute:#9aa7b6; --line:#2b3745; --acc:#7fb0ee; --warn:#f0a35a; --bad:#f08a82; --ok:#6fcf9d; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui, "Segoe UI", sans-serif; }
+main { max-width:1180px; margin:0 auto; padding:24px 16px; }
+h1 { font-size:1.6rem; margin:0 0 16px; } h2 { font-size:1.15rem; } h3 { font-size:1rem; margin:16px 0 4px; }
+.cols { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; } @media (max-width:800px){ .cols{grid-template-columns:1fr;} }
+section { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px; }
+input { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); font:inherit; }
+button { font:inherit; cursor:pointer; padding:7px 12px; border:1px solid var(--acc); background:var(--acc); color:var(--panel); border-radius:6px; }
+button:focus-visible, input:focus-visible { outline:3px solid var(--warn); outline-offset:2px; }
+.consulta { display:flex; gap:8px; }
+.fila { display:grid; grid-template-columns:48px 1fr auto auto; gap:8px; align-items:center; width:100%; text-align:left; margin-top:8px; background:transparent; color:var(--ink); border:1px solid var(--line); }
+.fila.activa { border-color:var(--acc); box-shadow:inset 3px 0 0 var(--acc); }
+.pts { font-weight:700; font-size:1.2rem; color:var(--acc); }
+.tag { font-size:.8rem; color:var(--mute); border:1px solid var(--line); border-radius:4px; padding:1px 6px; }
+.ev-insuficiente { color:var(--bad); border-color:var(--bad); } .ev-parcial { color:var(--warn); border-color:var(--warn); } .ev-suficiente_para_borrador { color:var(--ok); border-color:var(--ok); }
+.estados { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; } .estados button { background:transparent; color:var(--acc); }
+.alerta { background:var(--bad); color:#fff; padding:8px 12px; border-radius:6px; }
+.resp { margin-top:12px; padding:10px; border-left:3px solid var(--acc); } .faltante { color:var(--warn); } .cita, .comp, .nota, .vacio { color:var(--mute); }
+pre { white-space:pre-wrap; background:var(--bg); padding:10px; border-radius:6px; font-size:.85rem; }
