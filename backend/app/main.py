@@ -1,17 +1,27 @@
 import json
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
+
 from . import db, scoring, agent_interface as agent
 from .models import Ficha, QueryIn, QueryOut, ReviewIn
+
+
+def sembrar():
+    db.clear()
+    for f in agent.build_candidates():
+        db.save(scoring.aplicar(f))
+    db.set_meta("agent_mode", agent.AGENT_MODE)
 
 
 @asynccontextmanager
 async def lifespan(_):
     db.init()
-    if not db.all_fichas():
-        for f in agent.build_candidates():
-            db.save(scoring.aplicar(f))
+    if not db.all_fichas() or db.get_meta("agent_mode") != agent.AGENT_MODE:
+        sembrar()  # re-siembra si cambió el modo (stub <-> live); las revisiones previas quedan en audit
     yield
 
 
@@ -28,7 +38,7 @@ def _ficha(id_caso) -> Ficha:
 
 @app.get("/health")
 def health():
-    return {"ok": True, "agent_mode": agent.AGENT_MODE, "reglas": scoring.VERSION}
+    return {"ok": True, "agent_mode": agent.AGENT_MODE, "reglas": scoring.VERSION, "pesos": scoring.PESOS}
 
 
 @app.get("/api/quality-report")
@@ -38,9 +48,11 @@ def quality_report():
 
 
 @app.get("/api/inbox", response_model=list[Ficha])
-def inbox(limit: int = 5):
+def inbox(limit: int = 5, sinteticos: bool = False):
+    """Bandeja priorizada. Por defecto excluye los casos controlados sintéticos (se listan con sinteticos=true)."""
     fs = sorted((Ficha(**d) for d in db.all_fichas()), key=scoring.clave_orden)
-    return fs[: max(1, min(limit, 50))]
+    fs = [f for f in fs if f.sintetico == sinteticos] if agent.AGENT_MODE == "live" else fs
+    return fs[: max(1, min(limit, 100))]
 
 
 @app.get("/api/fichas/{id_caso}", response_model=Ficha)
@@ -59,8 +71,10 @@ def query(q: QueryIn):
 def draft(id_caso: str):
     f = _ficha(id_caso)
     f.borrador = agent.generate_draft(f)
+    if f.estado_revision == "nuevo":
+        f.estado_revision = "en_revision"
     db.save(f)
-    db.log("draft", id_caso)
+    db.log("draft", id_caso, (f.borrador or {}).get("generador", ""))
     return f
 
 
@@ -73,6 +87,8 @@ def review(id_caso: str, r: ReviewIn):
         if not f.borrador:
             raise HTTPException(409, "Genera el borrador antes de aprobarlo.")
     f.estado_revision = r.estado
+    f.revisiones = f.revisiones + [{"estado": r.estado, "revisor": r.revisor, "comentario": r.comentario,
+                                    "ts": datetime.now(timezone.utc).isoformat(timespec="seconds")}]
     db.save(f)
     db.log("review", id_caso, f"{r.estado} por {r.revisor}: {r.comentario}")
     return f
@@ -81,3 +97,27 @@ def review(id_caso: str, r: ReviewIn):
 @app.get("/api/audit")
 def audit():
     return db.audit()
+
+
+@app.get("/api/export/fichas.jsonl", response_class=PlainTextResponse)
+def export_fichas():
+    """fichas.jsonl con el estado actual (incluye borrador y revisión) para registrar en Notion."""
+    return "\n".join(json.dumps(d, ensure_ascii=False) for d in db.all_fichas())
+
+
+@app.get("/api/eval")
+def eval_report():
+    p = db.ROOT / "eval" / "resultados" / "resumen.json"
+    info = {}
+    if agent.AGENT_MODE == "live":
+        from .agent import pipeline
+        info = pipeline.info()
+    return {"agente": info, "evaluacion": json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"disponible": False}}
+
+
+@app.post("/api/reset")
+def reset():
+    """Vuelve a generar las fichas desde el snapshot (borra estados de revisión; el audit se conserva)."""
+    sembrar()
+    db.log("reset")
+    return {"ok": True, "fichas": len(db.all_fichas())}
