@@ -21,7 +21,7 @@ EMB_MODEL = os.getenv("EMB_MODEL", "sentence-transformers/paraphrase-multilingua
 
 # Umbrales calibrados sobre el snapshot (ver docs/04_AGENT.md)
 SIM_CLUSTER = float(os.getenv("SIM_CLUSTER", "0.80"))     # mismo evento
-SIM_QUERY_MIN = float(os.getenv("SIM_QUERY_MIN", "0.45"))  # por debajo: abstención
+SIM_QUERY_MIN = float(os.getenv("SIM_QUERY_MIN", "0.55"))  # por debajo: abstención (calibrado en dev: sin respuesta <= 0.47, respondibles >= 0.61)
 VENTANA_EVENTO_H = 120                                      # registros a >5 días no se agrupan
 VIDA_MEDIA_URGENCIA_H = 48
 DIAS_RECIRCULADA = 30

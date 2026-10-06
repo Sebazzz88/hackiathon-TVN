@@ -222,7 +222,7 @@ def plantilla(f: Ficha, ev):
     guion += [{"texto": f"Según {d['medio']}: {d['titulo']}.", "tipo": "declaracion",
                "citas": [{"id_evidencia": i, "campo": "titulo"}]} for i, d in rep[:3]]
     guion += [x for x in brief if x["tipo"] == "hecho"][:2]  # agrupación de procedencias y contexto oficial
-    guion += [{"texto": f"Versión de {v['medio']}: {v['valor']:g}.", "tipo": "declaracion",
+    guion += [{"texto": f"Otra versión, de {v['medio']}: {v['titulo']}.", "tipo": "declaracion",
                "citas": [{"id_evidencia": v["id"], "campo": "titulo"}]} for k in f.contradicciones for v in k["versiones"]]
     if i0:
         guion.append({**enfoque, "texto": f"El tema podría tener {ENFOQUE_TEMA.get(f.tema, ENFOQUE_TEMA['otros'])}; está por confirmar."})

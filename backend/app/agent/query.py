@@ -17,14 +17,24 @@ from ..models import Cita, QueryOut
 from . import pipeline
 from .baseline import norm
 from .config import LEYENDA, SIM_QUERY_MIN
-from .context import CLAVES, NOMBRE_PAIS, NOMBRES, PAISES, fmt_valor, item_indicador, ultimo_valor
+from .context import NOMBRE_PAIS, NOMBRES, PAISES, fmt_valor, item_indicador, ultimo_valor
 from .embed import embed
 from .security import es_inyeccion
 
-AHORA = ["hoy", "actual", "actualmente", "ahora", "este mes", "esta semana", "en este momento", "today", "current"]
+AHORA = ["hoy", "actual", "actualmente", "ahora", "este mes", "esta semana", "en este momento", "today", "current",
+         "proximo ano", "el ano que viene", "sera", "seran", "pronostico", "proyeccion", "prevision", "next year", "forecast"]
 PIDE_CIFRA = ["cuanto", "cuantos", "cuantas", "cifra", "monto", "porcentaje", "%", "numero de", "cantidad", "how many", "how much"]
-CLAVES_Q = {**CLAVES, "NY.GDP.MKTP.KD.ZG": ["pib", "crecimiento economico", "crecimiento de la economia", "gdp"],
-            "NE.EXP.GNFS.ZS": ["exportaciones", "exports"]}
+# Orden de lo más específico a lo más general: "porcentaje de la población que usa internet" es internet, no población;
+# "exportaciones en el PIB" es exportaciones, no crecimiento. En consultas, "precio" solo NO activa inflación
+# (gasolina o diésel son noticias, no el IPC anual).
+CLAVES_Q = {
+    "IT.NET.USER.ZS": ["internet", "conectividad", "banda ancha"],
+    "NE.EXP.GNFS.ZS": ["exportaciones", "exports"],
+    "SL.UEM.TOTL.ZS": ["desempleo", "tasa de empleo", "unemployment"],
+    "FP.CPI.TOTL.ZG": ["inflacion", "indice de precios", "ipc", "costo de vida", "inflation"],
+    "SP.POP.TOTL": ["poblacion", "habitantes", "population"],
+    "NY.GDP.MKTP.KD.ZG": ["pib", "crecimiento economico", "crecimiento de la economia", "crecio la economia", "gdp"],
+}
 
 
 OTROS_PAISES = ["chile", "argentina", "peru", "ecuador", "venezuela", "bolivia", "brasil", "uruguay", "paraguay",
