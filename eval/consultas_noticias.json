@@ -1,0 +1,198 @@
+[
+ {
+  "pregunta": "¿Quién es la nueva administradora del Canal de Panamá?",
+  "eventos": [
+   "EV-G97e3e7b0a7",
+   "EV-G4d6d5f7b0f"
+  ],
+  "ids_aceptables": [
+   "G2041be07fd",
+   "G2beca40852",
+   "G4d6d5f7b0f",
+   "G5387260329",
+   "G79e06bce55",
+   "G7a79e3fd25",
+   "G85cb2bee47",
+   "G97e3e7b0a7",
+   "G9ee1fc3ab5",
+   "Gc2a6ecbd25",
+   "Gd6e2fb1a25",
+   "Gf5c7aa4571",
+   "Gf9cfa320c1"
+  ]
+ },
+ {
+  "pregunta": "¿Qué dijo S&P sobre el grado de inversión de Panamá?",
+  "eventos": [
+   "EV-G226d8217c0"
+  ],
+  "ids_aceptables": [
+   "G11b756ff2a",
+   "G1b46030073",
+   "G226d8217c0",
+   "G974fee5ac1",
+   "Ga771a3fc84",
+   "Gcf3e5c3584"
+  ]
+ },
+ {
+  "pregunta": "¿Qué pasó con el boxeador Ismael Laguna?",
+  "eventos": [
+   "EV-G115a74c18f"
+  ],
+  "ids_aceptables": [
+   "G0070fe6b52",
+   "G115a74c18f",
+   "G2ba5559a04",
+   "G54890e08f9",
+   "G6116f712f0",
+   "G785aef459b",
+   "Ga7177e687c",
+   "Gca1b682ff6",
+   "Gd2df45c20e",
+   "Ge165ff662b",
+   "Gf4f75dbf97",
+   "Gf7469ab1bf",
+   "Gf83bb0f2a6"
+  ]
+ },
+ {
+  "pregunta": "¿Se aprobó el presupuesto del Canal de Panamá en la Asamblea?",
+  "eventos": [
+   "EV-G0954e05695"
+  ],
+  "ids_aceptables": [
+   "G0954e05695",
+   "Ga5ae694e2d",
+   "Gc2650380d5"
+  ]
+ },
+ {
+  "pregunta": "¿Va a subir el precio de la gasolina en Panamá?",
+  "eventos": [
+   "EV-Ga02663d71f"
+  ],
+  "ids_aceptables": [
+   "G3568f9c171",
+   "G86701c186f",
+   "Ga02663d71f"
+  ]
+ },
+ {
+  "pregunta": "¿Qué advierte Moody's sobre Cobre Panamá y el grado de inversión?",
+  "eventos": [
+   "EV-Gb01bc434a8"
+  ],
+  "ids_aceptables": [
+   "G55b50a63f1",
+   "G8c67410fe4",
+   "Gb01bc434a8"
+  ]
+ },
+ {
+  "pregunta": "¿Afectará El Niño los tránsitos por el Canal de Panamá?",
+  "eventos": [
+   "EV-G96aee7ce50",
+   "EV-Gcc9be32d89",
+   "EV-Gfd6b3336bf",
+   "EV-G697faf9d32"
+  ],
+  "ids_aceptables": [
+   "G697faf9d32",
+   "G74bb50b704",
+   "G96aee7ce50",
+   "G9e37de9fb6",
+   "Gb43ae9a893",
+   "Gbf885970e2",
+   "Gcc9be32d89",
+   "Ge0bad9d778",
+   "Gfd6b3336bf"
+  ]
+ },
+ {
+  "pregunta": "Aniversario de los Tratados Torrijos-Carter",
+  "eventos": [
+   "EV-G7e5229cbfd"
+  ],
+  "ids_aceptables": [
+   "G2d5f6b93cb",
+   "G4b999db4df",
+   "G7e5229cbfd",
+   "Gbf092b5206"
+  ]
+ },
+ {
+  "pregunta": "¿Quién era Dagoberto Yin Carrizo?",
+  "eventos": [
+   "EV-Gafbecc7950"
+  ],
+  "ids_aceptables": [
+   "G6293864cad",
+   "Gaf4576bdfa",
+   "Gafbecc7950",
+   "Ge3c4dd5ebd"
+  ]
+ },
+ {
+  "pregunta": "¿Seguirá Thomas Christiansen como técnico de Panamá?",
+  "eventos": [
+   "EV-G5ed0433087"
+  ],
+  "ids_aceptables": [
+   "G1ab49f1665",
+   "G478b294a23",
+   "G5ed0433087",
+   "G6c52fe2a8f",
+   "Gf4be5dd810"
+  ]
+ },
+ {
+  "pregunta": "¿Qué película panameña irá a los premios Oscar y Goya?",
+  "eventos": [
+   "EV-Gd81a4829a6"
+  ],
+  "ids_aceptables": [
+   "G767423b07a",
+   "Gce75775a9d",
+   "Gd81a4829a6"
+  ]
+ },
+ {
+  "pregunta": "¿Qué misión realiza la NASA desde Panamá?",
+  "eventos": [
+   "EV-G11995d6639"
+  ],
+  "ids_aceptables": [
+   "G11995d6639",
+   "G4eeaddd694"
+  ]
+ },
+ {
+  "pregunta": "¿Qué piden los familiares de los panameños detenidos en Cuba?",
+  "eventos": [
+   "EV-G0f5eac14c2"
+  ],
+  "ids_aceptables": [
+   "G0f5eac14c2",
+   "G1f1db749c7"
+  ]
+ },
+ {
+  "pregunta": "¿Hasta cuándo sigue la vigilancia de Sinaproc por lluvias?",
+  "eventos": [
+   "EV-Ta0993c4b63"
+  ],
+  "ids_aceptables": [
+   "Ta0993c4b63"
+  ]
+ },
+ {
+  "pregunta": "¿Por qué se suspendió la potabilizadora de Miraflores?",
+  "eventos": [
+   "EV-T7bb199ba28"
+  ],
+  "ids_aceptables": [
+   "T7bb199ba28"
+  ]
+ }
+]

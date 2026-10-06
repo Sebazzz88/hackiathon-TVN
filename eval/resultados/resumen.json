@@ -1,0 +1,956 @@
+{
+ "generado_utc": "2026-10-06T21:58:44+00:00",
+ "particiones": {
+  "dev": {
+   "sustentada": {
+    "agente": [
+     20,
+     20
+    ],
+    "baseline": [
+     6,
+     20
+    ],
+    "fallos_agente": []
+   },
+   "contradiccion": {
+    "agente": [
+     7,
+     7
+    ],
+    "baseline": [
+     0,
+     7
+    ],
+    "fallos_agente": []
+   },
+   "sin_respuesta": {
+    "agente": [
+     7,
+     7
+    ],
+    "baseline": [
+     1,
+     7
+    ],
+    "fallos_agente": []
+   },
+   "adversarial": {
+    "agente": [
+     6,
+     6
+    ],
+    "baseline": [
+     1,
+     6
+    ],
+    "fallos_agente": []
+   },
+   "abstencion_correcta": {
+    "agente": [
+     13,
+     13
+    ],
+    "baseline": [
+     2,
+     13
+    ]
+   },
+   "abstencion_incorrecta": {
+    "agente": [
+     0,
+     27
+    ],
+    "baseline": [
+     1,
+     27
+    ]
+   }
+  },
+  "reservado": {
+   "sustentada": {
+    "agente": [
+     10,
+     10
+    ],
+    "baseline": [
+     5,
+     10
+    ],
+    "fallos_agente": []
+   },
+   "contradiccion": {
+    "agente": [
+     3,
+     3
+    ],
+    "baseline": [
+     0,
+     3
+    ],
+    "fallos_agente": []
+   },
+   "sin_respuesta": {
+    "agente": [
+     3,
+     3
+    ],
+    "baseline": [
+     0,
+     3
+    ],
+    "fallos_agente": []
+   },
+   "adversarial": {
+    "agente": [
+     4,
+     4
+    ],
+    "baseline": [
+     0,
+     4
+    ],
+    "fallos_agente": []
+   },
+   "abstencion_correcta": {
+    "agente": [
+     7,
+     7
+    ],
+    "baseline": [
+     0,
+     7
+    ]
+   },
+   "abstencion_incorrecta": {
+    "agente": [
+     0,
+     13
+    ],
+    "baseline": [
+     0,
+     13
+    ]
+   }
+  }
+ },
+ "temas": {
+  "dev": {
+   "n": 100,
+   "macro_f1_agente": 0.568,
+   "macro_f1_baseline": 0.547,
+   "exactitud_agente": "83/100 (83%)",
+   "exactitud_baseline": "78/100 (78%)",
+   "por_clase_agente": {
+    "economia": {
+     "precision": 1.0,
+     "recall": 0.429,
+     "f1": 0.6,
+     "soporte": 7
+    },
+    "logistica_canal": {
+     "precision": 1.0,
+     "recall": 0.8,
+     "f1": 0.889,
+     "soporte": 5
+    },
+    "turismo": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "soporte": 1
+    },
+    "servicios_publicos": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "soporte": 3
+    },
+    "eventos_naturales": {
+     "precision": 1.0,
+     "recall": 0.2,
+     "f1": 0.333,
+     "soporte": 5
+    },
+    "regulacion": {
+     "precision": 0.5,
+     "recall": 0.167,
+     "f1": 0.25,
+     "soporte": 6
+    },
+    "otros": {
+     "precision": 0.82,
+     "recall": 1.0,
+     "f1": 0.901,
+     "soporte": 73
+    }
+   },
+   "por_clase_baseline": {
+    "economia": {
+     "precision": 0.714,
+     "recall": 0.714,
+     "f1": 0.714,
+     "soporte": 7
+    },
+    "logistica_canal": {
+     "precision": 1.0,
+     "recall": 0.2,
+     "f1": 0.333,
+     "soporte": 5
+    },
+    "turismo": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "soporte": 1
+    },
+    "servicios_publicos": {
+     "precision": 0.2,
+     "recall": 0.333,
+     "f1": 0.25,
+     "soporte": 3
+    },
+    "eventos_naturales": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "soporte": 5
+    },
+    "regulacion": {
+     "precision": 1.0,
+     "recall": 0.5,
+     "f1": 0.667,
+     "soporte": 6
+    },
+    "otros": {
+     "precision": 0.817,
+     "recall": 0.918,
+     "f1": 0.865,
+     "soporte": 73
+    }
+   },
+   "errores_agente": [
+    {
+     "id": "G38c5fdc693",
+     "titulo": "Competitividad: ¿quién está sentado en la mesa?",
+     "humano": "economia",
+     "agente": "otros"
+    },
+    {
+     "id": "Teb754d221e",
+     "titulo": "Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia",
+     "humano": "servicios_publicos",
+     "agente": "otros"
+    },
+    {
+     "id": "G1594239ef1",
+     "titulo": "Vásquez considera que decisión final sobre la mina no debe ser solo del Ejecutivo",
+     "humano": "regulacion",
+     "agente": "otros"
+    },
+    {
+     "id": "G7d42aa0f4b",
+     "titulo": "Clima en Panamá: Pronóstico para este lunes 28 de septiembre",
+     "humano": "eventos_naturales",
+     "agente": "otros"
+    },
+    {
+     "id": "G631264c373",
+     "titulo": "Meduca presenta calendario de Escuela para Padres y Madres",
+     "humano": "servicios_publicos",
+     "agente": "otros"
+    },
+    {
+     "id": "Gbaa6e81001",
+     "titulo": "Comisión Interministerial recomienda al presidente Mulino un cierre ordenado de la mina de Donoso",
+     "humano": "regulacion",
+     "agente": "otros"
+    },
+    {
+     "id": "G11b756ff2a",
+     "titulo": "S & P ratifica grado de inversión de Panamá en BBB - y mantiene perspectiva estable, dice el MEF",
+     "humano": "economia",
+     "agente": "otros"
+    },
+    {
+     "id": "G2c68ba9ffe",
+     "titulo": "Σούπερ Ελ Νίνιο χωρίς προηγούμενο εδώ και 1.000 χρόνια – Οι φόβοι για όσα έρχονται",
+     "humano": "eventos_naturales",
+     "agente": "otros"
+    },
+    {
+     "id": "G5d015ffca8",
+     "titulo": "Riquelme: Me he ido a Panamá, porque quiero invertir entre 7.000 y 9.000 millones en Latinoamérica. No hay absolutamente nada fiscal",
+     "humano": "economia",
+     "agente": "otros"
+    },
+    {
+     "id": "Ge66946f286",
+     "titulo": "Mulino se reúne en Nueva York con Blackstone y SSA Marine para impulsar inversiones en el Canal",
+     "humano": "logistica_canal",
+     "agente": "otros"
+    },
+    {
+     "id": "Tc7010d3172",
+     "titulo": "Descentralización explica qué incluye el proyecto de $293,715 para 15 juntas comunales",
+     "humano": "servicios_publicos",
+     "agente": "regulacion"
+    },
+    {
+     "id": "G8fa8365869",
+     "titulo": "Apuestan por ley de pasantías para facilitar inserción de jóvenes en el mercado laboral",
+     "humano": "regulacion",
+     "agente": "otros"
+    },
+    {
+     "id": "G1b60c24cbe",
+     "titulo": "Los riesgos del deber: Mulino lamenta muerte de rescatistas en Macho de Monte",
+     "humano": "eventos_naturales",
+     "agente": "otros"
+    },
+    {
+     "id": "T0eeb2a8a38",
+     "titulo": "Agroferias del IMA: Conozca dónde se realizarán este miércoles",
+     "humano": "economia",
+     "agente": "otros"
+    },
+    {
+     "id": "G94d97a45bd",
+     "titulo": "Asamblea aprueba pasaporte gratis para estudiantes que representen al país en eventos deportivos, culturales y científicos",
+     "humano": "regulacion",
+     "agente": "otros"
+    },
+    {
+     "id": "G35d6695d35",
+     "titulo": "Dos muertos y 14 desaparecidos tras avalancha en el Himalaya",
+     "humano": "eventos_naturales",
+     "agente": "otros"
+    },
+    {
+     "id": "G04ceaece4a",
+     "titulo": "Cierre ordenado de la mina abre el debate sobre cuánto tiempo tendría que operar el proyecto",
+     "humano": "regulacion",
+     "agente": "otros"
+    }
+   ]
+  },
+  "test": {
+   "n": 50,
+   "macro_f1_agente": 0.44,
+   "macro_f1_baseline": 0.395,
+   "exactitud_agente": "39/50 (78%)",
+   "exactitud_baseline": "41/50 (82%)",
+   "por_clase_agente": {
+    "economia": {
+     "precision": 1.0,
+     "recall": 0.2,
+     "f1": 0.333,
+     "soporte": 5
+    },
+    "logistica_canal": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "soporte": 2
+    },
+    "turismo": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "soporte": 0
+    },
+    "servicios_publicos": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "soporte": 1
+    },
+    "eventos_naturales": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "soporte": 2
+    },
+    "regulacion": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "soporte": 0
+    },
+    "otros": {
+     "precision": 0.837,
+     "recall": 0.9,
+     "f1": 0.867,
+     "soporte": 40
+    }
+   },
+   "por_clase_baseline": {
+    "economia": {
+     "precision": 1.0,
+     "recall": 0.4,
+     "f1": 0.571,
+     "soporte": 5
+    },
+    "logistica_canal": {
+     "precision": 0.5,
+     "recall": 0.5,
+     "f1": 0.5,
+     "soporte": 2
+    },
+    "turismo": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "soporte": 0
+    },
+    "servicios_publicos": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "soporte": 1
+    },
+    "eventos_naturales": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "soporte": 2
+    },
+    "regulacion": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "soporte": 0
+    },
+    "otros": {
+     "precision": 0.864,
+     "recall": 0.95,
+     "f1": 0.905,
+     "soporte": 40
+    }
+   },
+   "errores_agente": [
+    {
+     "id": "T0619c1cc84",
+     "titulo": "Presentan a las obras ganadoras de Documental Panamá",
+     "humano": "otros",
+     "agente": "turismo"
+    },
+    {
+     "id": "T4d4d3eb02d",
+     "titulo": "Contenido Exclusivo: Coclé, se seca el campo",
+     "humano": "eventos_naturales",
+     "agente": "otros"
+    },
+    {
+     "id": "T9aac77643f",
+     "titulo": "PASE-U: compras con la billetera de Caja de Ahorros superan los $45 millones desde junio",
+     "humano": "economia",
+     "agente": "otros"
+    },
+    {
+     "id": "G906ea01daa",
+     "titulo": "2,643 horas: la carga invisible de la burocracia en Panamá",
+     "humano": "economia",
+     "agente": "otros"
+    },
+    {
+     "id": "G1b46030073",
+     "titulo": "S & P Global ratifica grado de inversión de Panamá",
+     "humano": "economia",
+     "agente": "otros"
+    },
+    {
+     "id": "Ga3cfb2a70e",
+     "titulo": "Caso PPC: el Ministerio Público no avanza, porque espera la ampliación de la auditoría de la Contraloría",
+     "humano": "otros",
+     "agente": "regulacion"
+    },
+    {
+     "id": "Gd5e6ed2c8c",
+     "titulo": "Campaña contra el cáncer en Panamá: estas son las actividades programadas para octubre",
+     "humano": "servicios_publicos",
+     "agente": "otros"
+    },
+    {
+     "id": "T00d9574f94",
+     "titulo": "Tu Banco, tu Istmo: Banistmo presenta nueva identidad como parte del Grupo Financiero BSC",
+     "humano": "economia",
+     "agente": "otros"
+    },
+    {
+     "id": "Tcfe900fe54",
+     "titulo": "Multitudinario desfile de carretas en Guararé; TVN Media se tomó el Festival de la Mejorana",
+     "humano": "otros",
+     "agente": "turismo"
+    },
+    {
+     "id": "Gdbe71eec1b",
+     "titulo": "Σούπερ Ελ Νίνιο χωρίς προηγούμενο εδώ και 1.000 χρόνια – Οι φόβοι για όσα έρχονται",
+     "humano": "eventos_naturales",
+     "agente": "otros"
+    },
+    {
+     "id": "Tc43ac23160",
+     "titulo": "TVN Media y el Teatro Nacional sellan alianza para promover la cultura panameña",
+     "humano": "otros",
+     "agente": "turismo"
+    }
+   ]
+  },
+  "metodo": "propuesta Claude (leyendo solo el titular, sin ver la salida del clasificador) — PENDIENTE revisión humana"
+ },
+ "agrupacion": {
+  "n": 60,
+  "agente": {
+   "precision": "14/15 (93%)",
+   "recall": "14/17 (82%)",
+   "f1": 0.875
+  },
+  "baseline_jaccard_0.5": {
+   "precision": "8/9 (89%)",
+   "recall": "8/17 (47%)",
+   "f1": 0.615
+  },
+  "errores_agente": [
+   {
+    "a": "TVN Media y DIRCOM Panamá se unen para fortalecer la voz de los Héroes por Panamá",
+    "b": "TVN Media se consolida en primer lugar como medio de comunicación con mejor reputación en Panamá, según Merco 2025",
+    "humano": false,
+    "agente": true
+   },
+   {
+    "a": "Transición de mando en el Canal de Panamá, tras 49 años de la firma de los tratados Torrijos - Carter",
+    "b": "Wirtschaft - Verwaltung des Panamakanals wird erstmals von einer Frau geleitet",
+    "humano": true,
+    "agente": false
+   },
+   {
+    "a": "Panamá pone la mira en Nueva Zelanda tras cerrar su preparación en India",
+    "b": "Panamá afina su arma contra el poderío aéreo de Nueva Zelanda",
+    "humano": true,
+    "agente": false
+   },
+   {
+    "a": "Wirtschaft - Verwaltung des Panamakanals wird erstmals von einer Frau geleitet",
+    "b": "New Panama Canal Chief Takes Office With Water, Expansion Projects in Focus",
+    "humano": true,
+    "agente": false
+   }
+  ],
+  "metodo": "propuesta Claude (leyendo ambos titulares) — PENDIENTE revisión humana; par 8 dudoso"
+ },
+ "borradores": [
+  {
+   "id_caso": "EV-T7bb199ba28",
+   "sintetico": false,
+   "generador": "plantilla_determinista",
+   "emitidas": 8,
+   "con_cita_valida": 8,
+   "eliminadas": 0,
+   "brief_palabras": 54,
+   "copy_palabras": 20,
+   "guion_s": 36,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "EV-Ta0993c4b63",
+   "sintetico": false,
+   "generador": "plantilla_determinista",
+   "emitidas": 8,
+   "con_cita_valida": 8,
+   "eliminadas": 0,
+   "brief_palabras": 52,
+   "copy_palabras": 18,
+   "guion_s": 34,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "EV-Te569818877",
+   "sintetico": false,
+   "generador": "plantilla_determinista",
+   "emitidas": 8,
+   "con_cita_valida": 8,
+   "eliminadas": 0,
+   "brief_palabras": 61,
+   "copy_palabras": 27,
+   "guion_s": 39,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "EV-G1454ad17a8",
+   "sintetico": false,
+   "generador": "plantilla_determinista",
+   "emitidas": 10,
+   "con_cita_valida": 10,
+   "eliminadas": 0,
+   "brief_palabras": 111,
+   "copy_palabras": 20,
+   "guion_s": 58,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "EV-Gb01bc434a8",
+   "sintetico": false,
+   "generador": "plantilla_determinista",
+   "emitidas": 15,
+   "con_cita_valida": 15,
+   "eliminadas": 0,
+   "brief_palabras": 149,
+   "copy_palabras": 18,
+   "guion_s": 58,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "EV-G226d8217c0",
+   "sintetico": false,
+   "generador": "plantilla_determinista",
+   "emitidas": 16,
+   "con_cita_valida": 16,
+   "eliminadas": 0,
+   "brief_palabras": 181,
+   "copy_palabras": 24,
+   "guion_s": 60,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "EV-G7e5229cbfd",
+   "sintetico": false,
+   "generador": "plantilla_determinista",
+   "emitidas": 13,
+   "con_cita_valida": 13,
+   "eliminadas": 0,
+   "brief_palabras": 138,
+   "copy_palabras": 16,
+   "guion_s": 50,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "EV-Tf8a174c461",
+   "sintetico": false,
+   "generador": "plantilla_determinista",
+   "emitidas": 8,
+   "con_cita_valida": 8,
+   "eliminadas": 0,
+   "brief_palabras": 54,
+   "copy_palabras": 20,
+   "guion_s": 32,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "EV-T3c5e8c9092",
+   "sintetico": false,
+   "generador": "plantilla_determinista",
+   "emitidas": 8,
+   "con_cita_valida": 8,
+   "eliminadas": 0,
+   "brief_palabras": 51,
+   "copy_palabras": 17,
+   "guion_s": 31,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "EV-G1db88f3c6a",
+   "sintetico": false,
+   "generador": "plantilla_determinista",
+   "emitidas": 12,
+   "con_cita_valida": 12,
+   "eliminadas": 0,
+   "brief_palabras": 126,
+   "copy_palabras": 23,
+   "guion_s": 47,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "SINT-S-REC-001",
+   "sintetico": true,
+   "generador": "plantilla_determinista",
+   "emitidas": 8,
+   "con_cita_valida": 8,
+   "eliminadas": 0,
+   "brief_palabras": 50,
+   "copy_palabras": 16,
+   "guion_s": 34,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "SINT-S-CON-009",
+   "sintetico": true,
+   "generador": "plantilla_determinista",
+   "emitidas": 14,
+   "con_cita_valida": 14,
+   "eliminadas": 0,
+   "brief_palabras": 96,
+   "copy_palabras": 15,
+   "guion_s": 47,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "SINT-S-CON-007",
+   "sintetico": true,
+   "generador": "plantilla_determinista",
+   "emitidas": 17,
+   "con_cita_valida": 17,
+   "eliminadas": 0,
+   "brief_palabras": 155,
+   "copy_palabras": 18,
+   "guion_s": 66,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "SINT-S-CON-005",
+   "sintetico": true,
+   "generador": "plantilla_determinista",
+   "emitidas": 14,
+   "con_cita_valida": 14,
+   "eliminadas": 0,
+   "brief_palabras": 108,
+   "copy_palabras": 18,
+   "guion_s": 52,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "SINT-S-CON-003",
+   "sintetico": true,
+   "generador": "plantilla_determinista",
+   "emitidas": 14,
+   "con_cita_valida": 14,
+   "eliminadas": 0,
+   "brief_palabras": 108,
+   "copy_palabras": 18,
+   "guion_s": 54,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "SINT-S-DUP-001",
+   "sintetico": true,
+   "generador": "plantilla_determinista",
+   "emitidas": 8,
+   "con_cita_valida": 8,
+   "eliminadas": 0,
+   "brief_palabras": 55,
+   "copy_palabras": 21,
+   "guion_s": 33,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "SINT-S-CON-001",
+   "sintetico": true,
+   "generador": "plantilla_determinista",
+   "emitidas": 14,
+   "con_cita_valida": 14,
+   "eliminadas": 0,
+   "brief_palabras": 104,
+   "copy_palabras": 17,
+   "guion_s": 52,
+   "preguntas": 3,
+   "leyenda": true
+  },
+  {
+   "id_caso": "SINT-S-INY-001",
+   "sintetico": true,
+   "generador": "plantilla_determinista",
+   "emitidas": 0,
+   "con_cita_valida": 0,
+   "eliminadas": 2,
+   "brief_palabras": 11,
+   "copy_palabras": 0,
+   "guion_s": 11,
+   "preguntas": 3,
+   "leyenda": true
+  }
+ ],
+ "ranking": {
+  "top5_agente": [
+   [
+    "EV-T7bb199ba28",
+    "Canal de Panamá: Suspensión temporal de operaciones de potabilizadora de Miraflores este miércoles"
+   ],
+   [
+    "EV-Ta0993c4b63",
+    "Sinaproc extiende vigilancia por lluvias, tormentas y vientos hasta el viernes"
+   ],
+   [
+    "EV-Te569818877",
+    "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh"
+   ],
+   [
+    "EV-G1454ad17a8",
+    "Sismo de magnitud 3.3 sorprende durante la madrugada: ocurrió al noroeste de Chepo"
+   ],
+   [
+    "EV-Gb01bc434a8",
+    "Moody: Cobre Panamá puede incidir en el grado de inversión"
+   ]
+  ],
+  "top5_baseline_fecha": [
+   [
+    "EV-T8345efcf73",
+    "Príncipes de Gales: los nombres que usan en el colegio sus hijos"
+   ],
+   [
+    "EV-Teb754d221e",
+    "Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia"
+   ],
+   [
+    "EV-T7bb199ba28",
+    "Canal de Panamá: Suspensión temporal de operaciones de potabilizadora de Miraflores este miércoles"
+   ],
+   [
+    "EV-Ta0993c4b63",
+    "Sinaproc extiende vigilancia por lluvias, tormentas y vientos hasta el viernes"
+   ],
+   [
+    "EV-T0eeb2a8a38",
+    "Agroferias del IMA: Conozca dónde se realizarán este miércoles"
+   ]
+  ],
+  "coincidencia_agente_baseline": "2/5 (40%)",
+  "precision_at_5_agente": "PENDIENTE",
+  "nota": "Falta eval/seleccion_editor.json (selección independiente de un editor). No se reporta Precision@5."
+ },
+ "tiempos": {
+  "pipeline_s": 4.86,
+  "consulta_mediana_s": 0.005,
+  "consulta_p95_s": 0.015,
+  "borrador_mediana_s": 0.001,
+  "borrador_p95_s": 0.002,
+  "n_consultas": 60,
+  "n_borradores": 18,
+  "entorno": "CPU local Windows, embeddings ONNX locales, LLM desactivado (plantilla/caché)"
+ },
+ "costo": "0 USD en esta ejecución (LLM_OFFLINE=1: plantilla determinista o caché).",
+ "metricas": [
+  {
+   "nombre": "[dev] Respuestas sustentadas correctas",
+   "agente": "20/20 (100%)",
+   "baseline": "6/20 (30%)",
+   "nota": "sin fallos"
+  },
+  {
+   "nombre": "[dev] Contradicciones mostradas",
+   "agente": "7/7 (100%)",
+   "baseline": "0/7 (0%)",
+   "nota": "sin fallos"
+  },
+  {
+   "nombre": "[dev] Sin respuesta: abstención correcta",
+   "agente": "7/7 (100%)",
+   "baseline": "1/7 (14%)",
+   "nota": "sin fallos"
+  },
+  {
+   "nombre": "[dev] Adversariales rechazadas",
+   "agente": "6/6 (100%)",
+   "baseline": "1/6 (17%)",
+   "nota": "sin fallos"
+  },
+  {
+   "nombre": "[dev] Abstención correcta (sin respuesta + adversarial)",
+   "agente": "13/13 (100%)",
+   "baseline": "2/13 (15%)",
+   "nota": "meta ≥ 80%"
+  },
+  {
+   "nombre": "[dev] Abstención INCORRECTA en respondibles",
+   "agente": "0/27 (0%)",
+   "baseline": "1/27 (4%)",
+   "nota": "menor es mejor"
+  },
+  {
+   "nombre": "[reservado] Respuestas sustentadas correctas",
+   "agente": "10/10 (100%)",
+   "baseline": "5/10 (50%)",
+   "nota": "sin fallos"
+  },
+  {
+   "nombre": "[reservado] Contradicciones mostradas",
+   "agente": "3/3 (100%)",
+   "baseline": "0/3 (0%)",
+   "nota": "sin fallos"
+  },
+  {
+   "nombre": "[reservado] Sin respuesta: abstención correcta",
+   "agente": "3/3 (100%)",
+   "baseline": "0/3 (0%)",
+   "nota": "sin fallos"
+  },
+  {
+   "nombre": "[reservado] Adversariales rechazadas",
+   "agente": "4/4 (100%)",
+   "baseline": "0/4 (0%)",
+   "nota": "sin fallos"
+  },
+  {
+   "nombre": "[reservado] Abstención correcta (sin respuesta + adversarial)",
+   "agente": "7/7 (100%)",
+   "baseline": "0/7 (0%)",
+   "nota": "meta ≥ 80%"
+  },
+  {
+   "nombre": "[reservado] Abstención INCORRECTA en respondibles",
+   "agente": "0/13 (0%)",
+   "baseline": "0/13 (0%)",
+   "nota": "menor es mejor"
+  },
+  {
+   "nombre": "Cobertura de citas en borradores",
+   "agente": "195/195 (100%)",
+   "baseline": null,
+   "nota": "2 afirmaciones eliminadas por el validador; validez de sustento: PENDIENTE revisión humana (afirmaciones_para_revision.csv)"
+  },
+  {
+   "nombre": "Clasificación temática macro-F1 [dev, n=100]",
+   "agente": 0.568,
+   "baseline": 0.547,
+   "nota": "exactitud 83/100 (83%) vs 78/100 (78%)"
+  },
+  {
+   "nombre": "Clasificación temática macro-F1 [test, n=50]",
+   "agente": 0.44,
+   "baseline": 0.395,
+   "nota": "exactitud 39/50 (78%) vs 41/50 (82%)"
+  },
+  {
+   "nombre": "Agrupación de eventos (pares, n=60) F1",
+   "agente": 0.875,
+   "baseline": 0.615,
+   "nota": "P 14/15 (93%) · R 14/17 (82%)"
+  },
+  {
+   "nombre": "Precision@5 (exploratoria)",
+   "agente": "PENDIENTE",
+   "baseline": null,
+   "nota": "Falta eval/seleccion_editor.json (selección independiente de un editor). No se reporta Precision@5."
+  },
+  {
+   "nombre": "Tiempo por consulta (mediana / p95)",
+   "agente": "0.005 s / 0.015 s",
+   "baseline": null,
+   "nota": "meta mediana ≤ 15 s; pipeline completo 4.86 s"
+  },
+  {
+   "nombre": "Tiempo por borrador (mediana / p95)",
+   "agente": "0.001 s / 0.002 s",
+   "baseline": null,
+   "nota": "0 USD en esta ejecución (LLM_OFFLINE=1: plantilla determinista o caché)."
+  }
+ ],
+ "conjunto": "60 consultas (40 dev / 20 reservadas)",
+ "etiquetas": "Propuestas por el asistente de IA (Claude) a partir de titulares y del snapshot; PENDIENTE revisión humana. Hasta entonces las métricas son preliminares."
+}
