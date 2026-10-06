@@ -1,0 +1,65 @@
+{
+  "disponible": true,
+  "generado_utc": "2026-10-06T21:54:53+00:00",
+  "noticias": {
+    "total": 875,
+    "validas": 875,
+    "con_error": 0,
+    "errores_por_tipo": {},
+    "por_origen_validas": {
+      "tvn_rss": 152,
+      "gdelt": 723
+    },
+    "tvn_validas": 152,
+    "sin_fecha_publicacion": 723,
+    "medios_distintos": 208,
+    "cobertura": {
+      "desde": "2024-09-20T18:19:27+00:00",
+      "hasta": "2026-10-06T21:00:19+00:00"
+    },
+    "cumple_minimo_100": true,
+    "cumple_minimo_20_tvn": true
+  },
+  "total": 875,
+  "validas": 875,
+  "con_error": 0,
+  "por_origen": {
+    "tvn_rss": 152,
+    "gdelt": 723
+  },
+  "sin_fecha_publicacion": 723,
+  "indicadores": {
+    "celdas": 540,
+    "esperadas": 540,
+    "nota": "6 países × 6 indicadores × 15 años = 540 celdas. El PDF menciona 1.350, cifra que no corresponde a esa cuadrícula; se conserva la cuadrícula completa con nulos explícitos.",
+    "con_valor": 540,
+    "nulas": 0,
+    "paises": [
+      "COL",
+      "CRI",
+      "DOM",
+      "GTM",
+      "MEX",
+      "PAN"
+    ],
+    "indicadores": [
+      "FP.CPI.TOTL.ZG",
+      "IT.NET.USER.ZS",
+      "NE.EXP.GNFS.ZS",
+      "NY.GDP.MKTP.KD.ZG",
+      "SL.UEM.TOTL.ZS",
+      "SP.POP.TOTL"
+    ],
+    "anios": [
+      2010,
+      2024
+    ]
+  },
+  "eventos": {
+    "total": 82,
+    "con_campos_faltantes": 0,
+    "fuera_de_caja": 0,
+    "magnitud_max": 5.8,
+    "nota": "Caja regional lat 5–12, lon −86/−76; no equivale al territorio de Panamá."
+  }
+}
