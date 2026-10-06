@@ -188,3 +188,49 @@ def test_T10_embeddings_respaldo_sin_modelo():
     v = embed._hash_vec("Canal de Panamá")
     assert v.shape == (1024,) and v.sum() > 0
     assert embed.BACKEND in ("fastembed", "hash")
+
+
+# Ruta LLM con cliente simulado (sin red): parseo, caché, costo y validador sobre la salida del modelo
+def test_llm_ruta_completa_con_cliente_simulado(fichas, tmp_path, monkeypatch):
+    import types
+    import anthropic
+    f = fichas["SINT-S-CON-001"]
+    salida = {"titulo": "Lluvias en Chiriquí: versiones distintas sobre viviendas afectadas",
+              "enfoque": {"texto": "Posible riesgo para familias afectadas.", "tipo": "hipotesis",
+                          "citas": [{"id_evidencia": "S-CON-001", "campo": "titulo"}]},
+              "brief": [{"texto": "Según sintetico-a.test, las lluvias dejaron 3 viviendas afectadas.", "tipo": "declaracion",
+                         "citas": [{"id_evidencia": "S-CON-001", "campo": "titulo"}]},
+                        {"texto": "Según sintetico-b.test, fueron 40 viviendas.", "tipo": "declaracion",
+                         "citas": [{"id_evidencia": "S-CON-002", "campo": "titulo"}]},
+                        {"texto": "El ministro declaró que hubo 900 damnificados.", "tipo": "hecho",
+                         "citas": [{"id_evidencia": "S-CON-001", "campo": "titulo"}]}],
+              "preguntas": ["¿Qué reporta SINAPROC?", "¿Cuál es la cifra oficial?", "¿Dónde ocurrió?"],
+              "verificaciones_pendientes": ["Cifra oficial de viviendas"],
+              "guion": [{"texto": "Hay dos versiones sobre las viviendas afectadas.", "tipo": "inferencia",
+                         "citas": [{"id_evidencia": "S-CON-001", "campo": "titulo"}, {"id_evidencia": "S-CON-002", "campo": "titulo"}]}],
+              "copy": [{"texto": "Lluvias en Chiriquí: cifras en verificación.", "tipo": "inferencia",
+                        "citas": [{"id_evidencia": "S-CON-001", "campo": "titulo"}]}]}
+    llamadas = []
+
+    class Cliente:
+        def __init__(self, **kw):
+            self.messages = self
+
+        def create(self, **kw):
+            llamadas.append(kw)
+            return types.SimpleNamespace(stop_reason="end_turn", content=[types.SimpleNamespace(type="text", text=json.dumps(salida))],
+                                         usage=types.SimpleNamespace(input_tokens=1000, output_tokens=500))
+
+    monkeypatch.setattr(anthropic, "Anthropic", Cliente)
+    monkeypatch.setenv("LLM_OFFLINE", "0")
+    monkeypatch.setenv("LLM_API_KEY", "clave-de-prueba")
+    monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    b = draft.generar(f)
+    assert b["generador"].startswith("llm:") and len(llamadas) == 1
+    k = llamadas[0]
+    assert k["output_config"]["format"]["type"] == "json_schema" and "<DATOS>" in k["messages"][0]["content"]
+    assert "clave-de-prueba" not in json.dumps(k, ensure_ascii=False)  # la clave no viaja en el prompt
+    assert any("900" in e["texto"] for e in b["eliminadas"])  # cifra inventada eliminada por el validador
+    assert b["meta_llm"]["costo_usd"] > 0
+    b2 = draft.generar(f)  # segunda vez: desde caché, sin llamar al modelo
+    assert b2["generador"].startswith("cache:") and len(llamadas) == 1

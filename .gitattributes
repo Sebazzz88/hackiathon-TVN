@@ -1,0 +1,3 @@
+# El snapshot se versiona byte a byte: sus SHA-256 están en data/raw/manifest.json
+data/raw/** -text
+data/processed/*.csv -text

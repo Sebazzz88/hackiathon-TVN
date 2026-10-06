@@ -1,8 +1,7 @@
 .env
 .env.*
 !.env.example
-data/raw/*
-!data/raw/.gitkeep
+# data/raw se versiona: snapshot congelado (solo metadatos de TVN)
 __pycache__/
 *.pyc
 .venv/
