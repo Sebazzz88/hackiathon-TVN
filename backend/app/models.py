@@ -66,6 +66,7 @@ class QueryOut(BaseModel):
     ids_fuente: list[str] = []
     faltante: list[str] = []
     versiones: list[dict] = []   # contradicciones relevantes a la consulta
+    eventos: list[dict] = []     # eventos recuperados (para abrir su ficha)
     base: str = "titular/metadatos"
     metodo: str = ""
 

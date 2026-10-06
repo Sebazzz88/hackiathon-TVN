@@ -1,54 +1,125 @@
-# Copiloto TVN — "De la señal a la decisión" (hackIAthon Panamá 2026)
+# Copiloto TVN — "De la señal a la decisión"
 
-Prototipo para la mesa editorial de TVN. Convierte noticias públicas e indicadores oficiales en una bandeja de temas priorizados, fichas de evidencia y borradores con cita por afirmación, siempre sujetos a revisión humana. **Nada se publica automáticamente.**
+Prototipo para la mesa editorial de TVN, hecho para el hackIAthon Panamá 2026.
 
-- Reto: [docs/RETO.md](docs/RETO.md) · Producto: [docs/01_PRODUCT.md](docs/01_PRODUCT.md) · Agente: [docs/04_AGENT.md](docs/04_AGENT.md) · Evaluación: [docs/07_EVALUATION.md](docs/07_EVALUATION.md)
-- Stack: FastAPI + SQLite + React/Vite. IA local: embeddings multilingües ONNX (fastembed). LLM opcional: Claude (SDK oficial), con caché y plantilla de respaldo.
+## Qué es esto
 
-## Requisitos
+Cada mañana, un editor tiene cientos de titulares de muchos medios. Muchos repiten la misma nota de agencia, otros son viejos o no tienen relación con Panamá, y casi ninguno trae el dato oficial que permite ponerlos en contexto.
 
-- Windows con PowerShell, Python 3.12 o 3.13, Node.js 18 o superior, Git.
-- Internet solo para la instalación y para descargar el modelo de embeddings (una vez, ~0,22 GB). La demo funciona sin internet.
+El Copiloto hace ese primer filtro y deja la decisión en manos de una persona:
 
-## Instalación (PowerShell, desde la raíz del repo)
+1. **Ordena la agenda.** Agrupa los titulares que hablan del mismo hecho, cuenta cuántas fuentes *independientes* lo reportan (cinco medios que replican a EFE cuentan como una) y calcula un puntaje de atención de 0 a 100 con una fórmula visible: P = 30·Relevancia + 25·Impacto + 20·Urgencia + 15·Novedad + 10·Evidencia.
+2. **Explica cada tema en una ficha.** Qué se reporta, quién lo reporta, qué está respaldado, qué falta comprobar y qué se recomienda hacer. Si hay un dato oficial pertinente (Banco Mundial, USGS), lo agrega con país, año y unidad, y advierte que es un dato anual, no "de hoy".
+3. **Redacta un borrador.** Título, enfoque, brief, preguntas de investigación, guion de TV y copy digital. Cada frase lleva su cita y su tipo (hecho, declaración, inferencia o hipótesis). Un validador en código borra cualquier frase sin respaldo o con cifras que no están en la fuente.
+4. **Deja la decisión a una persona.** Hay cinco estados de revisión con nombre de revisor y comentario. Aprobar un borrador **no publica nada**, y un tema con evidencia insuficiente no se puede aprobar.
+
+También responde preguntas en español y **se abstiene** cuando no hay evidencia: por ejemplo, si se le pide la inflación "de hoy" o un dato que no existe. Ignora las fuentes que intentan darle órdenes (inyección de instrucciones).
+
+**Con qué datos.** Un snapshot público congelado el 6 de octubre de 2026:
+
+| Fuente | Contenido |
+|---|---|
+| RSS de TVN | 152 titulares; solo título, URL y fecha |
+| GDELT | 723 titulares de otros medios |
+| Banco Mundial | 6 países × 6 indicadores × 2010–2024 |
+| USGS | 82 sismos de 2024 en la región |
+
+Todo funciona **sin internet** durante la demo.
+
+**Dónde está la IA.**
+- **Embeddings multilingües locales** (ONNX, sin GPU). Clasifican en 6 temas, agrupan titulares del mismo hecho aunque estén en otro idioma y buscan por significado.
+- **Claude (opcional).** Redacta los borradores. Sin clave usa respuestas guardadas en caché o una plantilla determinista.
+- **Comparación con un baseline.** El agente se compara con una búsqueda por palabras clave y un ranking por fecha. Ver [docs/07_EVALUATION.md](docs/07_EVALUATION.md).
+
+## Cómo encenderlo
+
+Requisitos: Windows con PowerShell, **Python 3.12 o 3.13** y **Node.js 18 o superior**.
+
+### Opción rápida (un comando)
+
+Desde la carpeta del repo, en PowerShell:
 
 ```powershell
-Copy-Item .env.example .env          # luego edita .env si tienes clave LLM (opcional)
-cd backend
-py -3.13 -m venv .venv               # o: python -m venv .venv
-.\.venv\Scripts\python -m pip install -r requirements.txt
-.\.venv\Scripts\python -m app.agent.embed --descargar   # modelo de embeddings a data\models (una vez)
-cd ..\frontend
-npm install
-cd ..
+# La primera vez: instala dependencias, descarga el modelo (~0,22 GB) y enciende
+powershell -ExecutionPolicy Bypass -File .\iniciar.ps1 -Instalar
+
+# Las siguientes veces: solo enciende
+powershell -ExecutionPolicy Bypass -File .\iniciar.ps1
 ```
 
-## Ejecutar
+Se abren dos ventanas de PowerShell (backend e interfaz) y el navegador en **http://localhost:5173**. Para apagar, cierra esas dos ventanas.
+
+### Opción manual
 
 ```powershell
-# Terminal 1 — backend (http://localhost:8000/docs)
+Copy-Item .env.example .env
+
+# Backend (una vez)
+cd backend
+py -3.13 -m venv .venv
+.\.venv\Scripts\python -m pip install -r requirements.txt
+.\.venv\Scripts\python -m app.agent.embed --descargar
+cd ..
+
+# Interfaz (una vez)
+cd frontend
+npm install
+cd ..
+
+# Encender — Terminal 1
 cd backend
 .\.venv\Scripts\python -m uvicorn app.main:app --port 8000
 
-# Terminal 2 — interfaz (http://localhost:5173)
+# Encender — Terminal 2
 cd frontend
 npm run dev
 ```
 
-Con `AGENT_MODE=live` (valor de `.env.example`) se usa el agente. Con `AGENT_MODE=stub` se ven datos DEMO sintéticos. Al cambiar de modo, el backend regenera las fichas automáticamente.
+Abre **http://localhost:5173**. La documentación de la API está en http://localhost:8000/docs.
+
+### Borradores con Claude (opcional)
+
+Pon tu clave en `.env` (este archivo nunca se sube al repo):
+
+```
+LLM_API_KEY=tu-clave
+LLM_MODEL=claude-opus-5-5
+```
+
+Cada borrador generado se guarda en `data/cache/llm/`. Así la demo puede repetirse **sin internet** con los mismos textos. Para forzar el modo sin red pon `LLM_OFFLINE=1`.
+
+## Recorrido por la interfaz
+
+| Pestaña | Qué muestra |
+|---|---|
+| **Agenda** | Top 5, 10 o 30 temas. Cada uno muestra el puntaje (rojo = prioridad alta), el estado de evidencia y una barra con los 5 componentes. Al abrir un tema aparece su ficha con las sub-pestañas **Ficha**, **Fuentes**, **Puntaje**, **Borrador** y **Revisión**. La casilla "Ver casos de prueba" muestra los casos sintéticos: inyección, contradicciones, noticia antigua y agencia replicada |
+| **Consultar** | Preguntas en español con ejemplos listos, incluida una abstención y un intento de inyección |
+| **Datos** | Reporte de calidad del snapshot, catálogo con SHA-256 y límites de cobertura |
+| **Evaluación** | Métricas del agente frente al baseline, con numerador y denominador |
+
+Las horas se muestran en hora de Panamá. La "antigüedad" se mide contra la fecha de corte del snapshot, no contra el reloj, para que la demo sea reproducible.
+
+**Enlaces directos** (útiles para el pitch o para Notion):
+
+- `http://localhost:5173/#/ficha/SINT-S-CON-001/resumen` abre un caso con versiones incompatibles.
+- `http://localhost:5173/#/ficha/SINT-S-INY-001/resumen` abre una fuente que intenta dar órdenes al sistema.
+- `http://localhost:5173/#/consulta?q=¿Cuál es la inflación de Panamá hoy?` muestra una abstención.
+- `http://localhost:5173/#/evaluacion` abre las métricas.
 
 ## Pruebas y evaluación
 
 ```powershell
 cd backend
-.\.venv\Scripts\python -m pytest -q          # T01–T10 + API
+.\.venv\Scripts\python -m pytest -q             # pruebas T01–T10 del reto y regresiones
 cd ..
 backend\.venv\Scripts\python eval\run_eval.py   # agente vs baseline → eval\resultados\
 ```
 
-## Datos (snapshot congelado y versionado)
+Las etiquetas del benchmark las propuso un asistente de IA y están **pendientes de revisión humana**. Ver [docs/07_EVALUATION.md](docs/07_EVALUATION.md).
 
-El snapshot ya está en `data/raw/` con `manifest.json` (SHA-256, consultas, fecha de corte). Para regenerarlo (requiere internet; cambia los resultados):
+## Datos
+
+El snapshot está versionado en `data/raw/` con `manifest.json` (SHA-256, consultas, fecha de corte). Regenerarlo requiere internet y cambia los resultados:
 
 ```powershell
 python data\scripts\download_snapshot.py all
@@ -60,33 +131,30 @@ python data\scripts\validate.py
 | `data/raw/noticias.csv` | TVN RSS (solo título, URL, fecha) + GDELT DOC 2.0 |
 | `data/raw/indicadores.csv` | Banco Mundial: 6 países × 6 indicadores × 2010–2024 |
 | `data/raw/eventos.geojson` | USGS: sismos 2024, M ≥ 3, caja lat 5–12, lon −86/−76 |
-| `data/synthetic/casos_controlados.csv` | Casos de prueba sintéticos rotulados (inyección, contradicciones, recirculada, agencia) |
-| `data/processed/` | Noticias válidas/errores, reporte de calidad, `fichas.jsonl`, caché de embeddings |
+| `data/synthetic/casos_controlados.csv` | Casos de prueba sintéticos rotulados |
+| `data/processed/` | Noticias válidas y con error, reporte de calidad, `fichas.jsonl`, caché de embeddings |
 | `eval/benchmark.jsonl` | 60 consultas (40 dev / 20 reservadas) |
 
-Diccionario y licencias: [docs/06_DATASET.md](docs/06_DATASET.md).
+Diccionario, licencias y desviaciones del PDF: [docs/06_DATASET.md](docs/06_DATASET.md).
 
-## Demo sin internet (T10)
+## Si algo falla
 
-1. Desconecta la red.
-2. Arranca backend e interfaz como arriba. Los embeddings salen del modelo local y de la caché.
-3. Los borradores usan la caché del LLM (`data/cache/llm/`) si existe; si no, la plantilla determinista. Para forzar este modo: `LLM_OFFLINE=1` en `.env`.
-4. Si falta el modelo de embeddings, el sistema avisa y usa un respaldo léxico (peor calidad), sin caerse.
-
-## Docker (solo backend)
-
-```powershell
-docker compose up --build
-```
+| Síntoma | Solución |
+|---|---|
+| La interfaz dice "No hay conexión con el backend" | El backend no está encendido o no está en el puerto 8000 |
+| Aviso "modelo local no disponible" en el backend | Falta el modelo: `backend\.venv\Scripts\python -m app.agent.embed --descargar`. Mientras tanto se usa un respaldo léxico de menor calidad |
+| Quiero empezar de cero las revisiones | Borra `data\app.db` y reinicia el backend |
+| `iniciar.ps1` no se ejecuta | Úsalo con `powershell -ExecutionPolicy Bypass -File .\iniciar.ps1` |
 
 ## Estructura
 
 ```
 backend/app/agent/   IA: embeddings, temas, eventos, contexto, puntaje, consultas, borradores, seguridad, baseline
 backend/app/         API FastAPI, SQLite, fórmula de puntaje
-backend/tests/       pruebas T01–T10
-frontend/src/        interfaz del flujo completo
+backend/tests/       pruebas T01–T10 y regresiones
+frontend/src/        interfaz (App.jsx, views/, lib.js, style.css)
 data/                snapshot, scripts de descarga y validación, casos sintéticos
-eval/                benchmark, etiquetas, evaluación
-docs/                documentación y export para Notion (docs/notion_export/)
+eval/                benchmark, etiquetas y evaluación
+docs/                documentación (01–12) y export para Notion (docs/notion_export/)
+iniciar.ps1          instala y enciende todo en Windows
 ```

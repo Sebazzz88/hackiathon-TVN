@@ -26,7 +26,8 @@ backend/app/agent/  (AGENT_MODE=live)
    │
 backend/app/  FastAPI: scoring.py (P=30R+25I+20U+15N+10E), db.py (SQLite), main.py (API)
    ▼
-frontend/ React + Vite: calidad → bandeja → ficha → borrador → revisión → evaluación
+frontend/ React + Vite (App.jsx, lib.js, views/): Agenda (ficha · fuentes · puntaje · borrador · revisión),
+          Consultar, Datos, Evaluación. Rutas por hash para enlaces directos. Sin fuentes ni recursos externos (offline)
    ▼
 Revisión humana (5 estados, revisor, comentario) → /api/export/fichas.jsonl → registro manual en Notion
 ```
@@ -43,6 +44,7 @@ Revisión humana (5 estados, revisor, comentario) → /api/export/fichas.jsonl �
 | Método | Ruta | Uso |
 |---|---|---|
 | GET | /health | modo, versión de reglas y pesos |
+| GET | /api/meta | fecha de corte, archivos y SHA-256 del snapshot |
 | GET | /api/quality-report | reporte de calidad |
 | GET | /api/inbox?limit=5&sinteticos=false | bandeja priorizada |
 | GET | /api/fichas/{id} | ficha |

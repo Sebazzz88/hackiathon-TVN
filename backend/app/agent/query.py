@@ -17,9 +17,9 @@ from ..models import Cita, QueryOut
 from . import pipeline
 from .baseline import norm
 from .config import LEYENDA, SIM_QUERY_MIN
-from .context import NOMBRE_PAIS, NOMBRES, PAISES, fmt_valor, item_indicador, ultimo_valor
+from .context import NOMBRE_PAIS, NOMBRES, PAISES, item_indicador, ultimo_valor
 from .embed import embed
-from .security import es_inyeccion
+from .security import consulta_maliciosa
 
 AHORA = ["hoy", "actual", "actualmente", "ahora", "este mes", "esta semana", "en este momento", "today", "current",
          "proximo ano", "el ano que viene", "sera", "seran", "pronostico", "proyeccion", "prevision", "next year", "forecast"]
@@ -62,7 +62,7 @@ def _abst(faltante, metodo, versiones=None):
 
 def responder(pregunta: str) -> QueryOut:
     q = norm(pregunta)
-    if es_inyeccion(pregunta):
+    if consulta_maliciosa(pregunta):
         return _abst(["La consulta contiene instrucciones para cambiar las reglas o revelar información interna. "
                       "Se rechaza: el agente solo responde con evidencia del corpus."], "control_inyeccion")
     ind = _indicador(q)
@@ -88,14 +88,10 @@ def responder(pregunta: str) -> QueryOut:
                         citas=[Cita(afirmacion=it["texto"], tipo="hecho", id_evidencia=it["id_evidencia"], campo="valor")],
                         ids_fuente=[it["id_evidencia"]])
     # --- noticias ---
-    a = pipeline.analizar()
-    fichas = list(a["fichas"])  # los casos sintéticos se incluyen pero se rotulan como tales
+    fichas, T = pipeline.indice_eventos()  # los casos sintéticos se incluyen pero se rotulan como tales
     if not fichas:
         return _abst(["No hay noticias cargadas en el snapshot."], "recuperacion_semantica")
-    qv = embed([pregunta])[0]
-    titulos = [f.titulo for f in fichas]
-    T = embed(titulos)
-    sims = T @ qv
+    sims = T @ embed([pregunta])[0]
     orden = np.argsort(-sims)[:3]
     if float(sims[orden[0]]) < SIM_QUERY_MIN:
         return _abst([f"Ningún evento del corpus responde a la consulta (similitud máxima {float(sims[orden[0]]):.2f} "
@@ -106,11 +102,15 @@ def responder(pregunta: str) -> QueryOut:
         if not con_cifra:
             return _abst(["Los titulares relacionados no contienen la cifra pedida y no se leyó el artículo completo. "
                           "No se inventa un número: se requiere la fuente primaria."], "recuperacion_semantica")
-    citas, partes, versiones, ids = [], [], [], []
+    citas, partes, versiones, ids, eventos = [], [], [], [], []
     for f in top:
-        n0 = next((n for n in f.noticias if n["id"] in f.ids_fuente and not n.get("inyeccion_detectada")), None)
+        validas = [n for n in f.noticias if not n.get("inyeccion_detectada")]
+        n0 = next((n for n in validas if n["titulo"] == f.titulo), validas[0] if validas else None)
         if not n0:
             continue
+        eventos.append({"id_caso": f.id_caso, "titulo": n0["titulo"], "medio": n0["medio"], "registros": f.registros,
+                        "fuentes_independientes": f.fuentes_independientes, "estado_evidencia": f.estado_evidencia,
+                        "sintetico": f.sintetico, "contradicciones": len(f.contradicciones)})
         citas.append(Cita(afirmacion=f"{n0['medio']} publicó: «{n0['titulo']}»", tipo="declaracion",
                           id_evidencia=n0["id"], campo="titulo"))
         partes.append(f"• {'[CASO SINTÉTICO DE PRUEBA] ' if f.sintetico else ''}{n0['titulo']} ({n0['medio']}; {f.registros} titular(es), "
@@ -119,7 +119,7 @@ def responder(pregunta: str) -> QueryOut:
         for k in f.contradicciones:
             versiones.append(k)
             for v in k["versiones"]:
-                citas.append(Cita(afirmacion=f"Versión: {v['valor']:g} según {v['medio']}", tipo="declaracion",
+                citas.append(Cita(afirmacion=f"Versión de {v['medio']}: «{v['titulo']}»", tipo="declaracion",
                                   id_evidencia=v["id"], campo="titulo"))
     if not citas:
         return _abst(["Los registros recuperados no son evidencia utilizable (posible inyección)."], "recuperacion_semantica")
@@ -127,5 +127,5 @@ def responder(pregunta: str) -> QueryOut:
     if versiones:
         txt += "\nHay versiones incompatibles: se muestran todas; verificación pendiente."
     txt += f"\n{LEYENDA}"
-    return QueryOut(abstencion=False, respuesta=txt, citas=citas, ids_fuente=ids, versiones=versiones,
+    return QueryOut(abstencion=False, respuesta=txt, citas=citas, ids_fuente=ids, versiones=versiones, eventos=eventos,
                     metodo="recuperacion_semantica", base="titular/metadatos")
