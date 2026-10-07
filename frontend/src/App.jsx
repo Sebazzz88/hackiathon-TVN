@@ -59,9 +59,9 @@ export default function App() {
         {meta?.ia && (
           <div className={"estado-ia" + (meta.ia.conectado ? " on" : "")}
             title={meta.ia.conectado
-              ? `IA generativa conectada (${meta.ia.modelo}). Embeddings ${meta.ia.embeddings}.`
-              : `IA generativa sin conectar: falta LLM_API_KEY en .env${meta.ia.respuestas_en_cache ? ` (${meta.ia.respuestas_en_cache} respuestas en caché)` : ""}. La IA local de embeddings sí está activa.`}>
-            <i className="ia-punto" /> IA {meta.ia.conectado ? meta.ia.modelo.replace("claude-", "Claude ").replaceAll("-", " ") : meta.ia.respuestas_en_cache ? "en caché" : "local"}
+              ? `IA generativa: ${meta.ia.modelo} (${meta.ia.local ? "local, gratuita, sin internet" : meta.ia.proveedor}). Embeddings ${meta.ia.embeddings}.`
+              : `IA generativa no disponible: ${meta.ia.motivo || "sin configurar"}${meta.ia.respuestas_en_cache ? `. Hay ${meta.ia.respuestas_en_cache} respuestas en caché` : ""}. La IA local de embeddings sí está activa.`}>
+            <i className="ia-punto" /> IA {meta.ia.conectado ? `${meta.ia.modelo}${meta.ia.local ? " · local" : ""}` : meta.ia.respuestas_en_cache ? "en caché" : "solo embeddings"}
           </div>
         )}
         <div className="corte" title="Los datos son un snapshot congelado: la urgencia se mide contra esta fecha">

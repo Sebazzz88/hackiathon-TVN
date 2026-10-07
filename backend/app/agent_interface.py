@@ -26,7 +26,7 @@ def build_candidates() -> list[Ficha]:
     ]
 
 
-def answer_query(pregunta: str) -> QueryOut:
+def answer_query(pregunta: str, ia: bool = False) -> QueryOut:
     """Responde SOLO con evidencia recuperada; si no hay, abstencion=True y explica qué falta."""
     return QueryOut(abstencion=True, faltante=["Agente en modo stub: sin corpus conectado"])
 
