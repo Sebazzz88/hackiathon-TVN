@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { EVIDENCIA, api, horaPA, textoProcedencia } from "../lib.js";
+import { EVIDENCIA, api, fechasNota, textoProcedencia } from "../lib.js";
 import { Cita, Tipo } from "./Ficha.jsx";
 
 const EJEMPLOS = [
@@ -30,7 +30,7 @@ function Versiones({ versiones }) {
             <p className="version-valor">{v.valor.toLocaleString("es-PA")}</p>
             <p className="version-titular">{v.titulo}</p>
             <p className="meta">
-              {v.medio} · {v.fecha_publicacion ? `publicado ${horaPA(v.fecha_publicacion)}` : `detectado ${horaPA(v.fecha_deteccion)}`}
+              {v.medio} · {fechasNota(v)}
             </p>
             <Cita id={v.id} campo="titulo" />
           </div>
@@ -102,7 +102,7 @@ export default function Consulta({ inicial, irAFicha, navegar }) {
       <div className="ejemplos">
         {EJEMPLOS.map((e) => <button key={e} className="chip" onClick={() => ir(e)}>{e}</button>)}
       </div>
-      {error && <p className="error">{error}</p>}
+      {error && <div className="error-caja" role="alert"><p>{error}</p><p className="nota">La agenda y las fichas siguen disponibles. Puedes reintentar la consulta.</p></div>}
 
       {r && (
         <article className={"respuesta estado-" + (r.estado || (r.abstencion ? "abstencion" : "respondida"))} aria-live="polite">

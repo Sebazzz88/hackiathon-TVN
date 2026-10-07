@@ -336,3 +336,17 @@ textarea { resize: vertical; }
 .pj-falla { color: var(--mal); }
 .prueba-j pre { white-space: pre-wrap; font-size: .75rem; background: var(--bg); padding: 6px; border-radius: 4px; }
 .preguntas-jurado { padding-left: 18px; display: grid; gap: 10px; }
+
+/* Accesibilidad (punto 9) */
+.saltar { position: absolute; left: 8px; top: -60px; z-index: 100; background: var(--panel); color: var(--tinta);
+  border: 2px solid var(--acento); border-radius: 6px; padding: 8px 12px; font-weight: 700; text-decoration: none; }
+.saltar:focus { top: 8px; }
+.contenido:focus { outline: none; }
+.banner-metadatos { border-left: 4px solid var(--suave); color: var(--tinta); margin: 10px 0 0; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+@media (forced-colors: active) {
+  .sello, .seg, .subtab, .prueba-j, .banner-metadatos { border: 1px solid CanvasText; }
+}

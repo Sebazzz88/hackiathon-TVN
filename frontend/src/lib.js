@@ -99,6 +99,12 @@ const fmtFecha = new Intl.DateTimeFormat("es-PA", { timeZone: "America/Panama", 
 export const horaPA = (s) => (s ? fmt.format(new Date(s)) : "—");
 export const fechaPA = (s) => (s ? fmtFecha.format(new Date(s)) : "—");
 
+/** Fechas de una nota sin mezclarlas: publicación (la da el medio) ≠ detección (cuando GDELT la vio). Hora de Panamá. */
+export function fechasNota(n) {
+  const pub = n?.fecha_publicacion ? `publicado ${horaPA(n.fecha_publicacion)}` : "sin fecha de publicación";
+  return n?.fecha_deteccion ? `${pub} · detectado ${horaPA(n.fecha_deteccion)}` : pub;
+}
+
 /** Antigüedad relativa respecto de la fecha de corte del snapshot (no del reloj del equipo). */
 export function hace(s, corte) {
   if (!s) return "sin fecha";

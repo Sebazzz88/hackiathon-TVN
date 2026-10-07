@@ -47,8 +47,10 @@ export default function Borrador({ f, onCambio }) {
         </button>
         {b?.generador && <Generador b={b} />}
       </div>
+      <p className="banner-metadatos" role="note">Basado únicamente en titular/metadatos: el borrador no usa el texto de ningún artículo.
+        Revisión humana obligatoria; aprobar como borrador no publica.</p>
       {ocupado && <p className="nota">Si la IA local está activa, el modelo redacta en este equipo; en CPU puede tardar 1–3 minutos. Después queda en caché y sale al instante.</p>}
-      {error && <p className="error">{error}</p>}
+      {error && <div className="error-caja" role="alert"><p>{error}</p><p className="nota">La ficha y sus fuentes siguen disponibles. Pulsa el botón para reintentar.</p></div>}
       {!b && !ocupado && (
         <p className="vacio">
           Genera título, enfoque, brief, preguntas, guion y copy. Cada afirmación lleva su cita; un validador elimina lo que

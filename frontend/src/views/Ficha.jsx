@@ -1,4 +1,4 @@
-import { COMPONENTES, EVIDENCIA, TEMAS, TIPOS, estadoTxt, hace, horaPA, textoProcedencia } from "../lib.js";
+import { COMPONENTES, EVIDENCIA, TEMAS, TIPOS, estadoTxt, fechasNota, hace, textoProcedencia } from "../lib.js";
 import { ETIQUETAS, abrirEvidencia } from "../evidencia.js";
 import Borrador from "./Borrador.jsx";
 import Revision from "./Revision.jsx";
@@ -42,7 +42,7 @@ export default function Ficha({ f, corte, seccion, onSeccion, onCambio }) {
           <span className="sello sello-proc">{textoProcedencia(f)}</span>
           <span className="sello">{estadoTxt(f.estado_revision)}</span>
         </div>
-        <p className="leyenda">Basado únicamente en titular/metadatos. No se leyó el artículo completo.</p>
+        <p className="banner-metadatos" role="note">Basado únicamente en titular/metadatos: no se leyó ningún artículo completo.</p>
       </header>
 
       {f.alertas?.length > 0 && (
@@ -155,7 +155,7 @@ function Fuentes({ f }) {
               <li key={n.id} className={n.inyeccion_detectada ? "inyectada" : ""}>
                 <a href={n.url} target="_blank" rel="noreferrer">{n.titulo}</a>
                 <span className="meta">
-                  {n.medio} · {n.fecha_publicacion ? `publicado ${horaPA(n.fecha_publicacion)}` : `detectado ${horaPA(n.fecha_deteccion)}`}
+                  {n.medio} · {fechasNota(n)}
                   {n.recirculada && " · publicación antigua"}{n.inyeccion_detectada && " · posible inyección (no confiable)"} · <Cita id={n.id} campo="titulo" />
                 </span>
               </li>
