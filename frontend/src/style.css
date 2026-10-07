@@ -319,3 +319,20 @@ textarea { resize: vertical; }
 .rank .cambio { display: block; font-size: .65rem; font-weight: 800; margin-top: 4px; }
 .rank .cambio.sube { color: var(--ok); }
 .rank .cambio.baja { color: var(--mal); }
+
+/* Modo jurado */
+.jurado { max-width: 980px; margin: 0 auto; }
+.pruebas-jurado { list-style: none; padding: 0; margin: 14px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 10px; }
+.prueba-j { background: var(--panel); border: 1px solid var(--linea); border-left: 6px solid var(--linea); border-radius: 8px; padding: 10px 12px; }
+.prueba-j.verde { border-left-color: var(--ok); }
+.prueba-j.rojo { border-left-color: var(--mal); background: color-mix(in srgb, var(--mal) 6%, var(--panel)); }
+.pj-cab { display: flex; align-items: center; gap: 8px; font-size: .95rem; }
+.pj-estado { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; color: #fff; font-weight: 900; font-size: .8rem; }
+.verde .pj-estado { background: var(--ok); }
+.rojo .pj-estado { background: var(--mal); }
+.pj-esperado { font-size: .84rem; margin: 6px 0; }
+.prueba-j details { font-size: .8rem; }
+.prueba-j details ul { padding-left: 16px; margin: 6px 0 0; display: grid; gap: 4px; }
+.pj-falla { color: var(--mal); }
+.prueba-j pre { white-space: pre-wrap; font-size: .75rem; background: var(--bg); padding: 6px; border-radius: 4px; }
+.preguntas-jurado { padding-left: 18px; display: grid; gap: 10px; }

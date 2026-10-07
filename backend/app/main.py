@@ -190,6 +190,28 @@ def export_fichas():
     return "\n".join(json.dumps(d, ensure_ascii=False) for d in db.all_fichas())
 
 
+@app.get("/api/jurado/pruebas")
+def jurado_ultimo():
+    """Último resultado de T01–T10 (sin volver a correrlas)."""
+    from . import jurado
+    return jurado.ultimo()
+
+
+@app.post("/api/jurado/pruebas")
+def jurado_correr():
+    """Corre T01–T10 en vivo (subproceso sin ventana, ~10 s) y devuelve verde/rojo por prueba con su evidencia."""
+    from . import jurado
+    return jurado.correr()
+
+
+@app.get("/api/jurado/metricas")
+def jurado_metricas():
+    """Tabla agente vs baseline leída de eval/results.json (la escribe eval/run_eval.py; nada se escribe a mano)."""
+    p = db.ROOT / "eval" / "results.json"
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"disponible": False,
+            "detalle": "Falta eval/results.json: corre backend\\.venv\\Scripts\\python eval\\run_eval.py"}
+
+
 @app.get("/api/eval")
 def eval_report():
     p = db.ROOT / "eval" / "resultados" / "resumen.json"

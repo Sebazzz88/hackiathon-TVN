@@ -3,7 +3,7 @@
 //   #/agenda?n=10&p=1            lista de 10 casos de prueba
 //   #/ficha/<id>/<seccion>?n=30  ficha abierta dentro de una lista de 30
 //   #/consulta?q=<pregunta>      #/datos      #/evaluacion
-export const VISTAS = ["agenda", "consulta", "datos", "evaluacion"];
+export const VISTAS = ["agenda", "consulta", "datos", "evaluacion", "jurado"];
 export const TAMANOS = [5, 10, 30];       // atajos de la interfaz
 export const N_MAX = 1000;                 // tope del backend; "max" pide todo
 export const SECCIONES = ["resumen", "fuentes", "puntaje", "borrador", "revision"];

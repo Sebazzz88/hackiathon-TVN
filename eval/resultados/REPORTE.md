@@ -1,4 +1,4 @@
-# Resultados de evaluación — 2026-10-07T16:20:43+00:00
+# Resultados de evaluación — 2026-10-07T16:25:57+00:00
 
 Conjunto: 60 consultas (40 dev / 20 reservadas). Propuestas por el asistente de IA (Claude) a partir de titulares y del snapshot; PENDIENTE revisión humana. Hasta entonces las métricas son preliminares.
 
@@ -21,7 +21,7 @@ Conjunto: 60 consultas (40 dev / 20 reservadas). Propuestas por el asistente de 
 | Clasificación temática macro-F1 [test, n=50] | 0.44 | 0.395 | exactitud 39/50 (78%) vs 41/50 (82%) |
 | Agrupación de eventos (pares, n=60) F1 | 0.875 | 0.615 | P 14/15 (93%) · R 14/17 (82%) |
 | Precision@5 (exploratoria) | PENDIENTE | — | Falta eval/seleccion_editor.json (selección independiente de un editor). No se reporta Precision@5. |
-| Tiempo por consulta (mediana / p95) | 0.005 s / 0.012 s | — | meta mediana ≤ 15 s; pipeline completo 4.37 s |
+| Tiempo por consulta (mediana / p95) | 0.006 s / 0.014 s | — | meta mediana ≤ 15 s; pipeline completo 4.56 s |
 | Tiempo por borrador (mediana / p95) | 0.002 s / 0.002 s | — | 0 USD en esta ejecución (LLM_OFFLINE=1: plantilla determinista o caché). |
 
 ## Top 5 del agente vs baseline por fecha
