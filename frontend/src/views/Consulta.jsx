@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { useSegundos } from "../hooks.js";
 import { EVIDENCIA, api, fechasNota, textoProcedencia } from "../lib.js";
-import { Cita, Tipo } from "./Ficha.jsx";
+import { Afirmaciones, Cita, Eliminadas, Tipo } from "./Citas.jsx";
 
 const EJEMPLOS = [
   "Temas de logística de esta semana",
@@ -47,14 +48,7 @@ export default function Consulta({ inicial, irAFicha, navegar }) {
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState("");
   const [redactando, setRedactando] = useState(false);
-  const [seg, setSeg] = useState(0);
-
-  useEffect(() => {  // contador visible mientras la IA local redacta (en CPU puede tardar ~1 min)
-    if (!redactando) return;
-    setSeg(0);
-    const t = setInterval(() => setSeg((s) => s + 1), 1000);
-    return () => clearInterval(t);
-  }, [redactando]);
+  const seg = useSegundos(redactando);  // contador visible mientras la IA local redacta (en CPU puede tardar ~1 min)
 
   const redactarConIA = () => {
     setRedactando(true);
@@ -105,9 +99,9 @@ export default function Consulta({ inicial, irAFicha, navegar }) {
       {error && <div className="error-caja" role="alert"><p>{error}</p><p className="nota">La agenda y las fichas siguen disponibles. Puedes reintentar la consulta.</p></div>}
 
       {r && (
-        <article className={"respuesta estado-" + (r.estado || (r.abstencion ? "abstencion" : "respondida"))} aria-live="polite">
+        <article className={"respuesta estado-" + r.estado} aria-live="polite">
           <p className="estado-consulta">
-            <span className="estado-etiqueta">{ESTADO_TXT[r.estado] || ESTADO_TXT.respondida}</span>
+            <span className="estado-etiqueta">{ESTADO_TXT[r.estado]}</span>
             <span className="nota">{r.metodo?.replaceAll("_", " ")}</span>
           </p>
           {r.accion && <p className="accion-consulta"><b>Qué hacer:</b> {r.accion}</p>}
@@ -123,18 +117,10 @@ export default function Consulta({ inicial, irAFicha, navegar }) {
                 <div className="respuesta-ia">
                   <p className="kicker"><i className="ia-punto" /> Redactado por IA · {r.generador?.split(":").pop()}
                     {r.generador?.startsWith("cache:") && " · desde caché"} · validado contra la evidencia</p>
-                  <ul className="afirmaciones">
-                    {r.afirmaciones.map((a, i) => (
-                      <li key={i}><Tipo t={a.tipo} /> {a.texto} {a.citas.map((c, j) => <Cita key={j} id={c.id_evidencia} campo={c.campo} />)}</li>
-                    ))}
-                  </ul>
+                  <Afirmaciones lista={r.afirmaciones} />
                   {r.faltante?.length > 0 && <ul className="pendientes">{r.faltante.map((x) => <li key={x}>{x}</li>)}</ul>}
                   {r.validador?.emitidas > 0 && <p className="nota">Validador en código: {r.validador.emitidas} frases de la IA · {r.validador.validas} válidas · {r.validador.eliminadas} eliminadas.</p>}
-                  {r.eliminadas?.length > 0 && (
-                    <details className="eliminadas"><summary>{r.eliminadas.length} frase(s) de la IA descartadas por el validador</summary>
-                      <ul>{r.eliminadas.map((e, i) => <li key={i}><s>{e.texto}</s> <span className="nota">— {e.motivo}</span></li>)}</ul>
-                    </details>
-                  )}
+                  <Eliminadas lista={r.eliminadas} resumen={`${r.eliminadas?.length} frase(s) de la IA descartadas por el validador`} />
                   <h3 className="kicker">Eventos en los que se basa</h3>
                 </div>
               )}

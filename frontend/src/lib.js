@@ -1,4 +1,5 @@
 // Utilidades compartidas: API, formatos (hora de Panamá) y catálogos de etiquetas.
+import { PESOS_RETO } from "./puntaje.js";
 
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -65,13 +66,14 @@ export const TEMAS = {
   otros: "Otros",
 };
 
+/** [clave, nombre, peso del reto]; el peso sale de puntaje.js para no repetir 30/25/20/15/10. */
 export const COMPONENTES = [
-  ["R", "Relevancia", 30],
-  ["I", "Impacto", 25],
-  ["U", "Urgencia", 20],
-  ["N", "Novedad", 15],
-  ["E", "Evidencia", 10],
-];
+  ["R", "Relevancia"],
+  ["I", "Impacto"],
+  ["U", "Urgencia"],
+  ["N", "Novedad"],
+  ["E", "Evidencia"],
+].map(([k, nombre]) => [k, nombre, PESOS_RETO[k]]);
 
 export const ESTADOS = [
   ["nuevo", "Nuevo"],
@@ -101,10 +103,12 @@ const fmt = new Intl.DateTimeFormat("es-PA", {
   timeZone: "America/Panama", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
 });
 const fmtFecha = new Intl.DateTimeFormat("es-PA", { timeZone: "America/Panama", day: "2-digit", month: "short", year: "numeric" });
+const fmtHora = new Intl.DateTimeFormat("es-PA", { timeZone: "America/Panama", hour: "2-digit", minute: "2-digit" });
 
 /** Fecha en hora de Panamá (UTC−5). */
 export const horaPA = (s) => (s ? fmt.format(new Date(s)) : "—");
 export const fechaPA = (s) => (s ? fmtFecha.format(new Date(s)) : "—");
+export const soloHoraPA = (s) => (s ? fmtHora.format(new Date(s)) : "—");
 
 /** Fechas de una nota sin mezclarlas: publicación (la da el medio) ≠ detección (cuando GDELT la vio). Hora de Panamá. */
 export function fechasNota(n) {

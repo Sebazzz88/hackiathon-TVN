@@ -166,7 +166,6 @@ a { color: var(--azul); text-decoration: none; } a:hover { text-decoration: unde
 .barra { display: block; height: 10px; background: var(--linea); border-radius: 5px; overflow: hidden; }
 .barra i { display: block; height: 100%; border-radius: 5px; }
 .num { text-align: right; font-variant-numeric: tabular-nums; padding-left: 12px; white-space: nowrap; }
-.justificacion { font-size: .84rem; color: var(--suave); padding-left: 18px; margin: 14px 0; }
 
 /* ---------- Borrador ---------- */
 .barra-accion { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
@@ -207,7 +206,6 @@ textarea { resize: vertical; }
 .chip { background: var(--panel); border: 1px solid var(--linea); border-radius: 999px; padding: 4px 12px; font-size: .8rem; color: var(--suave); }
 .chip:hover { color: var(--tinta); border-color: var(--suave); }
 .respuesta { background: var(--panel); border: 1px solid var(--linea); border-left: 4px solid var(--ok); border-radius: var(--radio); padding: 18px 22px; box-shadow: var(--sombra); }
-.respuesta.abstiene { border-left-color: var(--medio); }
 .eventos { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 6px; }
 .evento { width: 100%; text-align: left; background: var(--bg); border: 1px solid transparent; border-radius: 8px; padding: 10px 12px; }
 .evento:hover { border-color: var(--linea); }

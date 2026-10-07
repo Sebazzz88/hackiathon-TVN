@@ -1,54 +1,20 @@
-// Prueba de extremo a extremo de las funciones nuevas, en un navegador REAL sin ventana (Edge/Chrome headless, CDP).
+// Prueba de extremo a extremo de las funciones nuevas, en un navegador REAL sin ventana (ver navegador.mjs).
 // Requiere la app encendida (APP_URL, por defecto http://localhost:5173) y Node 22+.
 //   node e2e/funciones.e2e.mjs
 // Cubre: "Otro número" y "Máx" (reales y sintéticos), generar y REGENERAR borrador, fuente normal en las citas,
 // visor de evidencia, banner de titular/metadatos, Modo jurado en vivo y accesibilidad básica.
-import { spawn } from "node:child_process";
-import { existsSync, mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { URL_APP, abrirNavegador, comprobaciones, dormir } from "./navegador.mjs";
 
-const URL_APP = process.env.APP_URL || "http://localhost:5173";
-const PUERTO = 9334;
-const exe = ["C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
-  "C:/Program Files/Google/Chrome/Application/chrome.exe"].find(existsSync);
-if (!exe) { console.error("No encontré Edge ni Chrome."); process.exit(2); }
-const proc = spawn(exe, ["--headless=new", `--remote-debugging-port=${PUERTO}`, "--disable-gpu", "--window-size=1440,1000",
-  `--user-data-dir=${mkdtempSync(join(tmpdir(), "tvn-e2e-"))}`, "about:blank"], { stdio: "ignore" });
-const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
-
-let ws, idMsg = 0;
-const pendientes = new Map(), erroresConsola = [], erroresRed = [];
-async function conectar() {
-  for (let i = 0; i < 40; i++) {
-    try {
-      const p = (await (await fetch(`http://localhost:${PUERTO}/json`)).json()).find((x) => x.type === "page");
-      if (p) { ws = new WebSocket(p.webSocketDebuggerUrl); await new Promise((ok, no) => { ws.onopen = ok; ws.onerror = no; }); return; }
-    } catch { /* aún arrancando */ }
-    await dormir(250);
-  }
-  throw new Error("No pude conectar con el navegador");
-}
-const enviar = (method, params = {}) => new Promise((ok) => { const id = ++idMsg; pendientes.set(id, ok); ws.send(JSON.stringify({ id, method, params })); });
-const ev = async (js) => (await enviar("Runtime.evaluate", { expression: js, returnByValue: true, awaitPromise: true })).result?.result?.value;
-async function esperarHasta(js, ms = 20000) { const t = Date.now(); while (Date.now() - t < ms) { if (await ev(`!!(${js})`)) return true; await dormir(100); } return false; }
-const ir = async (hash) => { await ev(`location.hash = ${JSON.stringify(hash)}`); await dormir(150); };
-const asentado = (n) => esperarHasta(`document.querySelectorAll('.items li').length === ${n} && document.querySelector('.items')?.getAttribute('aria-busy') === 'false'`);
-const clicTexto = (sel, re) => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].find(b => ${re}.test(b.textContent.trim()))?.click()`);
-const api = (p) => ev(`fetch(${JSON.stringify(p)}).then(r => r.json())`);
-
-const resultados = [];
-const ok = (nombre, cond, detalle = "") => { resultados.push(!!cond); console.log(`${cond ? "✔" : "✘"} ${nombre}${detalle ? " — " + detalle : ""}`); };
-
+const { ok, terminar } = comprobaciones();
+let nav;
 try {
-  await conectar();
-  ws.onmessage = (m) => {
-    const d = JSON.parse(m.data);
-    if (d.id && pendientes.has(d.id)) { pendientes.get(d.id)(d); pendientes.delete(d.id); }
-    else if (d.method === "Runtime.exceptionThrown") erroresConsola.push(d.params.exceptionDetails.text + " " + (d.params.exceptionDetails.exception?.description || ""));
-    else if (d.method === "Network.responseReceived" && d.params.response.status >= 500) erroresRed.push(`${d.params.response.status} ${d.params.response.url}`);
-  };
-  await enviar("Runtime.enable"); await enviar("Network.enable"); await enviar("Page.enable");
+  nav = await abrirNavegador(9334);
+  const { ev, esperarHasta, enviar, errores } = nav;
+  const ir = async (hash) => { await ev(`location.hash = ${JSON.stringify(hash)}`); await dormir(150); };
+  const asentado = (n) => esperarHasta(`document.querySelectorAll('.items li').length === ${n} && document.querySelector('.items')?.getAttribute('aria-busy') === 'false'`);
+  const clicTexto = (sel, re) => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].find(b => ${re}.test(b.textContent.trim()))?.click()`);
+  const api = (p) => ev(`fetch(${JSON.stringify(p)}).then(r => r.json())`);
+
   await enviar("Page.navigate", { url: URL_APP + "/#/agenda" });
   await asentado(5);
 
@@ -65,8 +31,9 @@ try {
   const sint = (await api("/api/inbox?limit=1000&sinteticos=true")).total;
   await ev("document.querySelector('.interruptor input').click()");
   ok(`casos de prueba + Máx muestra los ${sint} existentes`, await asentado(sint));
-  ok("y dice cuántos hay cuando se piden más de los que existen",
-    await (async () => { await ir("#/agenda?n=30&p=1"); await asentado(sint); return ev("document.body.textContent.includes('" + sint + "')"); })());
+  await ir("#/agenda?n=30&p=1");
+  await asentado(sint);
+  ok("y dice cuántos hay cuando se piden más de los que existen", await ev("document.body.textContent.includes('" + sint + "')"));
 
   // --- Ficha: banner, citas con fuente normal y visor de evidencia
   await ir("#/ficha/EV-G226d8217c0/resumen");
@@ -79,7 +46,7 @@ try {
     await ev("getComputedStyle(document.querySelector('.cita'))?.fontFamily"));
   await ev("document.querySelector('.cita').click()");
   ok("una cita abre el registro fuente", await esperarHasta("document.querySelector('.visor[role=dialog]')"));
-  await ev("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))");
+  await ev("window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))");
   ok("Escape cierra el visor", await esperarHasta("!document.querySelector('.visor')", 3000));
 
   // --- Borrador: generar y regenerar
@@ -109,14 +76,11 @@ try {
     await ev("(() => { const a = document.querySelector('a.saltar'); a.click(); return document.activeElement?.id === 'contenido'; })()"));
   ok("foco visible definido", await ev("[...document.styleSheets].some(s => { try { return [...s.cssRules].some(r => r.selectorText === ':focus-visible'); } catch { return false; } })"));
 
-  ok("sin errores de servidor (5xx) en toda la sesión", erroresRed.length === 0, erroresRed.join(" | "));
-  ok("sin excepciones en la consola del navegador", erroresConsola.length === 0, erroresConsola.join(" | "));
+  ok("sin errores de servidor (5xx) en toda la sesión", errores.red.length === 0, errores.red.join(" | "));
+  ok("sin excepciones en la consola del navegador", errores.consola.length === 0, errores.consola.join(" | "));
 } catch (e) {
   console.error("Fallo del script:", e); ok("el script terminó sin excepciones", false);
 } finally {
-  try { ws?.close(); } catch {}
-  proc.kill();
-  const mal = resultados.filter((r) => !r).length;
-  console.log(`\n${resultados.length - mal}/${resultados.length} comprobaciones correctas`);
-  process.exit(mal ? 1 : 0);
+  nav?.cerrar();
+  process.exit(terminar());
 }

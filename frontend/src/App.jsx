@@ -1,20 +1,12 @@
 import { Component, useCallback, useEffect, useState } from "react";
-import { api, fechaPA, horaPA } from "./lib.js";
-import { construir, parsear } from "./rutas.js";
+import { api, fechaPA, soloHoraPA } from "./lib.js";
+import { VISTAS, construir, parsear } from "./rutas.js";
 import Agenda from "./views/Agenda.jsx";
 import Consulta from "./views/Consulta.jsx";
 import Datos from "./views/Datos.jsx";
 import Evaluacion from "./views/Evaluacion.jsx";
 import Jurado from "./views/Jurado.jsx";
 import VisorEvidencia from "./views/VisorEvidencia.jsx";
-
-const VISTAS = [
-  ["agenda", "Agenda"],
-  ["consulta", "Consultar"],
-  ["datos", "Datos"],
-  ["evaluacion", "Evaluación"],
-  ["jurado", "Modo jurado"],
-];
 
 /** Si una vista falla al pintar, se muestra qué hacer en lugar de una pantalla en blanco. */
 class Contenedor extends Component {
@@ -86,7 +78,7 @@ export default function App() {
           <span className="marca-txt" aria-hidden="true">Copiloto editorial</span>
         </a>
         <nav className="tabs" aria-label="Secciones">
-          {VISTAS.map(([k, t]) => (
+          {Object.entries(VISTAS).map(([k, t]) => (
             <button key={k} className={vista === k ? "tab on" : "tab"} onClick={() => navegar({ vista: k, ficha: null })}
               aria-current={vista === k ? "page" : undefined}>
               {t}
@@ -102,7 +94,7 @@ export default function App() {
           </div>
         )}
         <div className="corte" title="Los datos son un snapshot congelado: la urgencia se mide contra esta fecha">
-          {corte ? <>Corte <b>{fechaPA(corte)}</b> · {horaPA(corte).split(", ").pop()} PTY</> : "…"}
+          {corte ? <>Corte <b>{fechaPA(corte)}</b> · {soloHoraPA(corte)} PTY</> : "…"}
           {meta?.agent_mode && meta.agent_mode !== "live" && <span className="modo">modo {meta.agent_mode}</span>}
         </div>
       </header>

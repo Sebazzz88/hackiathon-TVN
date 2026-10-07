@@ -1,18 +1,13 @@
 import { useEffect, useState } from "react";
+import { useSegundos } from "../hooks.js";
 import { generando, generarBorrador } from "../lib.js";
-import { Cita, Tipo } from "./Ficha.jsx";
+import { Afirmaciones, Cita, Eliminadas, Tipo } from "./Citas.jsx";
 
 export default function Borrador({ f, onCambio }) {
   const [ocupado, setOcupado] = useState(() => generando(f.id_caso));
   const [error, setError] = useState("");
   const b = f.borrador;
-  const [seg, setSeg] = useState(0);
-  useEffect(() => {
-    if (!ocupado) return;
-    setSeg(0);
-    const t = setInterval(() => setSeg((s) => s + 1), 1000);
-    return () => clearInterval(t);
-  }, [ocupado]);
+  const seg = useSegundos(ocupado);
 
   // Cada vez que se abre esta ficha: si ya se estaba generando (otra visita), se engancha a esa misma generación.
   useEffect(() => {
@@ -81,17 +76,6 @@ function Generador({ b }) {
   );
 }
 
-function Afirmaciones({ lista }) {
-  if (!lista.length) return <p className="nota">Sin afirmaciones respaldadas para esta sección.</p>;
-  return (
-    <ul className="afirmaciones">
-      {lista.map((a, i) => (
-        <li key={i}><Tipo t={a.tipo} /> <span>{a.texto}</span> {a.citas.map((c, j) => <Cita key={j} id={c.id_evidencia} campo={c.campo} />)}</li>
-      ))}
-    </ul>
-  );
-}
-
 function Paquete({ b }) {
   const sec = (s) => b.afirmaciones.filter((a) => a.seccion === s);
   const guionOk = b.guion_segundos_estimados >= 45 && b.guion_segundos_estimados <= 60;
@@ -137,12 +121,8 @@ function Paquete({ b }) {
         Validador en código: {b.validador ? `${b.validador.emitidas} afirmaciones emitidas · ${b.validador.validas} válidas · ${b.validador.eliminadas} eliminadas` : `${b.cobertura_citas.con_cita_valida}/${b.cobertura_citas.emitidas} con cita válida`}.
         Cada cita se puede abrir para ver su registro fuente.
       </p>
-      {b.eliminadas?.length > 0 && (
-        <details className="eliminadas">
-          <summary>{b.eliminadas.length} afirmación(es) eliminadas por el validador{b.validador?.por_codigo && ` (${Object.entries(b.validador.por_codigo).map(([k, n]) => `${n} ${k.replaceAll("_", " ")}`).join(", ")})`}</summary>
-          <ul>{b.eliminadas.map((e, i) => <li key={i}><s>{e.texto}</s> <span className="nota">— {e.motivo}</span></li>)}</ul>
-        </details>
-      )}
+      <Eliminadas lista={b.eliminadas} resumen={`${b.eliminadas?.length} afirmación(es) eliminadas por el validador` +
+        (b.validador?.por_codigo ? ` (${Object.entries(b.validador.por_codigo).map(([k, n]) => `${n} ${k.replaceAll("_", " ")}`).join(", ")})` : "")} />
     </div>
   );
 }

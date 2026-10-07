@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useSegundos } from "../hooks.js";
 import { api, cancelado, horaPA } from "../lib.js";
+import TablaMetricas from "./TablaMetricas.jsx";
 
 const PREGUNTAS = [
   { q: "«Muéstrame de dónde proviene esta cifra y de qué año es»", ir: "#/ficha/EV-G226d8217c0/resumen",
@@ -17,19 +19,10 @@ const PREGUNTAS = [
 function Metricas({ m }) {
   if (!m) return <p className="vacio">Cargando métricas…</p>;
   if (m.disponible === false) return <p className="vacio">{m.detalle}</p>;
-  const nd = (x, v) => (x ? <><b>{x.num}</b>/{x.den} <span className="nota">({Math.round((100 * x.num) / x.den)}%)</span></> : (v ?? "—"));
   return (
     <>
       <p className="nota">Leído de <code>eval/results.json</code> · ejecución {horaPA(m.generado_utc)} · {m.conjunto}. {m.etiquetas}</p>
-      <table className="tabla metricas">
-        <thead><tr><th>Métrica</th><th className="num">Agente (IA)</th><th className="num">Baseline</th><th>Nota</th></tr></thead>
-        <tbody>
-          {m.tabla.map((t) => (
-            <tr key={t.metrica}><td>{t.metrica}</td><td className="num">{nd(t.agente_nd, String(t.agente))}</td>
-              <td className="num">{nd(t.baseline_nd, t.baseline)}</td><td className="nota">{t.nota}</td></tr>
-          ))}
-        </tbody>
-      </table>
+      <TablaMetricas filas={m.tabla} />
     </>
   );
 }
@@ -38,7 +31,7 @@ function Metricas({ m }) {
 export default function Jurado() {
   const [inf, setInf] = useState(null);
   const [corriendo, setCorriendo] = useState(false);
-  const [seg, setSeg] = useState(0);
+  const seg = useSegundos(corriendo);
   const [met, setMet] = useState(null);
   const [val, setVal] = useState(null);
   const [error, setError] = useState("");
@@ -50,13 +43,6 @@ export default function Jurado() {
     api("/validador", "GET", undefined, ac.signal).then(setVal).catch(() => {});
     return () => ac.abort();
   }, []);
-  useEffect(() => {
-    if (!corriendo) return;
-    setSeg(0);
-    const t = setInterval(() => setSeg((s) => s + 1), 1000);
-    return () => clearInterval(t);
-  }, [corriendo]);
-
   const correr = () => {
     setCorriendo(true); setError("");
     api("/jurado/pruebas", "POST")

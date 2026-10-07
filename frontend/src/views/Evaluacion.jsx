@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, horaPA } from "../lib.js";
+import TablaMetricas from "./TablaMetricas.jsx";
 
 export default function Evaluacion({ irAFicha }) {
   const [ev, setEv] = useState(null);
@@ -24,19 +25,7 @@ export default function Evaluacion({ irAFicha }) {
           <p className="aviso">
             Ejecución {horaPA(e.generado_utc)} · {e.conjunto}. {e.etiquetas}
           </p>
-          <table className="tabla metricas">
-            <thead><tr><th>Métrica</th><th className="num">Agente (IA)</th><th className="num">Baseline</th><th>Nota</th></tr></thead>
-            <tbody>
-              {e.metricas.map((m) => (
-                <tr key={m.nombre}>
-                  <td>{m.nombre}</td>
-                  <td className="num"><b>{String(m.agente)}</b></td>
-                  <td className="num">{m.baseline ?? "—"}</td>
-                  <td className="nota">{m.nota}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <TablaMetricas filas={e.metricas.map((m) => ({ ...m, metrica: m.nombre }))} />
           {e.ranking && (
             <div className="comparacion">
               <Top titulo="Top 5 del agente" items={e.ranking.top5_agente} irAFicha={irAFicha} />

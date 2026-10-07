@@ -2,12 +2,15 @@
 // Así los botones, el botón "atrás" y los enlaces directos nunca quedan desincronizados.
 //   #/agenda?n=10&p=1            lista de 10 casos de prueba
 //   #/ficha/<id>/<seccion>?n=30  ficha abierta dentro de una lista de 30
-//   #/consulta?q=<pregunta>      #/datos      #/evaluacion
-export const VISTAS = ["agenda", "consulta", "datos", "evaluacion", "jurado"];
+//   #/consulta?q=<pregunta>      #/datos      #/evaluacion      #/jurado
+import { TEMAS } from "./lib.js";
+
+/** Vistas de la cabecera y secciones de la ficha, con su nombre visible (una sola lista para rutas y botones). */
+export const VISTAS = { agenda: "Agenda", consulta: "Consultar", datos: "Datos", evaluacion: "Evaluación", jurado: "Modo jurado" };
+export const SECCIONES = { resumen: "Ficha", fuentes: "Fuentes", puntaje: "Puntaje", borrador: "Borrador", revision: "Revisión" };
+export const TEMAS_IDS = Object.keys(TEMAS);
 export const TAMANOS = [5, 10, 30];       // atajos de la interfaz
 export const N_MAX = 1000;                 // tope del backend; "max" pide todo
-export const SECCIONES = ["resumen", "fuentes", "puntaje", "borrador", "revision"];
-export const TEMAS_IDS = ["economia", "logistica_canal", "turismo", "servicios_publicos", "eventos_naturales", "regulacion", "otros"];
 export const VENTANAS = [1, 7, 30];
 
 /** días válidos = entero 1..90; cualquier otra cosa = sin ventana (null). */
@@ -35,9 +38,9 @@ export function parsear(hash) {
     tema: TEMAS_IDS.includes(p.get("t")) ? p.get("t") : null, dias: normalizarDias(p.get("d")), c: p.get("c") || "",
   };
   if (partes[0] === "ficha" && partes[1]) {
-    return { ...base, vista: "agenda", ficha: partes[1], seccion: SECCIONES.includes(partes[2]) ? partes[2] : "resumen" };
+    return { ...base, vista: "agenda", ficha: partes[1], seccion: Object.hasOwn(SECCIONES, partes[2] ?? "") ? partes[2] : "resumen" };
   }
-  return { ...base, vista: VISTAS.includes(partes[0]) ? partes[0] : "agenda", ficha: null, seccion: "resumen" };
+  return { ...base, vista: Object.hasOwn(VISTAS, partes[0] ?? "") ? partes[0] : "agenda", ficha: null, seccion: "resumen" };
 }
 
 export function construir({ vista = "agenda", ficha = null, seccion = "resumen", n = 5, sint = false, q = "", tema = null, dias = null, c = "" } = {}) {

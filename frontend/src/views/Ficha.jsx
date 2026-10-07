@@ -1,32 +1,11 @@
-import { COMPONENTES, EVIDENCIA, TEMAS, TIPOS, estadoTxt, fechasNota, hace, textoProcedencia } from "../lib.js";
-import { ETIQUETAS, abrirEvidencia } from "../evidencia.js";
+import { COMPONENTES, EVIDENCIA, TEMAS, estadoTxt, fechasNota, hace, textoProcedencia } from "../lib.js";
+import { SECCIONES } from "../rutas.js";
 import Borrador from "./Borrador.jsx";
+import { Cita, Tipo } from "./Citas.jsx";
 import Revision from "./Revision.jsx";
 
-const SECCIONES = [
-  ["resumen", "Ficha"],
-  ["fuentes", "Fuentes"],
-  ["puntaje", "Puntaje"],
-  ["borrador", "Borrador"],
-  ["revision", "Revisión"],
-];
-
-export function Cita({ id, campo }) {
-  return (
-    <button type="button" className="cita" title={`Abrir el registro fuente de ${id} (campo ${campo})`}
-      onClick={() => abrirEvidencia(id, campo)}>
-      {id} · {ETIQUETAS[campo] || campo}
-    </button>
-  );
-}
-
-export function Tipo({ t }) {
-  return <span className={"tipo t-" + t}>{TIPOS[t] || t}</span>;
-}
-
 export default function Ficha({ f, corte, seccion, onSeccion, onCambio }) {
-  const sec = SECCIONES.some(([k]) => k === seccion) ? seccion : "resumen";
-  const setSec = onSeccion;
+  const sec = Object.hasOwn(SECCIONES, seccion) ? seccion : "resumen";
 
   return (
     <article className="ficha">
@@ -50,8 +29,8 @@ export default function Ficha({ f, corte, seccion, onSeccion, onCambio }) {
       )}
 
       <nav className="subtabs" aria-label="Secciones de la ficha">
-        {SECCIONES.map(([k, t]) => (
-          <button key={k} className={sec === k ? "subtab on" : "subtab"} onClick={() => setSec(k)}>
+        {Object.entries(SECCIONES).map(([k, t]) => (
+          <button key={k} className={sec === k ? "subtab on" : "subtab"} onClick={() => onSeccion(k)}>
             {t}{k === "borrador" && f.borrador && <i className="ok" aria-label="generado" />}
           </button>
         ))}

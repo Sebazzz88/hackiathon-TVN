@@ -1,62 +1,21 @@
-// Prueba de extremo a extremo en un navegador REAL (Edge o Chrome), sin dependencias: habla con él por el protocolo
-// de depuración (CDP). Requiere la app encendida en http://localhost:5173 y Node 22+.
+// Prueba de extremo a extremo de la agenda en un navegador REAL sin ventana (ver navegador.mjs).
+// Requiere la app encendida (APP_URL, por defecto http://localhost:5173) y Node 22+.
 //   node e2e/agenda.e2e.mjs
 // Reproduce los fallos reportados: cambiar 5 -> 10 -> 5, elegir 30, casos de prueba con 5/10, clics rápidos.
-import { spawn } from "node:child_process";
-import { existsSync, mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { URL_APP, abrirNavegador, comprobaciones, dormir } from "./navegador.mjs";
 
-const URL_APP = process.env.APP_URL || "http://localhost:5173";
-const PUERTO = 9333;
-const NAVEGADORES = [
-  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
-  "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
-  "C:/Program Files/Google/Chrome/Application/chrome.exe",
-];
-const exe = NAVEGADORES.find(existsSync);
-if (!exe) { console.error("No encontré Edge ni Chrome."); process.exit(2); }
-
-const proc = spawn(exe, ["--headless=new", `--remote-debugging-port=${PUERTO}`, "--disable-gpu", "--window-size=1440,1000",
-  `--user-data-dir=${mkdtempSync(join(tmpdir(), "tvn-e2e-"))}`, "about:blank"], { stdio: "ignore" });
-const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
-
-let ws, idMsg = 0, pendientes = new Map(), erroresConsola = [], erroresRed = [];
-async function conectar() {
-  for (let i = 0; i < 40; i++) {
-    try {
-      const paginas = await (await fetch(`http://localhost:${PUERTO}/json`)).json();
-      const p = paginas.find((x) => x.type === "page");
-      if (p) { ws = new WebSocket(p.webSocketDebuggerUrl); await new Promise((ok, no) => { ws.onopen = ok; ws.onerror = no; }); return; }
-    } catch { /* aún arrancando */ }
-    await dormir(250);
-  }
-  throw new Error("No pude conectar con el navegador");
-}
-const enviar = (method, params = {}) => new Promise((ok) => { const id = ++idMsg; pendientes.set(id, ok); ws.send(JSON.stringify({ id, method, params })); });
-const ev = async (js) => (await enviar("Runtime.evaluate", { expression: js, returnByValue: true, awaitPromise: true })).result?.result?.value;
-async function esperarHasta(js, ms = 20000) { const t = Date.now(); while (Date.now() - t < ms) { if (await ev(js)) return true; await dormir(100); } return false; }
-
-const resultados = [];
-const ok = (nombre, cond, detalle = "") => { resultados.push({ nombre, cond: !!cond }); console.log(`${cond ? "✔" : "✘"} ${nombre}${detalle ? " — " + detalle : ""}`); };
-const filas = () => ev("document.querySelectorAll('.items li').length");
-const h1 = () => ev("document.querySelector('.lista h1')?.textContent");
-const hayError = () => ev("!!document.querySelector('.error-caja, .aviso-global')");
-const clic = (sel, texto) => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].find(b => b.textContent.trim() === ${JSON.stringify(texto)})?.click()`);
-const asentado = (n) => esperarHasta(`document.querySelectorAll('.items li').length === ${n} && document.querySelector('.items')?.getAttribute('aria-busy') === 'false'`);
-
+const { ok, terminar } = comprobaciones();
+let nav;
 try {
-  await conectar();
-  ws.onmessage = (m) => {
-    const d = JSON.parse(m.data);
-    if (d.id && pendientes.has(d.id)) { pendientes.get(d.id)(d); pendientes.delete(d.id); }
-    else if (d.method === "Runtime.exceptionThrown") erroresConsola.push(d.params.exceptionDetails.text + " " + (d.params.exceptionDetails.exception?.description || ""));
-    else if (d.method === "Runtime.consoleAPICalled" && d.params.type === "error") erroresConsola.push("console.error: " + d.params.args.map((x) => x.value ?? x.description ?? "").join(" ").slice(0, 3000));
-    else if (d.method === "Network.responseReceived" && d.params.response.status >= 500) erroresRed.push(`${d.params.response.status} ${d.params.response.url}`);
-  };
-  await enviar("Runtime.enable"); await enviar("Network.enable"); await enviar("Page.enable");
-  await enviar("Page.navigate", { url: URL_APP + "/#/agenda" });
+  nav = await abrirNavegador(9333);
+  const { ev, esperarHasta, enviar, errores } = nav;
+  const filas = () => ev("document.querySelectorAll('.items li').length");
+  const h1 = () => ev("document.querySelector('.lista h1')?.textContent");
+  const hayError = () => ev("!!document.querySelector('.error-caja, .aviso-global')");
+  const clic = (sel, texto) => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].find(b => b.textContent.trim() === ${JSON.stringify(texto)})?.click()`);
+  const asentado = (n) => esperarHasta(`document.querySelectorAll('.items li').length === ${n} && document.querySelector('.items')?.getAttribute('aria-busy') === 'false'`);
 
+  await enviar("Page.navigate", { url: URL_APP + "/#/agenda" });
   ok("la agenda carga con 5 temas", await asentado(5), `h1="${await h1()}"`);
 
   // --- Reporte 1: abrir 10 y volver a 5 se quedaba en 10
@@ -92,17 +51,14 @@ try {
   await ev("document.querySelector('.interruptor input').click()");
   await esperarHasta("document.querySelector('.lista h1')?.textContent === 'Casos sintéticos' && document.querySelectorAll('.items .item').length > 1");
   await ev("document.querySelectorAll('.items .item')[1].click()");
-  ok("abrir una ficha sintética no apaga los casos de prueba", await esperarHasta("!!document.querySelector('.ficha-cab .sint')") && await ev("document.querySelector('.interruptor input').checked"),
+  ok("abrir una ficha sintética no apaga los casos de prueba", await esperarHasta("document.querySelector('.ficha-cab .sint')") && await ev("document.querySelector('.interruptor input').checked"),
     await ev("location.hash + ' | ' + (document.querySelector('.ficha-cab .kicker')?.textContent || 'sin ficha') + ' | marcada=' + document.querySelector('.interruptor input')?.checked + ' | filas=' + document.querySelectorAll('.items .item').length"));
   await ev("history.back()"); await dormir(500);
-  ok("sin errores de servidor (5xx) en toda la sesión", erroresRed.length === 0, erroresRed.join(" | "));
-  ok("sin excepciones en la consola del navegador", erroresConsola.length === 0, erroresConsola.join(" | "));
+  ok("sin errores de servidor (5xx) en toda la sesión", errores.red.length === 0, errores.red.join(" | "));
+  ok("sin excepciones en la consola del navegador", errores.consola.length === 0, errores.consola.join(" | "));
 } catch (e) {
   console.error("Fallo del script:", e); ok("el script terminó sin excepciones", false);
 } finally {
-  try { ws?.close(); } catch {}
-  proc.kill();
-  const mal = resultados.filter((r) => !r.cond).length;
-  console.log(`\n${resultados.length - mal}/${resultados.length} comprobaciones correctas`);
-  process.exit(mal ? 1 : 0);
+  nav?.cerrar();
+  process.exit(terminar());
 }
