@@ -5,6 +5,7 @@ import Agenda from "./views/Agenda.jsx";
 import Consulta from "./views/Consulta.jsx";
 import Datos from "./views/Datos.jsx";
 import Evaluacion from "./views/Evaluacion.jsx";
+import Jurado from "./views/Jurado.jsx";
 import VisorEvidencia from "./views/VisorEvidencia.jsx";
 
 const VISTAS = [
@@ -12,6 +13,7 @@ const VISTAS = [
   ["consulta", "Consultar"],
   ["datos", "Datos"],
   ["evaluacion", "Evaluación"],
+  ["jurado", "Modo jurado"],
 ];
 
 /** Si una vista falla al pintar, se muestra qué hacer en lugar de una pantalla en blanco. */
@@ -97,6 +99,7 @@ export default function App() {
           {vista === "consulta" && <Consulta inicial={ruta.q} irAFicha={irAFicha} navegar={navegar} />}
           {vista === "datos" && <Datos meta={meta} />}
           {vista === "evaluacion" && <Evaluacion irAFicha={irAFicha} />}
+          {vista === "jurado" && <Jurado />}
         </Contenedor>
       </main>
 

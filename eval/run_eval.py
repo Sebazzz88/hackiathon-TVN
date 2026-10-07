@@ -295,6 +295,18 @@ def main():
     res["etiquetas"] = ("Propuestas por el asistente de IA (Claude) a partir de titulares y del snapshot; "
                         "PENDIENTE revisión humana. Hasta entonces las métricas son preliminares.")
     (OUT / "resumen.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
+    # eval/results.json: lo que lee el Modo jurado. Numerador y denominador salen de los mismos valores calculados arriba.
+    import re as _re
+
+    def _nd(v):
+        m = _re.match(r"\s*(\d+)/(\d+)", str(v)) if v is not None else None
+        return {"num": int(m.group(1)), "den": int(m.group(2))} if m else None
+
+    tabla = [{"metrica": m["nombre"], "agente": m["agente"], "baseline": m["baseline"], "nota": m["nota"],
+              "agente_nd": _nd(m["agente"]), "baseline_nd": _nd(m["baseline"])} for m in met]
+    (EV / "results.json").write_text(json.dumps({"generado_utc": res["generado_utc"], "conjunto": res["conjunto"],
+                                                 "etiquetas": res["etiquetas"], "tabla": tabla, "tiempos": res["tiempos"],
+                                                 "costo": res["costo"]}, ensure_ascii=False, indent=1), encoding="utf-8")
     # ---- reporte legible
     L = [f"# Resultados de evaluación — {res['generado_utc']}", "", f"Conjunto: {res['conjunto']}. {res['etiquetas']}", "",
          "| Métrica | Agente (IA) | Baseline | Nota |", "|---|---|---|---|"]
