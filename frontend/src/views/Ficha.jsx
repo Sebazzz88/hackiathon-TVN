@@ -177,20 +177,33 @@ function Puntaje({ f }) {
           <small>P = 30R + 25I + 20U + 15N + 10E · {f.reglas_version} · bajo [0,40) medio [40,70) alto [70,100]</small>
         </span>
       </div>
-      <table className="componentes">
+      <table className="componentes explicado">
+        <thead>
+          <tr><th>Componente</th><th>Valor 0–1</th><th className="num">Peso</th><th className="num">Aporte</th></tr>
+        </thead>
         <tbody>
           {COMPONENTES.map(([k, nombre, peso]) => (
             <tr key={k}>
-              <th><b>{k}</b> {nombre}<small> ×{peso}</small></th>
-              <td className="barra-celda"><span className="barra"><i className={"c-" + k} style={{ width: `${f.componentes[k] * 100}%` }} /></span></td>
-              <td className="num">{(f.componentes[k] * peso).toFixed(1)}</td>
+              <th scope="row">
+                <b>{k}</b> {nombre}
+                <span className="porque">{f.justificacion?.[k]}</span>
+              </th>
+              <td className="barra-celda">
+                <span className="barra" role="img" aria-label={`${nombre}: ${f.componentes[k].toFixed(2)} de 1`}>
+                  <i className={"c-" + k} style={{ width: `${f.componentes[k] * 100}%` }} />
+                </span>
+                <span className="valor01">{f.componentes[k].toFixed(2)}</span>
+              </td>
+              <td className="num">×{peso}</td>
+              <td className="num"><b>{(f.componentes[k] * peso).toFixed(1)}</b> pts</td>
             </tr>
           ))}
+          <tr className="total">
+            <th scope="row">Total</th><td /><td className="num">100</td><td className="num"><b>{f.puntaje.toFixed(1)}</b> pts</td>
+          </tr>
         </tbody>
       </table>
-      <ul className="justificacion">
-        {COMPONENTES.map(([k, nombre]) => <li key={k}><b>{nombre}:</b> {f.justificacion?.[k]}</li>)}
-      </ul>
+      <p className="nota">Para ver cómo cambiaría el ranking con otros pesos, usa <b>«¿Qué pasaría si…?»</b> en la agenda (no guarda nada).</p>
       <p className="nota">
         El puntaje ordena la atención; no es probabilidad de verdad ni de impacto. Una prioridad alta con evidencia
         insuficiente requiere investigación y no habilita la aprobación.

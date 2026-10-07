@@ -1,14 +1,25 @@
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, cancelado, COMPONENTES, EVIDENCIA, TEMAS, estadoTxt, hace, textoProcedencia } from "../lib.js";
 import { N_MAX, TAMANOS, TEMAS_IDS, VENTANAS, fichaVigente } from "../rutas.js";
+import { PESOS_RETO, banda, simular } from "../puntaje.js";
 import Ficha from "./Ficha.jsx";
+import QuePasariaSi from "./QuePasariaSi.jsx";
 
 /** Una fila de la lista. Memoizada: al cambiar de ficha solo se repinta la que cambia, no las 30. */
-const Fila = memo(function Fila({ f, k, activa, corte, onAbrir }) {
+const Fila = memo(function Fila({ f, k, activa, corte, onAbrir, sim }) {
+  const p = sim ? f.puntaje_sim : f.puntaje;
+  const b = sim ? banda(p) : f.banda;
   return (
     <li>
       <button className={"item" + (activa ? " activo" : "")} onClick={() => onAbrir(f.id_caso)} aria-current={activa}>
-        <span className="rank">{k + 1}</span>
+        <span className="rank">
+          {k + 1}
+          {sim && f.cambio !== 0 && (
+            <small className={"cambio " + (f.cambio > 0 ? "sube" : "baja")} title={`Antes en el puesto ${f.pos_base}`}>
+              {f.cambio > 0 ? "▲" : "▼"}{Math.abs(f.cambio)}
+            </small>
+          )}
+        </span>
         <span className="item-cuerpo">
           <span className="kicker">
             {TEMAS[f.tema] || "—"} · {hace(f.fecha_ultima, corte)}
@@ -24,8 +35,8 @@ const Fila = memo(function Fila({ f, k, activa, corte, onAbrir }) {
             {COMPONENTES.map(([c, , w]) => <i key={c} className={"c-" + c} style={{ width: `${f.componentes[c] * w}%` }} />)}
           </span>
         </span>
-        <span className={"puntaje banda-" + f.banda} title={`Puntaje de atención ${f.puntaje}/100 (${f.banda})`}>
-          {Math.round(f.puntaje)}
+        <span className={"puntaje banda-" + b} title={sim ? `Simulado: ${p}/100 (oficial ${f.puntaje})` : `Puntaje de atención ${p}/100 (${b})`}>
+          {Math.round(p)}
         </span>
       </button>
     </li>
@@ -49,6 +60,8 @@ export default function Agenda({ corte, ruta, navegar }) {
   const [texto, setTexto] = useState("");           // contenido del campo "otro número"
   useEffect(() => { setTexto(typeof n === "number" && !TAMANOS.includes(n) ? String(n) : ""); }, [n]);
   const detalle = useRef(null);
+  const [simulando, setSimulando] = useState(false);
+  const [pesos, setPesos] = useState({ ...PESOS_RETO });
 
   // ---- lista ----
   useEffect(() => {
@@ -83,6 +96,8 @@ export default function Agenda({ corte, ruta, navegar }) {
   // Una respuesta tardía (borrador, revisión) solo cambia la ficha abierta si ES esa ficha; la lista se refresca siempre.
   const actualizar = useCallback((f) => { setSel((actual) => (fichaVigente(f, actual?.id_caso) ? f : actual)); setVersion((v) => v + 1); }, []);
   const vacio = !cargando && !errorLista && lista.items.length === 0;
+  // Vista "¿qué pasaría si…?": reordena en el navegador con otros pesos; no toca el backend ni guarda nada.
+  const mostrados = useMemo(() => (simulando ? simular(lista.items, pesos) : lista.items), [simulando, lista.items, pesos]);
   const que = sint ? "casos de prueba" : "temas";
   const faltan = !cargando && !errorLista && typeof n === "number" && lista.total > 0 && lista.total < n;  // pidió más de los que existen
 
@@ -116,7 +131,10 @@ export default function Agenda({ corte, ruta, navegar }) {
           </form>
           <button className={n === "max" ? "seg on max" : "seg max"} aria-pressed={n === "max"}
             title={`Mostrar todos los ${que} disponibles`} onClick={() => navegar({ n: "max", ficha, seccion })}>Máx</button>
+          <button className={simulando ? "seg on max" : "seg max"} aria-pressed={simulando} onClick={() => setSimulando((s) => !s)}
+            title="Cambiar los pesos del puntaje y ver cómo cambiaría el orden, sin guardar nada">¿Qué pasaría si…?</button>
         </div>
+        {simulando && <QuePasariaSi pesos={pesos} setPesos={setPesos} cuantos={lista.items.length} />}
         <div className="filtros-tema" role="group" aria-label="Filtrar la agenda">
           <label>Tema
             <select value={tema || ""} onChange={(e) => navegar({ tema: e.target.value || null, ficha: null, c: "" })}>
@@ -158,7 +176,7 @@ export default function Agenda({ corte, ruta, navegar }) {
         {vacio && <p className="vacio">No hay temas para mostrar con este filtro. Prueba con otro tema, un periodo más largo o quita el filtro.</p>}
 
         <ol className="items" aria-busy={cargando}>
-          {lista.items.map((f, k) => <Fila key={f.id_caso} f={f} k={k} activa={idActivo === f.id_caso} corte={corte} onAbrir={abrir} />)}
+          {mostrados.map((f, k) => <Fila key={f.id_caso} f={f} k={k} activa={idActivo === f.id_caso} corte={corte} onAbrir={abrir} sim={simulando} />)}
         </ol>
         {lista.items.length > 0 && (
           <p className="nota">
