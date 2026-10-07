@@ -15,7 +15,7 @@ log = logging.getLogger("copiloto")
 MAX_BANDEJA = 1000  # "Máx" en la interfaz pide todo; el snapshot tiene ~720 temas
 
 
-FICHAS_VERSION = "3"  # súbela al cambiar los campos de las fichas: se regeneran sin perder revisiones ni borradores
+FICHAS_VERSION = "4"  # súbela al cambiar los campos de las fichas: se regeneran sin perder revisiones ni borradores
 
 
 def sembrar(conservar=True):

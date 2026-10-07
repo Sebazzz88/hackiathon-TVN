@@ -57,34 +57,61 @@ def _pais(q):
     return "PAN"
 
 
-def _abst(faltante, metodo, versiones=None):
-    return QueryOut(abstencion=True, faltante=faltante, metodo=metodo, versiones=versiones or [])
+def _abst(faltante, metodo, accion=""):
+    return QueryOut(abstencion=True, estado="abstencion", faltante=faltante, metodo=metodo, accion=accion)
+
+
+ACCION_ABSTENCION = "Busca una fuente primaria (comunicado, documento oficial) o reformula la pregunta sobre un tema del corpus."
+ACCION_CONTRADICCION = ("No uses ninguna cifra todavía: contrasta las versiones con la fuente primaria y registra en la ficha "
+                        "cuál queda respaldada.")
+ACCION_RESPONDIDA_NOTICIAS = "Abre la ficha del evento para revisar fuentes, procedencias y qué falta comprobar antes de producir."
+ACCION_RESPONDIDA_INDICADOR = "Cita siempre país, año y unidad: es un dato anual del Banco Mundial, no una medición de hoy."
 
 
 def responder(pregunta: str, ia: bool = False) -> QueryOut:
+    """Toda consulta termina en UNO de tres estados, con la acción que debe tomar la persona:
+      respondida     hay evidencia y no se contradice
+      abstencion     no hay evidencia suficiente: dice qué falta y qué hacer
+      contradiccion  hay versiones incompatibles: se muestran lado a lado con fuente y fecha; no se elige ninguna"""
+    out = _responder(pregunta, ia)
+    if out.abstencion:
+        out.estado, out.accion = "abstencion", out.accion or ACCION_ABSTENCION
+    elif out.versiones:
+        out.estado, out.accion = "contradiccion", ACCION_CONTRADICCION
+    else:
+        out.estado = "respondida"
+        out.accion = out.accion or (ACCION_RESPONDIDA_INDICADOR if out.metodo == "indicador_bm" else ACCION_RESPONDIDA_NOTICIAS)
+    return out
+
+
+def _responder(pregunta: str, ia: bool = False) -> QueryOut:
     """ia=False: respuesta inmediata (extractiva, o la de la IA si ya está en caché). ia=True: llama al modelo."""
     q = norm(pregunta)
     if consulta_maliciosa(pregunta):
         return _abst(["La consulta contiene instrucciones para cambiar las reglas o revelar información interna. "
-                      "Se rechaza: el agente solo responde con evidencia del corpus."], "control_inyeccion")
+                      "Se rechaza: el agente solo responde con evidencia del corpus."], "control_inyeccion",
+                     "Reformula la pregunta sin instrucciones; el sistema no cambia sus reglas ni inventa datos.")
     ind = _indicador(q)
     if ind:
         otro = next((p for p in OTROS_PAISES if f" {p}" in f" {q}"), None)
         if otro:
             return _abst([f"El paquete del Banco Mundial solo cubre Panamá, Costa Rica, Colombia, República Dominicana, "
-                          f"México y Guatemala; no hay datos de «{otro}». No se sustituye por otro país."], "indicador_bm")
+                          f"México y Guatemala; no hay datos de «{otro}». No se sustituye por otro país."], "indicador_bm",
+                         "Pregunta por uno de los seis países del paquete o consulta la fuente oficial de ese país.")
         pais = _pais(q)
         anios = [int(y) for y in re.findall(r"\b(19\d{2}|20\d{2})\b", q)]
         if any(f" {a} " in f" {q} " for a in AHORA) or any(y > 2024 or y < 2010 for y in anios):
             y, _ = ultimo_valor(pais, ind)
             return _abst([f"El paquete solo tiene datos ANUALES del Banco Mundial 2010–2024 para {NOMBRES[ind].lower()}; "
                           f"no existe una medición de hoy ni del año pedido. Último año disponible para "
-                          f"{NOMBRE_PAIS[pais]}: {y}. Pregunte por ese año para ver el valor citado."], "indicador_bm")
+                          f"{NOMBRE_PAIS[pais]}: {y}. Pregunte por ese año para ver el valor citado."], "indicador_bm",
+                         f"Pregunta por un año entre 2010 y {y}, o busca la cifra actual en la fuente oficial (INEC, MEF).")
         y = anios[0] if anios else ultimo_valor(pais, ind)[0]
         it = item_indicador(pais, ind, y) if y else None
         if not it or it["valor"] is None:
             return _abst([f"El Banco Mundial no reporta {NOMBRES[ind].lower()} de {NOMBRE_PAIS[pais]} para {y} "
-                          "(valor nulo en la fuente). No se rellena ni se estima."], "indicador_bm")
+                          "(valor nulo en la fuente). No se rellena ni se estima."], "indicador_bm",
+                         "Prueba con otro año disponible o consulta la fuente nacional.")
         txt = (f"{it['texto']}. Fuente: Banco Mundial ({it['indicador_id']}). {it['limitacion']}")
         return QueryOut(abstencion=False, respuesta=txt, metodo="indicador_bm", base="indicadores oficiales",
                         citas=[Cita(afirmacion=it["texto"], tipo="hecho", id_evidencia=it["id_evidencia"], campo="valor")],
@@ -99,11 +126,13 @@ def responder(pregunta: str, ia: bool = False) -> QueryOut:
         return _abst([f"Ningún evento del corpus responde a la consulta (similitud máxima {float(sims[orden[0]]):.2f} "
                       f"< umbral {SIM_QUERY_MIN}). Se necesitaría una fuente que cubra ese tema."], "recuperacion_semantica")
     top = [fichas[i] for i in orden if float(sims[i]) >= SIM_QUERY_MIN]
+    cercanos = {fichas[i].id_caso for i in orden if float(sims[i]) >= float(sims[orden[0]]) - 0.08}
     if any(c in q for c in PIDE_CIFRA):
         con_cifra = [f for f in top if re.search(r"\d", f.titulo)]
         if not con_cifra:
             return _abst(["Los titulares relacionados no contienen la cifra pedida y no se leyó el artículo completo. "
-                          "No se inventa un número: se requiere la fuente primaria."], "recuperacion_semantica")
+                          "No se inventa un número: se requiere la fuente primaria."], "recuperacion_semantica",
+                         "Abre la ficha del evento y pide la cifra a la fuente primaria antes de publicarla.")
     citas, partes, versiones, ids, eventos = [], [], [], [], []
     for f in top:
         validas = [n for n in f.noticias if not n.get("inyeccion_detectada")]
@@ -118,7 +147,7 @@ def responder(pregunta: str, ia: bool = False) -> QueryOut:
         partes.append(f"• {'[CASO SINTÉTICO DE PRUEBA] ' if f.sintetico else ''}{n0['titulo']} ({n0['medio']}; {f.registros} titular(es), "
                       f"{f.fuentes_independientes} procedencia(s) independiente(s); evidencia {f.estado_evidencia.replace('_', ' ')})")
         ids += f.ids_fuente
-        for k in f.contradicciones:
+        for k in (f.contradicciones if f.id_caso in cercanos else []):
             versiones.append(k)
             for v in k["versiones"]:
                 citas.append(Cita(afirmacion=f"Versión de {v['medio']}: «{v['titulo']}»", tipo="declaracion",

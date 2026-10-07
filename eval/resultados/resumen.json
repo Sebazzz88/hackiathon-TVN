@@ -1,5 +1,5 @@
 {
- "generado_utc": "2026-10-07T16:13:21+00:00",
+ "generado_utc": "2026-10-07T16:15:28+00:00",
  "particiones": {
   "dev": {
    "sustentada": {
@@ -825,9 +825,9 @@
   "nota": "Falta eval/seleccion_editor.json (selección independiente de un editor). No se reporta Precision@5."
  },
  "tiempos": {
-  "pipeline_s": 4.81,
+  "pipeline_s": 4.35,
   "consulta_mediana_s": 0.004,
-  "consulta_p95_s": 0.016,
+  "consulta_p95_s": 0.011,
   "borrador_mediana_s": 0.002,
   "borrador_p95_s": 0.003,
   "n_consultas": 60,
@@ -940,9 +940,9 @@
   },
   {
    "nombre": "Tiempo por consulta (mediana / p95)",
-   "agente": "0.004 s / 0.016 s",
+   "agente": "0.004 s / 0.011 s",
    "baseline": null,
-   "nota": "meta mediana ≤ 15 s; pipeline completo 4.81 s"
+   "nota": "meta mediana ≤ 15 s; pipeline completo 4.35 s"
   },
   {
    "nombre": "Tiempo por borrador (mediana / p95)",

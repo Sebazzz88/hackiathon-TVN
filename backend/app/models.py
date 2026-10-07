@@ -87,7 +87,12 @@ class QueryIn(BaseModel):
     ia: bool = False  # True = pedir respuesta redactada por la IA generativa (puede tardar con un modelo local)
 
 
+EstadoConsulta = Literal["respondida", "abstencion", "contradiccion"]
+
+
 class QueryOut(BaseModel):
+    estado: EstadoConsulta = "respondida"   # respondida | abstencion | contradiccion
+    accion: str = ""                         # qué debe hacer la persona ahora
     abstencion: bool
     respuesta: Optional[str] = None
     citas: list[Cita] = []
