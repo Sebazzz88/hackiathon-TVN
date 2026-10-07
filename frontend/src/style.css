@@ -59,6 +59,7 @@ a { color: var(--azul); text-decoration: none; } a:hover { text-decoration: unde
 .estado-ia .ia-punto { background: #fbbf24; }
 .estado-ia.on .ia-punto { background: #4ade80; box-shadow: 0 0 0 3px rgba(74, 222, 128, .25); }
 .ia-punto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--cI); margin-right: 4px; vertical-align: 1px; }
+.pedir-ia { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
 .respuesta-ia { border-bottom: 1px solid var(--linea); margin-bottom: 12px; padding-bottom: 6px; }
 .respuesta-ia .afirmaciones li { font-size: 1rem; }
 .generador { font-size: .82rem; color: var(--suave); }

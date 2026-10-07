@@ -46,7 +46,9 @@ Indicadores: respuesta determinista (cifras exactas del Banco Mundial, sin LLM).
 
 ## Borrador y validador
 
-- **Generador:** Claude (`LLM_MODEL`, por defecto `claude-opus-5-5`, `effort=low`, salida JSON por esquema). Si hay respuesta en caché (`data/cache/llm/`) se usa sin red. Sin clave, sin internet o con error: plantilla determinista.
+- **Generador:** Hermes 3 (3B, Nous Research) local vía Ollama, por defecto. Es gratuito y no usa internet; la salida JSON se fuerza con el esquema (`format`) y la temperatura es 0. Con un modelo local pequeño se usa el **modo híbrido** (`draft-local-v1`): el código arma los hechos (brief y guion con citas) y Hermes redacta título, enfoque, 3 preguntas y copy. Con proveedores grandes (`LLM_PROVIDER=anthropic|openai`, `LLM_BORRADOR=completo`) el modelo redacta el paquete completo (`draft-v2`). Si hay respuesta en caché (`data/cache/llm/`) se usa sin red. Sin modelo o con error, se usa la plantilla determinista.
+- **Normalización antes de validar** (`recuperar_citas`): los modelos pequeños a veces citan el medio en vez del id o meten el id en el texto. Se pasa a `citas` y se limpia el texto. Un medio o id que no exista en la ficha no se convierte en cita.
+- **Medido con Hermes 3 3B en el equipo del autor** (i3-1115G4, 4 hilos, sin GPU): respuesta a consulta 45–75 s, borrador híbrido ~73 s. El modo completo tardó 228 s y produjo JSON truncado, así que se descartó para modelos locales.
 - **Validador** (en código, para borradores y respuestas, con LLM o plantilla): elimina la afirmación si no tiene cita, cita un id ajeno a la ficha, cita un campo inexistente, cita una fuente con posible inyección, contiene instrucciones, tiene cifras que no aparecen en la evidencia citada, o fechas y horas distintas a las de la evidencia. Las fechas de la fuente no respaldan números sueltos: el mes 9 de una fecha no valida un "9%" inventado (regresión encontrada con una prueba). Un "hecho" que solo cita titulares pasa a "declaración". Recorta a 250/80 palabras y estima el guion a 2,5 palabras/s.
 
 ### Prompt de sistema (`draft-v1`)

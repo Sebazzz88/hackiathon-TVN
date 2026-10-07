@@ -21,6 +21,9 @@ Responsable de todas: Sebastián (equipo de una persona), con asistencia de Clau
 | D13 | 2026-10-06 | Urgencia medida contra la fecha de corte del snapshot, no contra "ahora" | Reloj del sistema | Reproducibilidad: el mismo snapshot da el mismo ranking cualquier día |
 | D14 | 2026-10-06 | Casos sintéticos (inyección, contradicciones, recirculada, agencia) en archivo aparte y rotulados | Alterar noticias reales | El reto pide identificar los casos alterados como sintéticos |
 | D15 | 2026-10-06 | Normalizar espaciado de titulares GDELT en `processed/`; `raw/` intacto | Usar texto crudo | GDELT entrega "1 , 500" y "Panamá : …", que rompe la lectura de cifras |
+| D16 | 2026-10-06 | IA generativa local: Hermes 3 3B vía Ollama por defecto | Claude u otra API de pago | Gratuito, sin clave y sin internet (T10). Pedido explícito del autor. Costo: más lento en CPU (~1 min) |
+| D17 | 2026-10-06 | Borrador híbrido con modelos locales: hechos por código y redacción editorial por la IA | Borrador completo por la IA | Medido: el borrador completo tardó 228 s y truncó el JSON; el híbrido tarda ~73 s y pasa el validador |
+| D18 | 2026-10-06 | En Consultar, la IA se pide con un botón; la respuesta inmediata es extractiva | Llamar siempre a la IA | En CPU tarda 45–75 s; la búsqueda no debe esperar. Lo ya generado sale de la caché |
 
 ## Cambios de pesos
 

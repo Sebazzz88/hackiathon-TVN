@@ -57,6 +57,7 @@ class Ficha(BaseModel):  # espejo de fichas.jsonl
 
 class QueryIn(BaseModel):
     pregunta: str = Field(min_length=3, max_length=500)
+    ia: bool = False  # True = pedir respuesta redactada por la IA generativa (puede tardar con un modelo local)
 
 
 class QueryOut(BaseModel):
@@ -71,6 +72,7 @@ class QueryOut(BaseModel):
     eliminadas: list[dict] = []    # afirmaciones de la IA descartadas por el validador
     generador: str = ""            # extractivo | llm:<modelo> | cache:<modelo>
     meta_llm: dict = {}            # tokens, costo y segundos de la llamada (sin datos sensibles)
+    ia_disponible: bool = False    # la UI puede ofrecer "Redactar con IA"
     base: str = "titular/metadatos"
     metodo: str = ""
 

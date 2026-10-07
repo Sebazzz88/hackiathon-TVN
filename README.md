@@ -28,12 +28,12 @@ Todo funciona **sin internet** durante la demo.
 
 **Dónde está la IA.**
 - **Embeddings multilingües locales** (ONNX, sin GPU). Clasifican en 6 temas, agrupan titulares del mismo hecho aunque estén en otro idioma y buscan por significado.
-- **Claude.** Redacta los borradores y las respuestas a consultas, siempre a partir de la evidencia recuperada y pasando por un validador de citas. Se activa con una clave en `.env`; sin ella usa respuestas en caché o una plantilla determinista.
+- **Hermes 3, local y gratuito, vía Ollama.** Redacta respuestas a consultas y la parte editorial de los borradores (título, enfoque, preguntas y copy), siempre a partir de la evidencia recuperada y pasando por un validador de citas. Sin el modelo usa respuestas en caché o una plantilla determinista.
 - **Comparación con un baseline.** El agente se compara con una búsqueda por palabras clave y un ranking por fecha. Ver [docs/07_EVALUATION.md](docs/07_EVALUATION.md).
 
 ## Cómo encenderlo
 
-Requisitos: Windows con PowerShell, **Python 3.12 o 3.13** y **Node.js 18 o superior**.
+Requisitos: Windows con PowerShell, **Python 3.12 o 3.13**, **Node.js 18 o superior** y, para la IA generativa, **Ollama** con `hermes3:3b` (ver más abajo).
 
 ### Opción rápida (un comando)
 
@@ -77,30 +77,36 @@ npm run dev
 
 Abre **http://localhost:5173**. La documentación de la API está en http://localhost:8000/docs.
 
-### Activar la IA generativa (Claude)
+### IA generativa local y gratuita: Hermes 3 con Ollama
 
-La IA local de embeddings está siempre activa. La IA generativa, Claude, redacta los **borradores** y las **respuestas a consultas** sobre noticias. Para activarla:
+La app usa **Hermes 3** (Nous Research, 3B parámetros), que corre en tu equipo con **Ollama**. Es gratuito, no necesita clave y funciona sin internet. Instálalo una vez:
 
-1. Consigue una clave en https://console.anthropic.com (sección *API Keys*).
-2. Abre `.env` en la raíz del proyecto y escribe la clave. Este archivo nunca se sube a GitHub.
+```powershell
+winget install --id Ollama.Ollama -e     # instala Ollama
+ollama pull hermes3:3b                   # descarga Hermes 3 (~2 GB)
+```
 
-   ```
-   LLM_API_KEY=tu-clave-aqui
-   LLM_MODEL=claude-opus-5-5
-   LLM_OFFLINE=0
-   ```
+`iniciar.ps1` y el backend lo detectan solos (`LLM_PROVIDER=ollama`, `LLM_MODEL=hermes3:3b` en `.env`). En la cabecera, el indicador **IA** se pone verde con el nombre del modelo.
 
-3. Reinicia la app: cierra las dos ventanas y vuelve a correr `iniciar.ps1`. En la cabecera, el indicador **IA** se pone verde con el nombre del modelo.
-4. Para la demo sin internet, precalienta la caché. Genera los borradores y respuestas de la demo y los guarda en `data/cache/llm/`:
+**Qué hace Hermes en la app**
 
-   ```powershell
-   cd backend
-   .\.venv\Scripts\python -m app.agent.precalentar
-   cd ..
-   git add data/cache/llm; git commit -m "data: cache LLM para demo offline"; git push origin feat/agente
-   ```
+| Lugar | Qué redacta | Cómo se controla |
+|---|---|---|
+| Consultar | Botón **"Redactar respuesta con IA"** sobre los titulares encontrados | Cada frase debe citar una evidencia real |
+| Borrador | Título, enfoque de interés público, 3 preguntas de investigación y copy digital | El brief y el guion con los hechos y las cifras los arma el código, con sus citas |
 
-Todo lo que redacta la IA pasa por el **validador de citas**. Se elimina cualquier frase sin cita válida, con cifras o fechas que no estén en la fuente, o con instrucciones inyectadas. En la interfaz se ve qué escribió la IA, qué descartó el validador, los tokens y el costo. Sin clave o sin internet, el sistema usa la caché y, si no la hay, una plantilla determinista: nunca se cae.
+Todo lo que escribe la IA pasa por el **validador de citas**. Se elimina cualquier frase sin cita válida, con cifras o fechas que no estén en la fuente, o con instrucciones inyectadas. La interfaz muestra qué escribió la IA y qué descartó el validador.
+
+**Velocidad.** En un portátil sin GPU, Hermes tarda alrededor de 1 minuto por respuesta o borrador. La interfaz muestra un contador mientras trabaja. Lo ya generado queda en caché (`data/cache/llm/`) y sale al instante. Para la demo, precalienta la caché antes (tarda unos 30–40 min la primera vez):
+
+```powershell
+cd backend
+.\.venv\Scripts\python -m app.agent.precalentar --top 5
+cd ..
+git add data/cache/llm; git commit -m "data: cache Hermes para demo offline"; git push origin feat/agente
+```
+
+**Otros proveedores (opcional).** En `.env` puedes cambiar `LLM_PROVIDER` a `openai`, para APIs compatibles como Kimi (Moonshot) o Groq, usando `LLM_BASE_URL` y `LLM_API_KEY`. También puedes usar `anthropic` (Claude) con `LLM_API_KEY`. Sin ningún modelo disponible, el sistema usa la caché o una plantilla determinista: nunca se cae.
 
 ## Recorrido por la interfaz
 

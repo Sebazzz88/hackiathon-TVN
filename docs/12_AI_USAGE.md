@@ -14,6 +14,11 @@ Registro honesto de las herramientas de IA usadas para construir el proyecto. La
 | Iteraciones relevantes | (1) El primer umbral de réplica por similitud semántica fusionaba titulares distintos; se midió y se cambió a criterio léxico (D06). (2) La prueba T05 detectó que dos titulares con cifras distintas se marcaban como réplica; se corrigió (D08). (3) Clasificación con margen mínimo tras ver notas internacionales en "economía" (D07). (4) Relevancia de TVN ajustada (D09) |
 | Límites | Las etiquetas del benchmark y de temas fueron **propuestas por Claude** y requieren revisión humana antes de tomarse como resultados |
 
+## IA dentro del producto (no es herramienta de desarrollo)
+
+- Embeddings: `paraphrase-multilingual-MiniLM-L12-v2` (ONNX local).
+- Generación: Hermes 3 3B (Nous Research) vía Ollama, local y gratuito. Detalle en `04_AGENT.md`.
+
 ## Codex (OpenAI)
 
 | Campo | Detalle |

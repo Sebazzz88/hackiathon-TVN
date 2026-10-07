@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../lib.js";
 import { Cita, Tipo } from "./Ficha.jsx";
 
@@ -6,6 +6,13 @@ export default function Borrador({ f, onCambio }) {
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState("");
   const b = f.borrador;
+  const [seg, setSeg] = useState(0);
+  useEffect(() => {
+    if (!ocupado) return;
+    setSeg(0);
+    const t = setInterval(() => setSeg((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [ocupado]);
 
   const generar = () => {
     setOcupado(true);
@@ -19,10 +26,11 @@ export default function Borrador({ f, onCambio }) {
     <div className="panel">
       <div className="barra-accion">
         <button className="primario" onClick={generar} disabled={ocupado}>
-          {ocupado ? "Generando…" : b ? "Regenerar borrador" : "Generar paquete editorial"}
+          {ocupado ? `Generando… ${seg} s` : b ? "Regenerar borrador" : "Generar paquete editorial"}
         </button>
         {b?.generador && <Generador b={b} />}
       </div>
+      {ocupado && <p className="nota">Si la IA local está activa, el modelo redacta en este equipo; en CPU puede tardar 1–3 minutos. Después queda en caché y sale al instante.</p>}
       {error && <p className="error">{error}</p>}
       {!b && !ocupado && (
         <p className="vacio">

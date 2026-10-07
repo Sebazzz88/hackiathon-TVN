@@ -9,9 +9,9 @@ def build_candidates() -> list[Ficha]:
     return fichas
 
 
-def answer_query(pregunta: str) -> QueryOut:
+def answer_query(pregunta: str, ia: bool = False) -> QueryOut:
     from .query import responder
-    return responder(pregunta)
+    return responder(pregunta, ia=ia)
 
 
 def generate_draft(ficha: Ficha) -> dict:

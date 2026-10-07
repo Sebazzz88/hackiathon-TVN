@@ -224,6 +224,8 @@ def test_llm_ruta_completa_con_cliente_simulado(fichas, tmp_path, monkeypatch):
     monkeypatch.setattr(anthropic, "Anthropic", Cliente)
     monkeypatch.setenv("LLM_OFFLINE", "0")
     monkeypatch.setenv("LLM_API_KEY", "clave-de-prueba")
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("LLM_MODEL", "claude-opus-5-5")
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     b = draft.generar(f)
     assert b["generador"].startswith("llm:") and len(llamadas) == 1
@@ -274,14 +276,17 @@ def test_consulta_redactada_por_ia_con_cliente_simulado(fichas, tmp_path, monkey
     monkeypatch.setattr(anthropic, "Anthropic", Cliente)
     monkeypatch.setenv("LLM_OFFLINE", "0")
     monkeypatch.setenv("LLM_API_KEY", "clave-de-prueba")
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("LLM_MODEL", "claude-opus-5-5")
     monkeypatch.setenv("LLM_CACHE_DIR", str(tmp_path))
     q = "¿Qué dijo S&P sobre el grado de inversión de Panamá?"
-    r = query.responder(q)
+    assert query.responder(q).generador == "extractivo" and not llamadas  # sin pedir IA: instantáneo, sin llamar
+    r = query.responder(q, ia=True)
     assert r.generador.startswith("llm:") and r.metodo == "recuperacion_semantica+ia"
     assert len(r.afirmaciones) == 1 and "S & P ratificó" in r.respuesta
     assert any("9" in e["texto"] for e in r.eliminadas)  # cifra inventada eliminada
     assert "<DATOS>" in llamadas[0]["messages"][0]["content"]
-    r2 = query.responder(q)
+    r2 = query.responder(q)  # sin pedir IA, pero ya está en caché: se muestra la respuesta de la IA
     assert r2.generador.startswith("cache:") and len(llamadas) == 1
 
 
@@ -296,3 +301,50 @@ def test_validador_fechas_no_respaldan_cifras_sueltas(fichas):
         {"texto": f"laestrella.com.pa {draft.cuando(ev['G11b756ff2a'])}: S & P ratifica el grado BBB.", "tipo": "declaracion", "citas": cita},
     ], ev, "brief")
     assert len(ok) == 1 and len(fuera) == 2
+
+
+def test_ollama_local_con_servidor_simulado(fichas, tmp_path, monkeypatch):
+    """Proveedor por defecto: Ollama local (sin clave). Se simula el servidor HTTP de Ollama."""
+    import types
+    import httpx
+    from app.agent import llm as llm_mod
+    salida = {"abstener": False, "faltante": [], "afirmaciones": [
+        {"texto": "Según laestrella.com.pa, S & P ratificó el grado de inversión de Panamá.", "tipo": "declaracion",
+         "citas": [{"id_evidencia": "G11b756ff2a", "campo": "titulo"}]}]}
+    enviados = []
+
+    def get(url, **kw):
+        return types.SimpleNamespace(json=lambda: {"models": [{"name": "hermes3:3b", "model": "hermes3:3b"}]})
+
+    def post(url, **kw):
+        enviados.append((url, kw["json"]))
+        return types.SimpleNamespace(raise_for_status=lambda: None, json=lambda: {
+            "message": {"content": json.dumps(salida)}, "prompt_eval_count": 900, "eval_count": 120})
+
+    monkeypatch.setattr(httpx, "get", get)
+    monkeypatch.setattr(httpx, "post", post)
+    for k in ("LLM_PROVIDER", "LLM_MODEL", "LLM_API_KEY"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setenv("LLM_OFFLINE", "0")
+    monkeypatch.setenv("LLM_CACHE_DIR", str(tmp_path))
+    assert llm_mod.estado()["conectado"] and llm_mod.estado()["local"]
+    r = query.responder("¿Qué dijo S&P sobre el grado de inversión de Panamá?", ia=True)
+    url, body = enviados[0]
+    assert url.endswith("/api/chat") and body["model"] == "hermes3:3b" and body["format"]["type"] == "object"
+    assert r.generador == "llm:hermes3:3b" and r.meta_llm["costo_usd"] == 0 and len(r.afirmaciones) == 1
+
+
+def test_recuperar_citas_de_modelo_pequeno(fichas):
+    """Modelos locales pequeños citan el medio o meten el id en el texto; se normaliza y luego se valida igual."""
+    ev = draft.evidencias(fichas["EV-G226d8217c0"])
+    afs = draft.recuperar_citas([
+        {"texto": "Según prensa.com, S & P ratificó el grado BBB.", "tipo": "declaracion",
+         "citas": [{"id_evidencia": "prensa.com", "campo": "texto"}]},
+        {"texto": "S & P ratificó el grado de inversión [G11b756ff2a, titulo].", "tipo": "declaracion", "citas": []},
+        {"texto": "Según medio-inventado.com, hubo 7 cambios.", "tipo": "declaracion",
+         "citas": [{"id_evidencia": "medio-inventado.com", "campo": "titulo"}]},
+    ], ev)
+    assert afs[0]["citas"][0]["id_evidencia"] in ev and afs[0]["citas"][0]["campo"] == "titulo"
+    assert afs[1]["citas"] == [{"id_evidencia": "G11b756ff2a", "campo": "titulo"}] and "G11b756ff2a" not in afs[1]["texto"]
+    ok, fuera = draft.validar(afs, ev, "brief")
+    assert len(ok) == 2 and len(fuera) == 1  # el medio inventado no se convierte en cita válida

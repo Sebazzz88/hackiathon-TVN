@@ -16,6 +16,23 @@ export default function Consulta({ inicial, irAFicha }) {
   const [r, setR] = useState(null);
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState("");
+  const [redactando, setRedactando] = useState(false);
+  const [seg, setSeg] = useState(0);
+
+  useEffect(() => {  // contador visible mientras la IA local redacta (en CPU puede tardar ~1 min)
+    if (!redactando) return;
+    setSeg(0);
+    const t = setInterval(() => setSeg((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [redactando]);
+
+  const redactarConIA = () => {
+    setRedactando(true);
+    setError("");
+    api("/query", "POST", { pregunta: q.trim(), ia: true })
+      .then((x) => { setR(x); setRedactando(false); })
+      .catch((e) => { setError(e.message); setRedactando(false); });
+  };
 
   const preguntar = (texto) => {
     const p = (texto ?? q).trim();
@@ -77,6 +94,18 @@ export default function Consulta({ inicial, irAFicha }) {
                   <h3 className="kicker">Eventos en los que se basa</h3>
                 </div>
               )}
+              {!r.afirmaciones?.length && r.ia_disponible && (
+                <div className="pedir-ia">
+                  <button className="primario" onClick={redactarConIA} disabled={redactando}>
+                    {redactando ? `Redactando con IA… ${seg} s` : "Redactar respuesta con IA"}
+                  </button>
+                  <span className="nota">
+                    {redactando ? "El modelo corre en este equipo (sin internet); en CPU puede tardar alrededor de un minuto."
+                      : "Abajo, la respuesta inmediata: los titulares encontrados con su cita."}
+                  </span>
+                </div>
+              )}
+              {r.meta_llm?.nota && <p className="nota">{r.meta_llm.nota}</p>}
               <ul className="eventos">
                 {r.eventos.map((e) => (
                   <li key={e.id_caso}>

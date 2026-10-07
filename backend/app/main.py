@@ -22,6 +22,10 @@ async def lifespan(_):
     db.init()
     if not db.all_fichas() or db.get_meta("agent_mode") != agent.AGENT_MODE:
         sembrar()  # re-siembra si cambió el modo (stub <-> live); las revisiones previas quedan en audit
+    if agent.AGENT_MODE == "live":  # carga el modelo local (Ollama) en memoria sin bloquear el arranque
+        import threading
+        from .agent import llm
+        threading.Thread(target=llm.precargar, daemon=True).start()
     yield
 
 
@@ -80,7 +84,7 @@ def get_ficha(id_caso: str):
 
 @app.post("/api/query", response_model=QueryOut)
 def query(q: QueryIn):
-    out = agent.answer_query(q.pregunta)
+    out = agent.answer_query(q.pregunta, q.ia)
     db.log("query", "", f"abstencion={out.abstencion}")  # no se registra el texto completo
     return out
 
