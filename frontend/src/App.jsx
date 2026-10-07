@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { Component, useCallback, useEffect, useState } from "react";
 import { api, fechaPA, horaPA } from "./lib.js";
+import { construir, parsear } from "./rutas.js";
 import Agenda from "./views/Agenda.jsx";
 import Consulta from "./views/Consulta.jsx";
 import Datos from "./views/Datos.jsx";
@@ -12,32 +13,48 @@ const VISTAS = [
   ["evaluacion", "Evaluación"],
 ];
 
-/** Rutas por hash (sirven como enlaces directos para Notion o el pitch):
- *  #/agenda · #/ficha/<id>/<seccion> · #/consulta?q=<pregunta> · #/datos · #/evaluacion */
-function leerRuta() {
-  const [ruta, qs] = window.location.hash.replace(/^#\/?/, "").split("?");  // URLSearchParams decodifica (respeta "&")
-  const partes = ruta.split("/").filter(Boolean).map(decodeURIComponent);
-  const q = new URLSearchParams(qs || "").get("q") || "";
-  if (partes[0] === "ficha") return { vista: "agenda", ficha: partes[1], seccion: partes[2] || "resumen", q };
-  return { vista: VISTAS.some(([k]) => k === partes[0]) ? partes[0] : "agenda", q };
+/** Si una vista falla al pintar, se muestra qué hacer en lugar de una pantalla en blanco. */
+class Contenedor extends Component {
+  state = { error: null };
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error) { console.error("Error de interfaz:", error); }
+  componentDidUpdate(prev) { if (prev.clave !== this.props.clave && this.state.error) this.setState({ error: null }); }
+  render() {
+    if (!this.state.error) return this.props.children;
+    return (
+      <div className="error-caja" role="alert">
+        <p><b>Esta vista tuvo un problema al mostrarse.</b> Tus datos no se perdieron.</p>
+        <button onClick={() => { window.location.hash = "#/agenda"; this.setState({ error: null }); }}>Volver a la agenda</button>
+        <button onClick={() => window.location.reload()}>Recargar la página</button>
+      </div>
+    );
+  }
 }
 
 export default function App() {
-  const [ruta, setRuta] = useState(leerRuta);
+  const [ruta, setRuta] = useState(() => parsear(window.location.hash));
   const [meta, setMeta] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const f = () => setRuta(leerRuta());
+    const f = () => setRuta(parsear(window.location.hash));
     window.addEventListener("hashchange", f);
     return () => window.removeEventListener("hashchange", f);
   }, []);
   useEffect(() => {
-    api("/meta").then(setMeta).catch(() => setError("No hay conexión con el backend (http://localhost:8000). ¿Está encendido?"));
+    api("/meta").then(setMeta).catch((e) => setError(e.message));
   }, []);
 
-  const ir = (hash) => { window.location.hash = hash; };
-  const irAFicha = (id, seccion = "resumen") => ir(`/ficha/${id}/${seccion}`);
+  /** Cambia parte de la ruta conservando el resto (tamaño de lista, casos de prueba...). Es la única forma de navegar. */
+  const navegar = useCallback((cambios) => {
+    const hash = construir({ ...parsear(window.location.hash), ...cambios });
+    if (hash !== window.location.hash) window.location.hash = hash;
+  }, []);
+  const irAFicha = useCallback((id, seccion = "resumen", opciones = {}) => {
+    // Los casos de prueba solo aparecen en su lista: si la ficha es sintética se abre dentro de esa lista.
+    navegar({ vista: "agenda", ficha: id, seccion, ...("sint" in opciones ? { sint: opciones.sint } : {}) });
+  }, [navegar]);
+
   const corte = meta?.fecha_corte_UTC;
   const vista = ruta.vista;
 
@@ -51,7 +68,8 @@ export default function App() {
         </div>
         <nav className="tabs" aria-label="Secciones">
           {VISTAS.map(([k, t]) => (
-            <button key={k} className={vista === k ? "tab on" : "tab"} onClick={() => ir("/" + k)} aria-current={vista === k}>
+            <button key={k} className={vista === k ? "tab on" : "tab"} onClick={() => navegar({ vista: k, ficha: null })}
+              aria-current={vista === k ? "page" : undefined}>
               {t}
             </button>
           ))}
@@ -73,10 +91,12 @@ export default function App() {
       {error && <div className="aviso-global" role="alert">{error}</div>}
 
       <main className="contenido">
-        {vista === "agenda" && <Agenda corte={corte} ficha={ruta.ficha} seccion={ruta.seccion} irAFicha={irAFicha} />}
-        {vista === "consulta" && <Consulta inicial={ruta.q} irAFicha={irAFicha} />}
-        {vista === "datos" && <Datos meta={meta} />}
-        {vista === "evaluacion" && <Evaluacion irAFicha={irAFicha} />}
+        <Contenedor clave={vista}>
+          {vista === "agenda" && <Agenda corte={corte} ruta={ruta} navegar={navegar} />}
+          {vista === "consulta" && <Consulta inicial={ruta.q} irAFicha={irAFicha} navegar={navegar} />}
+          {vista === "datos" && <Datos meta={meta} />}
+          {vista === "evaluacion" && <Evaluacion irAFicha={irAFicha} />}
+        </Contenedor>
       </main>
 
       <footer className="pie">

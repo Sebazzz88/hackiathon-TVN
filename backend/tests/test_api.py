@@ -15,7 +15,7 @@ def test_formula_y_bandas():
 
 def test_bandeja_ordenada_y_aprobacion_bloqueada():
     with TestClient(app) as c:
-        items = c.get("/api/inbox").json()
+        items = c.get("/api/inbox").json()["items"]
         assert [i["puntaje"] for i in items] == sorted((i["puntaje"] for i in items), reverse=True)
         r = c.post("/api/fichas/DEMO-002/review", json={"estado": "aprobado_como_borrador", "revisor": "Ana"})
         assert r.status_code == 409  # T08: prioridad alta + evidencia insuficiente no habilita aprobar

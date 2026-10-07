@@ -55,6 +55,28 @@ class Ficha(BaseModel):  # espejo de fichas.jsonl
     revisiones: list[dict] = []            # historial de revisión humana
 
 
+class BandejaItem(BaseModel):
+    """Lo mínimo que necesita la lista de la agenda (la ficha completa se pide al abrirla)."""
+    id_caso: str
+    titulo: str
+    tema: str = ""
+    puntaje: float
+    banda: str
+    componentes: Componentes
+    estado_evidencia: EstadoEvidencia
+    estado_revision: Estado
+    fuentes_independientes: int = 0
+    registros: int = 0
+    fecha_ultima: str = ""
+    sintetico: bool = False
+
+
+class Bandeja(BaseModel):
+    total: int        # fichas que cumplen el filtro (no solo las devueltas)
+    limit: int
+    items: list[BandejaItem]
+
+
 class QueryIn(BaseModel):
     pregunta: str = Field(min_length=3, max_length=500)
     ia: bool = False  # True = pedir respuesta redactada por la IA generativa (puede tardar con un modelo local)

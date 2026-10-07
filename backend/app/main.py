@@ -4,23 +4,27 @@ from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
+import logging
+
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 from . import db, scoring, agent_interface as agent
-from .models import Ficha, QueryIn, QueryOut, ReviewIn
+from .models import Bandeja, BandejaItem, Ficha, QueryIn, QueryOut, ReviewIn
+
+log = logging.getLogger("copiloto")
+MAX_BANDEJA = 1000  # "Máx" en la interfaz pide todo; el snapshot tiene ~720 temas
 
 
 def sembrar():
-    db.clear()
-    for f in agent.build_candidates():
-        db.save(scoring.aplicar(f))
+    """Genera las fichas fuera de la base y las guarda en una sola transacción (nadie ve la tabla a medias)."""
+    db.replace_all([scoring.aplicar(f) for f in agent.build_candidates()])
     db.set_meta("agent_mode", agent.AGENT_MODE)
 
 
 @asynccontextmanager
 async def lifespan(_):
     db.init()
-    if not db.all_fichas() or db.get_meta("agent_mode") != agent.AGENT_MODE:
+    if db.count() == 0 or db.get_meta("agent_mode") != agent.AGENT_MODE:
         sembrar()  # re-siembra si cambió el modo (stub <-> live); las revisiones previas quedan en audit
     if agent.AGENT_MODE == "live":  # carga el modelo local (Ollama) en memoria sin bloquear el arranque
         import threading
@@ -31,6 +35,14 @@ async def lifespan(_):
 
 app = FastAPI(title="Copiloto TVN – De la señal a la decisión", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"], allow_methods=["*"], allow_headers=["*"])
+
+
+@app.exception_handler(Exception)
+async def error_inesperado(request, exc):
+    """Nunca una pantalla de error cruda: siempre JSON con un mensaje que dice qué hacer. El detalle va al log."""
+    log.exception("Error en %s %s", request.method, request.url.path)
+    return JSONResponse(status_code=500, content={
+        "detail": "El servidor tuvo un problema al procesar la solicitud. Reintenta; si persiste, revisa la ventana del backend."})
 
 
 def _ficha(id_caso) -> Ficha:
@@ -53,14 +65,21 @@ def meta():
     return {"version": m.get("version"), "fecha_corte_UTC": m.get("fecha_corte_UTC"), "archivos": m.get("archivos", {}),
             "consultas": len(m.get("consultas", [])), "consultas_fallidas": len(m.get("consultas_fallidas", [])),
             "licencia_condiciones": m.get("licencia_condiciones"), "nota_intervalo": m.get("nota_intervalo"),
-            "fichas": len(db.all_fichas()), "agent_mode": agent.AGENT_MODE, "ia": _estado_ia()}
+            "fichas": db.count(), "agent_mode": agent.AGENT_MODE, "ia": _estado_ia()}
+
+
+_IA_CACHE = {"t": 0.0, "v": None}
 
 
 def _estado_ia():
+    """Estado de la IA con caché de 10 s: comprobar Ollama en cada petición sería lento e innecesario."""
+    import time
     if agent.AGENT_MODE != "live":
         return {"conectado": False, "modo": "stub"}
-    from .agent import embed, llm
-    return {**llm.estado(), "embeddings": "multilingües locales (ONNX)" if embed.BACKEND != "hash" else "respaldo léxico"}
+    if _IA_CACHE["v"] is None or time.time() - _IA_CACHE["t"] > 10:
+        from .agent import embed, llm
+        _IA_CACHE.update(t=time.time(), v={**llm.estado(), "embeddings": "multilingües locales (ONNX)" if embed.BACKEND != "hash" else "respaldo léxico"})
+    return _IA_CACHE["v"]
 
 
 @app.get("/api/quality-report")
@@ -69,12 +88,19 @@ def quality_report():
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"disponible": False}
 
 
-@app.get("/api/inbox", response_model=list[Ficha])
+@app.get("/api/inbox", response_model=Bandeja)
 def inbox(limit: int = 5, sinteticos: bool = False):
-    """Bandeja priorizada. Por defecto excluye los casos controlados sintéticos (se listan con sinteticos=true)."""
-    fs = sorted((Ficha(**d) for d in db.all_fichas()), key=scoring.clave_orden)
-    fs = [f for f in fs if f.sintetico == sinteticos] if agent.AGENT_MODE == "live" else fs
-    return fs[: max(1, min(limit, 100))]
+    """Bandeja priorizada: solo las `limit` fichas pedidas (máx. 1000), traídas con una consulta SQL. Por defecto solo
+    reales; sinteticos=true lista los casos controlados de prueba. En modo stub (datos DEMO) no se filtra."""
+    limit = max(1, min(limit, MAX_BANDEJA))
+    total, filas = db.inbox(limit, sinteticos if agent.AGENT_MODE == "live" else None)
+    items = []
+    for d in filas:
+        try:
+            items.append(BandejaItem(**d))
+        except Exception:  # una ficha corrupta no debe tumbar la agenda entera
+            log.warning("Ficha omitida de la bandeja por datos inválidos: %s", d.get("id_caso"))
+    return Bandeja(total=total, limit=limit, items=items)
 
 
 @app.get("/api/fichas/{id_caso}", response_model=Ficha)
@@ -142,4 +168,4 @@ def reset():
     """Vuelve a generar las fichas desde el snapshot (borra estados de revisión; el audit se conserva)."""
     sembrar()
     db.log("reset")
-    return {"ok": True, "fichas": len(db.all_fichas())}
+    return {"ok": True, "fichas": db.count()}

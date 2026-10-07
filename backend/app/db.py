@@ -1,4 +1,9 @@
-import json, os, sqlite3
+"""SQLite del Copiloto. Conexiones que se cierran, modo WAL (lecturas y escrituras no se bloquean) y columnas de
+orden indexadas: la bandeja trae solo las N fichas pedidas con una consulta SQL, no las 700+ del snapshot."""
+import json
+import os
+import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -8,29 +13,81 @@ DATA_DIR = _d if _d.is_absolute() else ((ROOT / "backend" / _d).resolve() if (RO
 DB_PATH = os.getenv("DB_PATH", str(DATA_DIR / "app.db"))
 
 
+@contextmanager
 def conn():
-    c = sqlite3.connect(DB_PATH)
+    """Conexión con commit al salir y CIERRE garantizado (sqlite3 por sí solo no cierra en `with`)."""
+    c = sqlite3.connect(DB_PATH, timeout=30)
     c.row_factory = sqlite3.Row
-    return c
+    try:
+        with c:
+            yield c
+    finally:
+        c.close()
+
+
+def _columnas(c, tabla):
+    return {r["name"] for r in c.execute(f"PRAGMA table_info({tabla})")}
 
 
 def init():
     Path(DB_PATH).parent.mkdir(parents=True, exist_ok=True)
     with conn() as c:
+        c.execute("PRAGMA journal_mode=WAL")
         c.execute("CREATE TABLE IF NOT EXISTS fichas(id_caso TEXT PRIMARY KEY, data TEXT NOT NULL)")
         c.execute("CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT)")
         c.execute("CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT, accion TEXT, id_caso TEXT, detalle TEXT)")
+        # migración de bases creadas por versiones anteriores: columnas de orden + relleno desde el JSON
+        cols = _columnas(c, "fichas")
+        for nombre, tipo in (("puntaje", "REAL"), ("u", "REAL"), ("sint", "INTEGER")):
+            if nombre not in cols:
+                c.execute(f"ALTER TABLE fichas ADD COLUMN {nombre} {tipo}")
+        for r in c.execute("SELECT id_caso, data FROM fichas WHERE puntaje IS NULL").fetchall():
+            d = json.loads(r["data"])
+            c.execute("UPDATE fichas SET puntaje=?, u=?, sint=? WHERE id_caso=?",
+                      (d.get("puntaje", 0), d.get("componentes", {}).get("U", 0), int(bool(d.get("sintetico"))), r["id_caso"]))
+        c.execute("CREATE INDEX IF NOT EXISTS ix_fichas_orden ON fichas(sint, puntaje DESC, u DESC, id_caso)")
+
+
+def _fila(f):
+    return (f.id_caso, f.model_dump_json(), f.puntaje, f.componentes.U, int(bool(f.sintetico)))
+
+
+_INS = "INSERT OR REPLACE INTO fichas(id_caso,data,puntaje,u,sint) VALUES(?,?,?,?,?)"
 
 
 def save(f):
     with conn() as c:
-        c.execute("INSERT OR REPLACE INTO fichas VALUES(?,?)", (f.id_caso, f.model_dump_json()))
+        c.execute(_INS, _fila(f))
+
+
+def replace_all(fichas):
+    """Sustituye todas las fichas en UNA transacción: quien lee nunca ve la tabla vacía a medio sembrar."""
+    filas = [_fila(f) for f in fichas]
+    with conn() as c:
+        c.execute("DELETE FROM fichas")
+        c.executemany(_INS, filas)
 
 
 def get(id_caso):
     with conn() as c:
         r = c.execute("SELECT data FROM fichas WHERE id_caso=?", (id_caso,)).fetchone()
     return json.loads(r["data"]) if r else None
+
+
+def count():
+    with conn() as c:
+        return c.execute("SELECT COUNT(*) FROM fichas").fetchone()[0]
+
+
+def inbox(limit, sint=None):
+    """(total, [ficha dict]) de las `limit` fichas con más puntaje. Orden del reto: puntaje desc, urgencia desc, ID.
+    sint=None -> todas; True/False -> solo sintéticas / solo reales."""
+    donde, args = ("", []) if sint is None else ("WHERE sint=?", [int(bool(sint))])
+    with conn() as c:
+        total = c.execute(f"SELECT COUNT(*) FROM fichas {donde}", args).fetchone()[0]
+        rows = c.execute(f"SELECT data FROM fichas {donde} ORDER BY puntaje DESC, u DESC, id_caso ASC LIMIT ?",
+                         args + [limit]).fetchall()
+    return total, [json.loads(r["data"]) for r in rows]
 
 
 def all_fichas():
@@ -47,11 +104,6 @@ def log(accion, id_caso="", detalle=""):
 def audit():
     with conn() as c:
         return [dict(r) for r in c.execute("SELECT * FROM audit ORDER BY id DESC LIMIT 200")]
-
-
-def clear():
-    with conn() as c:
-        c.execute("DELETE FROM fichas")
 
 
 def set_meta(k, v):
