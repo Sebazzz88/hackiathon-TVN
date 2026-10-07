@@ -1,4 +1,4 @@
-import { COMPONENTES, EVIDENCIA, TEMAS, TIPOS, estadoTxt, hace, horaPA } from "../lib.js";
+import { COMPONENTES, EVIDENCIA, TEMAS, TIPOS, estadoTxt, hace, horaPA, textoProcedencia } from "../lib.js";
 import { ETIQUETAS, abrirEvidencia } from "../evidencia.js";
 import Borrador from "./Borrador.jsx";
 import Revision from "./Revision.jsx";
@@ -39,7 +39,7 @@ export default function Ficha({ f, corte, seccion, onSeccion, onCambio }) {
         <div className="sellos">
           <span className={"sello banda-" + f.banda}><b>{Math.round(f.puntaje)}</b>/100 · prioridad {f.banda}</span>
           <span className={"sello ev ev-" + f.estado_evidencia}><i className={"punto ev-" + f.estado_evidencia} />{EVIDENCIA[f.estado_evidencia]}</span>
-          <span className="sello">{f.fuentes_independientes} fuente{f.fuentes_independientes === 1 ? "" : "s"} independiente{f.fuentes_independientes === 1 ? "" : "s"} · {f.registros} titular{f.registros === 1 ? "" : "es"}</span>
+          <span className="sello sello-proc">{textoProcedencia(f)}</span>
           <span className="sello">{estadoTxt(f.estado_revision)}</span>
         </div>
         <p className="leyenda">Basado únicamente en titular/metadatos. No se leyó el artículo completo.</p>
@@ -81,8 +81,18 @@ function Resumen({ f }) {
     <div className="panel">
       <Bloque titulo="Qué se reporta"><p className="lead">{f.titulo}</p></Bloque>
       <Bloque titulo="Quién lo reporta">
-        <p>{f.reportado_por?.join(" · ")}</p>
-        <p className="nota">La repetición no es corroboración: medios que replican la misma nota o agencia cuentan como una fuente.</p>
+        <p className="proc-resumen"><b>{textoProcedencia(f)}</b></p>
+        {f.procedencias?.length > 0 ? (
+          <ul className="proc-lista">
+            {f.procedencias.map((p) => (
+              <li key={p.etiqueta}>
+                <b>{p.nombre}</b> · {p.notas} nota{p.notas === 1 ? "" : "s"}
+                {p.medios.length > 1 && <span className="nota"> (replicada por {p.medios.filter((m) => m !== p.nombre).join(", ")})</span>}
+              </li>
+            ))}
+          </ul>
+        ) : <p>{f.reportado_por?.join(" · ")}</p>}
+        <p className="nota">La repetición no es corroboración: mismo dominio o misma agencia citada = una sola procedencia.</p>
       </Bloque>
       <Bloque titulo="Qué está respaldado">
         <ul className="respaldos">
@@ -133,7 +143,7 @@ function Fuentes({ f }) {
   return (
     <div className="panel">
       <p className="nota">
-        {f.registros} titulares agrupados en {f.fuentes_independientes} procedencia(s) independiente(s). Horas en hora de Panamá.
+        {textoProcedencia(f)}. Horas en hora de Panamá.
         GDELT no informa fecha de publicación: se muestra la de detección.
       </p>
       {Object.entries(grupos).map(([proc, ns]) => (

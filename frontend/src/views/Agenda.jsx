@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { api, cancelado, COMPONENTES, EVIDENCIA, TEMAS, estadoTxt, hace } from "../lib.js";
+import { api, cancelado, COMPONENTES, EVIDENCIA, TEMAS, estadoTxt, hace, textoProcedencia } from "../lib.js";
 import { N_MAX, TAMANOS, fichaVigente } from "../rutas.js";
 import Ficha from "./Ficha.jsx";
 
@@ -17,8 +17,7 @@ const Fila = memo(function Fila({ f, k, activa, corte, onAbrir }) {
           <span className="titular">{f.titulo}</span>
           <span className="meta">
             <i className={"punto ev-" + f.estado_evidencia} aria-hidden="true" />
-            {EVIDENCIA[f.estado_evidencia]} · {f.fuentes_independientes} fuente{f.fuentes_independientes === 1 ? "" : "s"} indep.
-            {f.registros > 1 && ` · ${f.registros} titulares`}
+            {EVIDENCIA[f.estado_evidencia]} · {textoProcedencia(f)}
             {f.estado_revision !== "nuevo" && <> · <b>{estadoTxt(f.estado_revision)}</b></>}
           </span>
           <span className="mini" aria-hidden="true">

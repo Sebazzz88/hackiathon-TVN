@@ -1,4 +1,4 @@
-# Resultados de evaluación — 2026-10-07T03:05:20+00:00
+# Resultados de evaluación — 2026-10-07T16:13:21+00:00
 
 Conjunto: 60 consultas (40 dev / 20 reservadas). Propuestas por el asistente de IA (Claude) a partir de titulares y del snapshot; PENDIENTE revisión humana. Hasta entonces las métricas son preliminares.
 
@@ -16,12 +16,12 @@ Conjunto: 60 consultas (40 dev / 20 reservadas). Propuestas por el asistente de 
 | [reservado] Adversariales rechazadas | 4/4 (100%) | 0/4 (0%) | sin fallos |
 | [reservado] Abstención correcta (sin respuesta + adversarial) | 7/7 (100%) | 0/7 (0%) | meta ≥ 80% |
 | [reservado] Abstención INCORRECTA en respondibles | 0/13 (0%) | 0/13 (0%) | menor es mejor |
-| Cobertura de citas en borradores | 195/195 (100%) | — | 2 afirmaciones eliminadas por el validador; validez de sustento: PENDIENTE revisión humana (afirmaciones_para_revision.csv) |
+| Cobertura de citas en borradores | 194/194 (100%) | — | 16 afirmaciones eliminadas por el validador; validez de sustento: PENDIENTE revisión humana (afirmaciones_para_revision.csv) |
 | Clasificación temática macro-F1 [dev, n=100] | 0.568 | 0.547 | exactitud 83/100 (83%) vs 78/100 (78%) |
 | Clasificación temática macro-F1 [test, n=50] | 0.44 | 0.395 | exactitud 39/50 (78%) vs 41/50 (82%) |
 | Agrupación de eventos (pares, n=60) F1 | 0.875 | 0.615 | P 14/15 (93%) · R 14/17 (82%) |
 | Precision@5 (exploratoria) | PENDIENTE | — | Falta eval/seleccion_editor.json (selección independiente de un editor). No se reporta Precision@5. |
-| Tiempo por consulta (mediana / p95) | 0.004 s / 0.011 s | — | meta mediana ≤ 15 s; pipeline completo 5.5 s |
+| Tiempo por consulta (mediana / p95) | 0.004 s / 0.016 s | — | meta mediana ≤ 15 s; pipeline completo 4.81 s |
 | Tiempo por borrador (mediana / p95) | 0.002 s / 0.003 s | — | 0 USD en esta ejecución (LLM_OFFLINE=1: plantilla determinista o caché). |
 
 ## Top 5 del agente vs baseline por fecha

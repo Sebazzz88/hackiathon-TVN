@@ -15,16 +15,28 @@ log = logging.getLogger("copiloto")
 MAX_BANDEJA = 1000  # "Máx" en la interfaz pide todo; el snapshot tiene ~720 temas
 
 
-def sembrar():
-    """Genera las fichas fuera de la base y las guarda en una sola transacción (nadie ve la tabla a medias)."""
-    db.replace_all([scoring.aplicar(f) for f in agent.build_candidates()])
+FICHAS_VERSION = "3"  # súbela al cambiar los campos de las fichas: se regeneran sin perder revisiones ni borradores
+
+
+def sembrar(conservar=True):
+    """Genera las fichas fuera de la base y las guarda en una sola transacción (nadie ve la tabla a medias).
+    conservar=True mantiene el trabajo humano (estado, revisiones y borrador) de las fichas que siguen existiendo."""
+    nuevas = [scoring.aplicar(f) for f in agent.build_candidates()]
+    if conservar:
+        viejas = {d["id_caso"]: d for d in db.all_fichas()}
+        for f in nuevas:
+            v = viejas.get(f.id_caso)
+            if v:
+                f.estado_revision, f.revisiones, f.borrador = v.get("estado_revision", "nuevo"), v.get("revisiones", []), v.get("borrador")
+    db.replace_all(nuevas)
     db.set_meta("agent_mode", agent.AGENT_MODE)
+    db.set_meta("fichas_version", FICHAS_VERSION)
 
 
 @asynccontextmanager
 async def lifespan(_):
     db.init()
-    if db.count() == 0 or db.get_meta("agent_mode") != agent.AGENT_MODE:
+    if db.count() == 0 or db.get_meta("agent_mode") != agent.AGENT_MODE or db.get_meta("fichas_version") != FICHAS_VERSION:
         sembrar()  # re-siembra si cambió el modo (stub <-> live); las revisiones previas quedan en audit
     if agent.AGENT_MODE == "live":  # carga el modelo local (Ollama) en memoria sin bloquear el arranque
         import threading
@@ -186,6 +198,6 @@ def eval_report():
 @app.post("/api/reset")
 def reset():
     """Vuelve a generar las fichas desde el snapshot (borra estados de revisión; el audit se conserva)."""
-    sembrar()
+    sembrar(conservar=False)
     db.log("reset")
     return {"ok": True, "fichas": db.count()}

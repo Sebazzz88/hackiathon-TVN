@@ -114,7 +114,27 @@ def procedencias(miembros, V):
             et = f"replica:{miembros[idx[0]][0].dominio}"
         for i in idx:
             proc[miembros[i][0].id] = et if (ag or len(idx) > 1) else f"medio:{miembros[i][0].dominio}"
-    return proc
+    # Regla del reto: mismo dominio = 1 procedencia. Si un dominio es la RAÍZ de un grupo de réplicas y además publicó
+    # otra nota propia, esa nota cuenta con el grupo (no como una fuente aparte).
+    raices = {e.split(":", 1)[1] for e in proc.values() if e.startswith("replica:")}
+    return {i: (f"replica:{e.split(':', 1)[1]}" if e.startswith("medio:") and e.split(":", 1)[1] in raices else e)
+            for i, e in proc.items()}
+
+
+def resumen_procedencias(miembros, proc):
+    """Lista legible de procedencias independientes: [{etiqueta, tipo, nombre, notas, medios}]. Una agencia replicada por
+    cinco medios es UNA entrada con cinco notas; dos notas del mismo dominio también son una."""
+    grupos = {}
+    for n in miembros:
+        g = grupos.setdefault(proc[n.id], {"notas": 0, "medios": set()})
+        g["notas"] += 1
+        g["medios"].add(n.dominio)
+    out = []
+    for et, g in grupos.items():
+        tipo, nombre = et.split(":", 1)
+        out.append({"etiqueta": et, "tipo": tipo, "nombre": ("Agencia " + nombre) if tipo == "agencia" else nombre,
+                    "notas": g["notas"], "medios": sorted(g["medios"])})
+    return sorted(out, key=lambda x: (-x["notas"], x["nombre"]))
 
 
 _RX_NUM = re.compile(r"(\d+(?:[.,]\d+)?)\s*(?:(mil|millones|millon)\s+(?:de\s+)?)?(%|por ciento|[a-záéíóúñ]{4,})?", re.I)
