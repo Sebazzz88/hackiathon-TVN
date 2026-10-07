@@ -63,6 +63,9 @@ export default function App() {
 
   return (
     <div className="app">
+      <a className="saltar" href="#contenido" onClick={(e) => { e.preventDefault(); document.getElementById("contenido")?.focus(); }}>
+        Saltar al contenido
+      </a>
       <header className="cabecera">
         <div className="marca">
           <span className="marca-tvn">TVN</span>
@@ -93,7 +96,7 @@ export default function App() {
 
       {error && <div className="aviso-global" role="alert">{error}</div>}
 
-      <main className="contenido">
+      <main className="contenido" id="contenido" tabIndex={-1}>
         <Contenedor clave={vista}>
           {vista === "agenda" && <Agenda corte={corte} ruta={ruta} navegar={navegar} />}
           {vista === "consulta" && <Consulta inicial={ruta.q} irAFicha={irAFicha} navegar={navegar} />}
