@@ -81,15 +81,15 @@ def test_T04_cifra_anual_banco_mundial_con_pais_anio_unidad():
     assert hoy.abstencion and not hoy.citas and "ANUALES" in hoy.faltante[0]
 
 
-def test_T04_valor_nulo_no_se_rellena():
-    from app.agent.corpus import indicadores
-    nulos = [k for k, v in indicadores().items() if v["valor"] is None and k[0] == "PAN"]
-    if not nulos:
-        pytest.skip("sin nulos para PAN en el snapshot")
-    p, ind, y = nulos[0]
-    from app.agent.context import NOMBRES
-    r = query.responder(f"¿Cuál fue {NOMBRES[ind].lower()} de Panamá en {y}?")
-    assert r.abstencion or "sin dato" in (r.respuesta or "")
+def test_T04_valor_nulo_no_se_rellena(monkeypatch):
+    """El snapshot actual no tiene celdas nulas; se inyecta una controlada para comprobar que no se rellena."""
+    from app.agent import context
+    tabla = dict(context.indicadores())
+    clave = ("PAN", "SL.UEM.TOTL.ZS", 2015)
+    tabla[clave] = {**tabla[clave], "valor": None}
+    monkeypatch.setattr(context, "indicadores", lambda: tabla)
+    r = query.responder("¿Cuál fue el desempleo de Panamá en 2015?")
+    assert r.abstencion and not r.citas and "nulo" in r.faltante[0]
 
 
 # T05 ------------------------------------------------------------------------------------------

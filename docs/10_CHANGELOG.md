@@ -12,6 +12,7 @@ Rama `feat/agente` (PR abierto a `main`). Autor: Sebastián, con asistencia de C
 | 2026-10-06 | Etapa 1: snapshot real versionado (TVN RSS + GDELT + Banco Mundial + USGS) con manifest SHA-256 | ver `git log` |
 | 2026-10-06 | Etapa 4: benchmark de 60 consultas, etiquetas de temas y pares, `eval/run_eval.py` | ver `git log` |
 | 2026-10-06 | Revisión de código y nueva UI: separación de patrones de inyección (fuente vs consulta), todas las fichas guardadas (las consultas abren cualquier evento), pipeline refactorizado, fecha de detección nunca presentada como publicación, UI editorial minimalista con rutas directas, `iniciar.ps1`, README | ver `git log` |
+| 2026-10-06 | Etapa 5: clon limpio verificado (métricas idénticas), export Notion completo (catálogo, 7 fichas generadas, matriz T01–T10, presentación), T04 nulo determinista, `docs/AUDITORIA_FINAL.md` | ver `git log` |
 
 ## Pruebas fallidas y su corrección (para Notion)
 
