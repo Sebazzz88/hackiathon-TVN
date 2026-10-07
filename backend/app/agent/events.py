@@ -168,7 +168,8 @@ def contradicciones(miembros, proc):
             clave = palabra[:6]  # raíz simple: "vivienda"/"viviendas" son la misma magnitud
             nombre.setdefault(clave, palabra)
             vistos.setdefault(clave, []).append({"valor": x, "id": n.id, "medio": n.dominio, "procedencia": proc[n.id],
-                                                 "titulo": n.titulo})
+                                                 "titulo": n.titulo, "fecha_publicacion": n.fecha_publicacion or None,
+                                                 "fecha_deteccion": n.fecha_deteccion or None})
     out = []
     for clave, vs in vistos.items():
         valores = {v["valor"] for v in vs}
