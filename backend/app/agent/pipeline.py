@@ -12,10 +12,12 @@ Estado de evidencia (independiente del puntaje): insuficiente / parcial / sufici
 import json
 import math
 import time
+from collections import Counter
 from functools import lru_cache
 
 import numpy as np
 
+from .. import scoring
 from ..models import Cita, Componentes, Ficha
 from . import corpus, embed, events, themes
 from .baseline import norm
@@ -111,7 +113,7 @@ def _ficha(idx, ns, V, clas, corte, cent_prev):
         votos[clas[i][0]] = votos.get(clas[i][0], 0) + clas[i][1]
     tema = max(votos, key=votos.get)
     sim_tema = float(np.mean([clas[i][1] for i in idx if clas[i][0] == tema]))
-    proc = events.procedencias([(ns[i], V[i]) for i in idx], V)
+    proc = events.procedencias(miem)
     indep = len(set(proc.values()))
     inyeccion = {n.id for n in miem if es_inyeccion(n.titulo)}
     recirc = {n.id for n in miem if events.recirculada(n, corte)}
@@ -137,12 +139,9 @@ def _ficha(idx, ns, V, clas, corte, cent_prev):
 
     # --- textos de la ficha ---
     sint = all(n.sintetico for n in miem)
-    rep = max(idx, key=lambda i: float(V[i] @ c))
-    rep = ns[rep]  # titular más representativo (medoide)
-    medios = {}
-    for n in miem:
-        medios[n.dominio] = medios.get(n.dominio, 0) + 1
-    citas = [Cita(afirmacion=f"{n.dominio} publicó el titular: «{n.titulo}»", tipo="declaracion",
+    rep = ns[max(idx, key=lambda i: float(V[i] @ c))]  # titular más representativo (medoide)
+    medios = Counter(n.dominio for n in miem)
+    citas =[Cita(afirmacion=f"{n.dominio} publicó el titular: «{n.titulo}»", tipo="declaracion",
                   id_evidencia=n.id, campo="titulo") for n in miem if n.id not in inyeccion][:8]
     citas += [Cita(afirmacion=x["texto"], tipo="hecho", id_evidencia=x["id_evidencia"],
                    campo="valor" if x["tipo"] == "indicador" else "magnitude") for x in ctx]
@@ -152,7 +151,7 @@ def _ficha(idx, ns, V, clas, corte, cent_prev):
         componentes=Componentes(R=round(R, 3), I=round(I, 3), U=round(U, 3), N=round(N, 3), E=round(E, 3)),
         estado_evidencia=estado, faltante=_faltante(miem, indep, ctx, contra), base="titular/metadatos", sintetico=sint,
         tema=tema, reporta=f"{rep.titulo} — {LEYENDA}",
-        reportado_por=[f"{m} ({k})" for m, k in sorted(medios.items(), key=lambda x: -x[1])],
+        reportado_por=[f"{m} ({k})" for m, k in medios.most_common()],
         respaldado=[f"{x.afirmacion} [{x.id_evidencia}·{x.campo}]" for x in citas], accion=_accion(estado, contra),
         fuentes_independientes=indep, registros=len(miem), fuentes_totales=len(miem), procedencias_independientes=indep,
         procedencias=events.resumen_procedencias(miem, proc),
@@ -200,8 +199,7 @@ def indice_eventos():
 def seleccionar(fichas):
     """Todas las fichas con puntaje aplicado, ordenadas (reales primero, luego sintéticos). La bandeja muestra el top N;
     se guardan todas para que cualquier evento recuperado en una consulta tenga su ficha."""
-    from .. import scoring
-    reales = sorted((scoring.aplicar(f.model_copy()) for f in fichas if not f.sintetico), key=scoring.clave_orden)
+    reales =sorted((scoring.aplicar(f.model_copy()) for f in fichas if not f.sintetico), key=scoring.clave_orden)
     return reales + [scoring.aplicar(f.model_copy()) for f in fichas if f.sintetico]
 
 

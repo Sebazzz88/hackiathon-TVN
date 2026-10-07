@@ -7,10 +7,16 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-_d = Path(os.getenv("DATA_DIR") or ROOT / "data")
-DATA_DIR = _d if _d.is_absolute() else ((ROOT / "backend" / _d).resolve() if (ROOT / "backend" / _d).exists() else _d.resolve())
+from .agent.config import ROOT, data_dir  # noqa: F401  (ROOT se usa como db.ROOT)
+
+DATA_DIR = data_dir()
 DB_PATH = os.getenv("DB_PATH", str(DATA_DIR / "app.db"))
+
+
+def leer_json(p, defecto=None):
+    """Contenido de un archivo JSON, o `defecto` si no existe (reportes y resultados que se generan aparte)."""
+    p = Path(p)
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else defecto
 
 
 @contextmanager

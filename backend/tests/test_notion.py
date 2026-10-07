@@ -7,9 +7,9 @@ os.environ["LLM_OFFLINE"] = "1"
 
 import pytest  # noqa: E402
 
-from app import db, notion_export as nx, scoring  # noqa: E402
-from app.agent import pipeline  # noqa: E402
+from app import db, notion_export as nx  # noqa: E402
 from app.models import Ficha  # noqa: E402
+from conftest import base_live  # noqa: E402
 
 INFORME = {"generado_utc": "2026-10-07T03:00:00+00:00", "segundos": 9.1, "verdes": 9, "total": 10, "comando": "pytest",
            "filas": [{"id": f"T{i:02d}", "titulo": f"caso {i}", "esperado": "esp", "estado": "rojo" if i == 5 else "verde", "motivo": "",
@@ -20,9 +20,7 @@ INFORME = {"generado_utc": "2026-10-07T03:00:00+00:00", "segundos": 9.1, "verdes
 
 @pytest.fixture
 def base(monkeypatch):
-    monkeypatch.setattr(db, "DB_PATH", os.path.join(tempfile.mkdtemp(), "notion.db"))
-    db.init()
-    db.replace_all([scoring.aplicar(f) for f in pipeline.seleccionar(pipeline.analizar()["fichas"])])
+    base_live(monkeypatch, "notion.db")
 
 
 def test_matriz_refleja_la_corrida_tal_cual():

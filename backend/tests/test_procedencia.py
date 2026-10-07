@@ -7,10 +7,9 @@ os.environ["LLM_OFFLINE"] = "1"
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import db, main, scoring  # noqa: E402
+from app import db, main  # noqa: E402
 from app.agent import events, pipeline  # noqa: E402
 from app.agent.corpus import Noticia  # noqa: E402
-from app.agent.embed import embed  # noqa: E402
 from app.models import Ficha  # noqa: E402
 
 
@@ -19,12 +18,12 @@ def noticia(i, titulo, medio, url=None):
 
 
 def procedencias(*ns):
-    miem = list(zip(ns, embed([n.titulo for n in ns])))
-    return events.procedencias(miem, None), events.resumen_procedencias(list(ns), events.procedencias(miem, None))
+    proc = events.procedencias(list(ns))
+    return proc, events.resumen_procedencias(list(ns), proc)
 
 
 def test_agencia_replicada_por_cinco_medios_cuenta_una():
-    ns = [noticia(f"A{i}", f"(EFE) Panamá y Costa Rica firman acuerdo aduanero", m) for i, m in
+    ns = [noticia(f"A{i}", "(EFE) Panamá y Costa Rica firman acuerdo aduanero", m) for i, m in
           enumerate(["a.com", "b.com", "c.com", "d.com", "e.com"])]
     proc, res = procedencias(*ns)
     assert len(set(proc.values())) == 1 and res[0]["nombre"] == "Agencia EFE" and res[0]["notas"] == 5

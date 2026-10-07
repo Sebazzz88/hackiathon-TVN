@@ -14,8 +14,9 @@ import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app import agent as agente_live  # noqa: E402
-from app import db, main, scoring  # noqa: E402
+from app import main  # noqa: E402
 from app.agent import draft, llm, pipeline  # noqa: E402
+from conftest import base_live  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parents[2]
 
@@ -36,14 +37,9 @@ def ia_caida(monkeypatch):
 @pytest.fixture(scope="module")
 def cliente():
     mp = pytest.MonkeyPatch()
-    mp.setattr(db, "DB_PATH", os.path.join(tempfile.mkdtemp(), "robustez.db"))
-    mp.setattr(main.agent, "AGENT_MODE", "live")
+    base_live(mp, "robustez.db")
     mp.setattr(main.agent, "answer_query", agente_live.answer_query)
     mp.setattr(main.agent, "generate_draft", agente_live.generate_draft)
-    db.init()
-    db.replace_all([scoring.aplicar(f) for f in pipeline.seleccionar(pipeline.analizar()["fichas"])])
-    db.set_meta("agent_mode", "live")
-    db.set_meta("fichas_version", main.FICHAS_VERSION)
     with TestClient(main.app, raise_server_exceptions=False) as c:
         yield c
     mp.undo()

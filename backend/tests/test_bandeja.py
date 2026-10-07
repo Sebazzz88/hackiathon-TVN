@@ -3,7 +3,6 @@ Regresión de los fallos reportados al usar la web (cambiar 5/10/30, casos de pr
 import json
 import os
 import sqlite3
-import tempfile
 import threading
 
 os.environ["LLM_OFFLINE"] = "1"
@@ -12,20 +11,14 @@ import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app import db, main  # noqa: E402
-from app import scoring  # noqa: E402
-from app.agent import pipeline  # noqa: E402
+from conftest import base_live  # noqa: E402
 
 
 @pytest.fixture(scope="module")
 def cliente():
     """App en modo live con su PROPIA base de datos, sin importar qué dejaron otros archivos de pruebas."""
     mp = pytest.MonkeyPatch()
-    mp.setattr(db, "DB_PATH", os.path.join(tempfile.mkdtemp(), "bandeja.db"))
-    mp.setattr(main.agent, "AGENT_MODE", "live")
-    db.init()
-    db.replace_all([scoring.aplicar(f) for f in pipeline.seleccionar(pipeline.analizar()["fichas"])])
-    db.set_meta("agent_mode", "live")
-    db.set_meta("fichas_version", main.FICHAS_VERSION)
+    base_live(mp, "bandeja.db")
     with TestClient(main.app) as c:
         yield c
     mp.undo()

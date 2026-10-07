@@ -5,7 +5,6 @@ import importlib.util
 import json
 import os
 import re
-import sys
 
 import pytest
 
@@ -13,7 +12,7 @@ os.environ["LLM_OFFLINE"] = "1"  # las pruebas nunca llaman a la red
 
 from app import scoring  # noqa: E402
 from app.agent import draft, embed, llm, pipeline, query  # noqa: E402
-from app.agent.config import ROOT, data_dir  # noqa: E402
+from app.agent.config import ROOT  # noqa: E402
 from app.models import Componentes, Ficha  # noqa: E402
 
 
@@ -49,7 +48,8 @@ def test_T01_fechas_invalidas_y_nulos_no_bloquean(tmp_path):
     assert rep["noticias"]["total"] == 5 and rep["noticias"]["validas"] == 2 and rep["noticias"]["con_error"] == 3
     errs = rep["noticias"]["errores_por_tipo"]
     assert errs.get("fecha_publicacion inválida") == 1 and errs.get("fila nula") == 1 and errs.get("id duplicado") == 1
-    ok = list(csv.DictReader(open(tmp_path / "out" / "noticias_ok.csv", encoding="utf-8")))
+    with open(tmp_path / "out" / "noticias_ok.csv", encoding="utf-8") as fh:
+        ok = list(csv.DictReader(fh))
     assert next(r for r in ok if r["id_noticia"] == "N3")["fecha_publicacion"] == ""  # nulo conservado, no rellenado
 
 

@@ -71,7 +71,7 @@ def test_cada_eliminada_trae_codigo_y_el_resumen_cuenta(ev):
         {"texto": "Según X.", "tipo": "declaracion", "citas": [{"id_evidencia": "Gnoexiste00", "campo": "titulo"}]},
         {"texto": "Según laestrella.com.pa, el Gobierno anunció un nuevo subsidio eléctrico para jubilados.", "tipo": "declaracion", "citas": CITA},
     ]
-    ok, fuera = draft.validar(afirms, ev, "brief")
+    _, fuera = draft.validar(afirms, ev, "brief")
     r = draft.resumen_validador(len(afirms), fuera)
     assert (r["emitidas"], r["validas"], r["eliminadas"]) == (5, 1, 4)
     assert r["por_codigo"] == {"sin_cita": 1, "cifras": 1, "fuera_del_corpus": 1, "sin_sustento": 1}

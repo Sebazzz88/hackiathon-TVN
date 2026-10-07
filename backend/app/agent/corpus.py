@@ -120,7 +120,6 @@ def registro_evidencia() -> dict:
 def registro_publico(id_ev: str):
     """Registro FUENTE de una evidencia citable, listo para mostrar: lo que dice el corpus, sin interpretación.
     None si el id no existe en el corpus (una cita a ese id no es válida)."""
-    from datetime import datetime, timezone
     if id_ev.startswith("AGR:"):
         return {"tipo": "agrupacion", "id": id_ev, "titulo": "Dato calculado por el sistema", "url": None,
                 "campos": {"id_caso": id_ev[4:], "metodo": "agrupación semántica de titulares + procedencia (agencia replicada = 1)"},
@@ -148,9 +147,3 @@ def registro_publico(id_ev: str):
             "campos": {"magnitude": o["magnitude"], "place": o["place"], "time": t, "depth": o["depth"],
                        "latitude": o["latitude"], "longitude": o["longitude"], "status": o["status"]},
             "nota": "USGS 2024, caja regional lat 5–12, lon −86/−76. Sirve solo como hecho sísmico, no como evidencia de daños."}
-
-
-def limpiar_cache():
-    registro_evidencia.cache_clear()
-    for fn in (noticias, indicadores, eventos, manifest):
-        fn.cache_clear()

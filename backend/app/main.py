@@ -1,20 +1,22 @@
 import json
+import logging
+import os
+import threading
+import time
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import logging
-
 from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.staticfiles import StaticFiles
 
-from . import db, scoring, agent_interface as agent
+from . import db, jurado, scoring, agent_interface as agent
 from .models import Bandeja, BandejaItem, Ficha, QueryIn, QueryOut, ReviewIn
 
 log = logging.getLogger("copiloto")
 MAX_BANDEJA = 1000  # "Máx" en la interfaz pide todo; el snapshot tiene ~720 temas
-
-
 FICHAS_VERSION = "4"  # súbela al cambiar los campos de las fichas: se regeneran sin perder revisiones ni borradores
 
 
@@ -39,7 +41,6 @@ async def lifespan(_):
     if db.count() == 0 or db.get_meta("agent_mode") != agent.AGENT_MODE or db.get_meta("fichas_version") != FICHAS_VERSION:
         sembrar()  # re-siembra si cambió el modo (stub <-> live); las revisiones previas quedan en audit
     if agent.AGENT_MODE == "live":  # carga el modelo local (Ollama) en memoria sin bloquear el arranque
-        import threading
         from .agent import llm
         threading.Thread(target=llm.precargar, daemon=True).start()
     yield
@@ -64,6 +65,12 @@ def _ficha(id_caso) -> Ficha:
     return Ficha(**d)
 
 
+def _registrar_validador(id_caso, resumen):
+    """Deja en la auditoría lo que revisó el validador (de ahí salen los totales de /api/validador)."""
+    if resumen:
+        db.log("validador", id_caso, json.dumps(resumen))
+
+
 @app.get("/health")
 def health():
     return {"ok": True, "agent_mode": agent.AGENT_MODE, "reglas": scoring.VERSION, "pesos": scoring.PESOS}
@@ -72,8 +79,7 @@ def health():
 @app.get("/api/meta")
 def meta():
     """Resumen del snapshot para la interfaz: fecha de corte, archivos con SHA-256 y cobertura."""
-    p = db.DATA_DIR / "raw" / "manifest.json"
-    m = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+    m = db.leer_json(db.DATA_DIR / "raw" / "manifest.json", {})
     return {"version": m.get("version"), "fecha_corte_UTC": m.get("fecha_corte_UTC"), "archivos": m.get("archivos", {}),
             "consultas": len(m.get("consultas", [])), "consultas_fallidas": len(m.get("consultas_fallidas", [])),
             "licencia_condiciones": m.get("licencia_condiciones"), "nota_intervalo": m.get("nota_intervalo"),
@@ -85,7 +91,6 @@ _IA_CACHE = {"t": 0.0, "v": None}
 
 def _estado_ia():
     """Estado de la IA con caché de 10 s: comprobar Ollama en cada petición sería lento e innecesario."""
-    import time
     if agent.AGENT_MODE != "live":
         return {"conectado": False, "modo": "stub"}
     if _IA_CACHE["v"] is None or time.time() - _IA_CACHE["t"] > 10:
@@ -96,8 +101,7 @@ def _estado_ia():
 
 @app.get("/api/quality-report")
 def quality_report():
-    p = db.DATA_DIR / "processed" / "quality_report.json"
-    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"disponible": False}
+    return db.leer_json(db.DATA_DIR / "processed" / "quality_report.json", {"disponible": False})
 
 
 @app.get("/api/inbox", response_model=Bandeja)
@@ -107,7 +111,6 @@ def inbox(limit: int = 5, sinteticos: bool = False, tema: str | None = None, dia
     limit = max(1, min(limit, MAX_BANDEJA))
     desde = None
     if dias:
-        from datetime import timedelta
         from .agent.corpus import fecha_corte
         desde = (fecha_corte() - timedelta(days=max(1, min(dias, 90)))).isoformat(timespec="minutes")
     total, filas = db.inbox(limit, sinteticos if agent.AGENT_MODE == "live" else None, tema or None, desde)
@@ -131,12 +134,11 @@ def query(q: QueryIn):
         out = agent.answer_query(q.pregunta, q.ia)
     except Exception:  # red de seguridad de la demo: nunca una pantalla de error, siempre una abstención que dice qué hacer
         log.exception("La consulta falló; se responde con abstención")
-        out = QueryOut(abstencion=True, estado="abstencion", metodo="respaldo",
+        out = QueryOut(abstencion=True, metodo="respaldo",
                        faltante=["El agente no pudo completar esta consulta (el detalle quedó en el log del backend)."],
                        accion="Reintenta la consulta. Mientras tanto, la agenda y las fichas siguen disponibles: no dependen de la IA.")
     db.log("query", "", f"abstencion={out.abstencion}")  # no se registra el texto completo
-    if out.validador:
-        db.log("validador", "", json.dumps(out.validador))
+    _registrar_validador("", out.validador)
     return out
 
 
@@ -144,19 +146,19 @@ def query(q: QueryIn):
 def draft(id_caso: str):
     f = _ficha(id_caso)
     try:
-        f.borrador = agent.generate_draft(f)
+        b = agent.generate_draft(f)
     except Exception:  # misma red de seguridad: se informa con una abstención, no con un error 500
         log.exception("El borrador de %s falló; se responde con abstención", id_caso)
         return f.model_copy(update={"borrador": {
             "generador": "ninguno", "abstencion": True, "citas": [],
             "faltante": ["No se pudo generar el borrador (el detalle quedó en el log del backend). Reintenta con «Regenerar»; "
                          "la ficha, sus fuentes y su evidencia siguen disponibles."]}})
+    f.borrador = b
     if f.estado_revision == "nuevo":
         f.estado_revision = "en_revision"
     db.save(f)
-    db.log("draft", id_caso, (f.borrador or {}).get("generador", ""))
-    if (f.borrador or {}).get("validador"):
-        db.log("validador", id_caso, json.dumps(f.borrador["validador"]))
+    db.log("draft", id_caso, b.get("generador", ""))
+    _registrar_validador(id_caso, b.get("validador"))
     return f
 
 
@@ -169,7 +171,7 @@ def review(id_caso: str, r: ReviewIn):
         if not f.borrador:
             raise HTTPException(409, "Genera el borrador antes de aprobarlo.")
     f.estado_revision = r.estado
-    f.revisiones = f.revisiones + [{"estado": r.estado, "revisor": r.revisor, "comentario": r.comentario,
+    f.revisiones = [*f.revisiones, {"estado": r.estado, "revisor": r.revisor, "comentario": r.comentario,
                                     "ts": datetime.now(timezone.utc).isoformat(timespec="seconds")}]
     db.save(f)
     db.log("review", id_caso, f"{r.estado} por {r.revisor}: {r.comentario}")
@@ -206,33 +208,29 @@ def export_fichas():
 @app.get("/api/jurado/pruebas")
 def jurado_ultimo():
     """Último resultado de T01–T10 (sin volver a correrlas)."""
-    from . import jurado
     return jurado.ultimo()
 
 
 @app.post("/api/jurado/pruebas")
 def jurado_correr():
     """Corre T01–T10 en vivo (subproceso sin ventana, ~10 s) y devuelve verde/rojo por prueba con su evidencia."""
-    from . import jurado
     return jurado.correr()
 
 
 @app.get("/api/jurado/metricas")
 def jurado_metricas():
     """Tabla agente vs baseline leída de eval/results.json (la escribe eval/run_eval.py; nada se escribe a mano)."""
-    p = db.ROOT / "eval" / "results.json"
-    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"disponible": False,
-            "detalle": "Falta eval/results.json: corre backend\\.venv\\Scripts\\python eval\\run_eval.py"}
+    return db.leer_json(db.ROOT / "eval" / "results.json", {
+        "disponible": False, "detalle": "Falta eval/results.json: corre backend\\.venv\\Scripts\\python eval\\run_eval.py"})
 
 
 @app.get("/api/eval")
 def eval_report():
-    p = db.ROOT / "eval" / "resultados" / "resumen.json"
     info = {}
     if agent.AGENT_MODE == "live":
         from .agent import pipeline
         info = pipeline.info()
-    return {"agente": info, "evaluacion": json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"disponible": False}}
+    return {"agente": info, "evaluacion": db.leer_json(db.ROOT / "eval" / "resultados" / "resumen.json", {"disponible": False})}
 
 
 @app.post("/api/reset")
@@ -245,13 +243,6 @@ def reset():
 
 # Demo en un solo proceso: si existe la interfaz compilada (frontend/dist), el backend la sirve en "/" (run_demo.ps1, Docker).
 # Se monta al final para que /api y /health tengan prioridad. Con "npm run dev" (puerto 5173) esto no interviene.
-def _montar_interfaz():
-    import os
-    from pathlib import Path
-    from fastapi.staticfiles import StaticFiles
-    dist = Path(os.getenv("FRONTEND_DIST") or db.ROOT / "frontend" / "dist")
-    if (dist / "index.html").exists():
-        app.mount("/", StaticFiles(directory=dist, html=True), name="interfaz")
-
-
-_montar_interfaz()
+_DIST = Path(os.getenv("FRONTEND_DIST") or db.ROOT / "frontend" / "dist")
+if (_DIST / "index.html").exists():
+    app.mount("/", StaticFiles(directory=_DIST, html=True), name="interfaz")

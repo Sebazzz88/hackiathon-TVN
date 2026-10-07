@@ -14,6 +14,7 @@ Se reporta numerador/denominador y cada fallo; no se esconden errores tras un pr
 import csv
 import json
 import os
+import re
 import statistics
 import sys
 import time
@@ -24,10 +25,10 @@ RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "backend"))
 os.environ.setdefault("LLM_OFFLINE", os.getenv("EVAL_LLM_OFFLINE", "1"))  # por defecto: sin red ni costo
 
-from app import scoring  # noqa: E402
 from app.agent import baseline, draft, pipeline, query  # noqa: E402
-from app.agent.corpus import registro_evidencia  # noqa: E402
 from app.agent.config import TEMAS  # noqa: E402
+from app.agent.corpus import registro_evidencia  # noqa: E402
+from app.agent.events import jaccard, titulo_base  # noqa: E402
 
 EV = RAIZ / "eval"
 OUT = EV / "resultados"
@@ -42,6 +43,11 @@ def frac(n, d):
     return f"{n}/{d} ({100 * n / d:.0f}%)" if d else "0/0 (sin casos)"
 
 
+def leer_csv(p):
+    with open(p, encoding="utf-8", newline="") as fh:
+        return list(csv.DictReader(fh))
+
+
 # ------------------------------------------------------------------ consultas
 def baseline_responder(pregunta, noticias):
     """Baseline: búsqueda por palabras clave sobre titulares; responde con el primer resultado o se abstiene si no
@@ -49,7 +55,7 @@ def baseline_responder(pregunta, noticias):
     res = baseline.buscar(pregunta, noticias, k=1)
     if not res:
         return {"abstencion": True, "ids": [], "versiones": False, "texto": ""}
-    s, n = res[0]
+    _, n = res[0]
     return {"abstencion": False, "ids": [n.id], "versiones": False, "texto": n.titulo}
 
 
@@ -120,7 +126,7 @@ def eval_temas(a):
     p = EV / "etiquetas_temas.csv"
     if not p.exists():
         return None
-    filas = list(csv.DictReader(open(p, encoding="utf-8")))
+    filas = leer_csv(p)
     idx = {n.id: i for i, n in enumerate(a["noticias"])}
     out = {}
     for part in ("dev", "test"):
@@ -144,13 +150,12 @@ def eval_pares(a):
     p = EV / "etiquetas_pares.csv"
     if not p.exists():
         return None
-    filas = list(csv.DictReader(open(p, encoding="utf-8")))
+    filas = leer_csv(p)
     grupo = {}
     for gi, g in enumerate(a["grupos"]):
         for i in g:
             grupo[a["noticias"][i].id] = gi
     tit = {n.id: n.titulo for n in a["noticias"]}
-    from app.agent.events import jaccard, titulo_base
 
     def prf(pred, y):
         tp = sum(1 for u, v in zip(y, pred) if u and v)
@@ -178,7 +183,6 @@ def eval_borradores(a):
     reg = registro_evidencia()
     det, tiempos, filas = [], [], []
     for f in reales + sint:
-        f = scoring.aplicar(f)
         t0 = time.perf_counter()
         b = draft.generar(f)
         tiempos.append(time.perf_counter() - t0)
@@ -204,9 +208,8 @@ def eval_borradores(a):
 
 # ------------------------------------------------------------------ ranking
 def eval_ranking(a):
-    sel = [scoring.aplicar(f) for f in pipeline.seleccionar(a["fichas"]) if not f.sintetico]
-    top_ag = [f.id_caso for f in sorted(sel, key=scoring.clave_orden)[:5]]
-    grupos = [{"id": f.id_caso, "fecha_ultima": f.fecha_ultima} for f in pipeline.analizar()["fichas"] if not f.sintetico]
+    top_ag = [f.id_caso for f in pipeline.seleccionar(a["fichas"]) if not f.sintetico][:5]
+    grupos = [{"id": f.id_caso, "fecha_ultima": f.fecha_ultima} for f in a["fichas"] if not f.sintetico]
     top_bl = [g["id"] for g in baseline.ranking_por_fecha(grupos)[:5]]
     tit = {f.id_caso: f.titulo for f in a["fichas"]}
     out = {"top5_agente": [(i, tit[i]) for i in top_ag], "top5_baseline_fecha": [(i, tit[i]) for i in top_bl],
@@ -230,7 +233,7 @@ def main():
     pipeline.analizar.cache_clear()
     a = pipeline.analizar()
     t_pipe = time.perf_counter() - t0
-    casos = [json.loads(l) for l in open(EV / "benchmark.jsonl", encoding="utf-8") if l.strip()]
+    casos = [json.loads(linea) for linea in (EV / "benchmark.jsonl").read_text(encoding="utf-8").splitlines() if linea.strip()]
     noticias = a["noticias"]
     res = {"generado_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), "particiones": {}}
     tiempos_q = []
@@ -296,10 +299,8 @@ def main():
                         "PENDIENTE revisión humana. Hasta entonces las métricas son preliminares.")
     (OUT / "resumen.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
     # eval/results.json: lo que lee el Modo jurado. Numerador y denominador salen de los mismos valores calculados arriba.
-    import re as _re
-
     def _nd(v):
-        m = _re.match(r"\s*(\d+)/(\d+)", str(v)) if v is not None else None
+        m = re.match(r"\s*(\d+)/(\d+)", str(v)) if v is not None else None
         return {"num": int(m.group(1)), "den": int(m.group(2))} if m else None
 
     tabla = [{"metrica": m["nombre"], "agente": m["agente"], "baseline": m["baseline"], "nota": m["nota"],
@@ -318,6 +319,7 @@ def main():
         L += ["", "## Errores de clasificación del agente (test)", ""]
         L += [f"- «{e['titulo']}» humano={e['humano']} agente={e['agente']}" for e in temas["test"]["errores_agente"]]
     (OUT / "REPORTE.md").write_text("\n".join(L) + "\n", encoding="utf-8")
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # "≥" y acentos también si la salida va a un archivo
     print("\n".join(L))
 
 

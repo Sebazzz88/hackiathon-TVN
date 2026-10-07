@@ -16,7 +16,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .db import DATA_DIR
+from .db import DATA_DIR, leer_json
 
 BACKEND = Path(__file__).resolve().parents[1]
 ARCHIVO_PRUEBAS = BACKEND / "tests" / "test_reto.py"
@@ -76,7 +76,9 @@ def correr():
                 tid = base.split("_")[1] if base.startswith("test_T") else None
                 if tid not in PRUEBAS:
                     continue
-                fallo = tc.find("failure") if tc.find("failure") is not None else tc.find("error")
+                fallo = tc.find("failure")
+                if fallo is None:
+                    fallo = tc.find("error")
                 casos.setdefault(tid, []).append({
                     "prueba": nombre, "comprueba": docs.get(base, ""), "segundos": round(float(tc.get("time", 0)), 2),
                     "ok": fallo is None and tc.find("skipped") is None, "omitida": tc.find("skipped") is not None,
@@ -99,4 +101,4 @@ def correr():
 
 
 def ultimo():
-    return json.loads(ULTIMO.read_text(encoding="utf-8")) if ULTIMO.exists() else {"disponible": False}
+    return leer_json(ULTIMO, {"disponible": False})

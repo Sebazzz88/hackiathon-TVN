@@ -9,18 +9,18 @@ Uso:  cd backend; .\\.venv\\Scripts\\python -m app.notion_export            (usa
       cd backend; .\\.venv\\Scripts\\python -m app.notion_export --correr   (corre T01–T10 antes de exportar)
 Lo que el sistema no sabe (p. ej. persona revisora de una ficha sin revisar) queda como PENDIENTE, nunca inventado.
 """
-import json
 import os
 import re
 import sys
 from collections import Counter
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import db, scoring
+from . import db, jurado, scoring
+from .agent import draft, pipeline
+from .agent.config import PANAMA_TZ, TEMAS
+from .agent.corpus import parse_dt
 
 DESTINO = db.ROOT / "docs" / "notion_export"
-PA = timezone(timedelta(hours=-5), "Panamá")  # Panamá no tiene horario de verano
 
 CASOS = [
     ("EV-G226d8217c0", "CU-02: tema económico con serie oficial del Banco Mundial (dato anual, no de hoy)"),
@@ -35,16 +35,11 @@ NOMBRES = {"R": "Relevancia", "I": "Impacto", "U": "Urgencia", "N": "Novedad", "
 
 
 def hora_pa(iso):
-    """'2026-10-07T03:10:00+00:00' → '2026-10-06 22:10 (Panamá)'. Sin fecha → '—'."""
+    """'2026-10-07T03:10:00+00:00' → '2026-10-06 22:10 (Panamá)'. Sin fecha → '—'; ilegible → tal cual."""
     if not iso:
         return "—"
-    try:
-        d = datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
-    except ValueError:
-        return str(iso)
-    if d.tzinfo is None:
-        d = d.replace(tzinfo=timezone.utc)
-    return d.astimezone(PA).strftime("%Y-%m-%d %H:%M") + " (Panamá)"
+    d = parse_dt(str(iso))
+    return d.astimezone(PANAMA_TZ).strftime("%Y-%m-%d %H:%M") + " (Panamá)" if d else str(iso)
 
 
 def _celda(x):
@@ -112,8 +107,7 @@ def catalogo_md(m):
 # ------------------------------------------------------------------ 05 · fichas
 def md_ficha(f, motivo, n, borrador, revisiones=()):
     """Una ficha trazable. `revisiones` son las de la base (persona, estado, comentario); si no hay, PENDIENTE."""
-    from .agent.config import TEMAS
-    f = scoring.aplicar(f)
+    f = scoring.aplicar(f.model_copy())  # copia: las fichas del pipeline están en caché y no se modifican
     b = borrador
     ult = revisiones[-1] if revisiones else None
     L = [f"## Ficha {n} · {f.titulo}", "", f"**Por qué este caso:** {motivo}", "",
@@ -166,7 +160,6 @@ def md_ficha(f, motivo, n, borrador, revisiones=()):
 
 
 def fichas_md(fichas, revisiones_por_caso, corte_utc=None):
-    from .agent import draft
     out = ["# Casos y evidencias (fichas trazables)", "",
            "Generado por `backend/app/notion_export.py` desde el snapshot congelado"
            + (f" (corte {hora_pa(corte_utc)})" if corte_utc else "") + ". "
@@ -217,16 +210,12 @@ def bitacora_md(audit, fichas_db, decisiones):
 # ------------------------------------------------------------------ orquestación
 def exportar(destino=DESTINO, correr=False, informe=None):
     """Escribe las 4 páginas y devuelve {archivo: ruta}. `informe` permite inyectar una corrida (pruebas)."""
-    from . import jurado
-    from .agent import pipeline
     destino = Path(destino)
     destino.mkdir(parents=True, exist_ok=True)
     if informe is None:
         informe = jurado.correr() if correr else jurado.ultimo()
-    p_met = db.ROOT / "eval" / "results.json"
-    metricas = json.loads(p_met.read_text(encoding="utf-8")) if p_met.exists() else None
-    p_man = db.DATA_DIR / "raw" / "manifest.json"
-    manifest = json.loads(p_man.read_text(encoding="utf-8")) if p_man.exists() else None
+    metricas = db.leer_json(db.ROOT / "eval" / "results.json")
+    manifest = db.leer_json(db.DATA_DIR / "raw" / "manifest.json")
     db.init()
     fichas_db = db.all_fichas()
     p_dec = db.ROOT / "docs" / "09_DECISIONS.md"
@@ -248,5 +237,5 @@ def exportar(destino=DESTINO, correr=False, informe=None):
 
 if __name__ == "__main__":
     os.environ["LLM_OFFLINE"] = "1"  # sin red y reproducible: los borradores de las fichas salen de la caché o de la plantilla
-    for nombre, ruta in exportar(correr="--correr" in sys.argv).items():
+    for ruta in exportar(correr="--correr" in sys.argv).values():
         print("escrito", ruta)

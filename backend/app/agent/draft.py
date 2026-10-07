@@ -11,12 +11,12 @@ afirma, no un hecho verificado). Preguntas y verificaciones pendientes no son af
 import json
 import os
 import re
-from datetime import timedelta, timezone
+from collections import Counter
 
 from ..models import Ficha
 from . import llm
-from .config import LEYENDA, TEMAS
 from .baseline import norm
+from .config import LEYENDA, PANAMA_TZ, TEMAS
 from .corpus import parse_dt, registro_evidencia
 from .security import como_dato, es_inyeccion
 
@@ -28,7 +28,6 @@ EJEMPLO_AFIRMACION = """
 Ejemplo de UNA afirmación bien formada (los ids van SOLO en "citas", nunca dentro de "texto"):
 {"texto": "Según prensa.com, la calificadora ratificó el grado de inversión de Panamá.", "tipo": "declaracion",
  "citas": [{"id_evidencia": "G226d8217c0", "campo": "titulo"}]}"""
-PANAMA_TZ = timezone(timedelta(hours=-5), "PTY")
 PALABRAS_POR_SEG = 2.5  # locución informativa ~150 palabras/min
 
 SYSTEM = """Eres un asistente de la mesa editorial de TVN (Panamá). Redactas BORRADORES para revisión humana; nunca publicas.
@@ -113,7 +112,7 @@ def evidencias(f: Ficha):
     if f.noticias:  # dato calculado por el sistema (agrupación), citable como tal
         ev[f"AGR:{f.id_caso}"] = {"registros": f.registros, "fuentes_independientes": f.fuentes_independientes,
                                   "metodo": "agrupación semántica + procedencia (agencia replicada = 1)"}
-    if not f.noticias:  # ficha sin detalle (p. ej. stub): usa el registro global
+    else:  # ficha sin detalle (p. ej. stub): usa el registro global
         reg = registro_evidencia()
         for i in f.ids_fuente:
             if i in reg and reg[i]["tipo"] == "noticia":
@@ -219,12 +218,11 @@ CAMPOS_FECHA = ("fecha_publicacion", "fecha_deteccion")
 _RX_FECHA_TXT = re.compile(r"\b\d{1,2}/\d{1,2}/\d{4}\b|\b\d{1,2}:\d{2}\b")
 
 
-def _nums_ev(d, campos):
-    """Cifras que respaldan un texto. Las fechas NO aportan números sueltos (si no, el mes 9 de una fecha
-    'respaldaría' un '9%' inventado); solo el año de publicación/detección."""
+def _nums_ev(d):
+    """Cifras de una evidencia que respaldan un texto. Las fechas NO aportan números sueltos (si no, el mes 9 de una
+    fecha 'respaldaría' un '9%' inventado); solo el año de publicación/detección."""
     out = set()
-    for c in campos:
-        v = d.get(c)
+    for c, v in d.items():
         if v is None or c in CAMPOS_FECHA or c == "url":
             continue
         if isinstance(v, float):
@@ -346,7 +344,7 @@ def validar(afirms, ev, seccion):
             permitidos, fechas = set(), set()
             for c in citas:
                 d = ev[c["id_evidencia"]]
-                permitidos |= _nums_ev(d, set(d))
+                permitidos |= _nums_ev(d)
                 fechas |= _fechas_ev(d)
             fechas_txt = _fechas_en_texto(texto)
             resto = texto
@@ -374,10 +372,7 @@ def validar(afirms, ev, seccion):
 
 def resumen_validador(emitidas, eliminadas):
     """Conteo para registrar: cuántas frases emitió el modelo, cuántas sobrevivieron y por qué se eliminó el resto."""
-    por = {}
-    for e in eliminadas:
-        k = e.get("codigo", "otro")
-        por[k] = por.get(k, 0) + 1
+    por = dict(Counter(e.get("codigo", "otro") for e in eliminadas))
     return {"emitidas": emitidas, "validas": emitidas - len(eliminadas), "eliminadas": len(eliminadas), "por_codigo": por}
 
 
@@ -501,7 +496,7 @@ def generar(f: Ficha) -> dict:
     guion_pend = " Queda por confirmar: " + "; ".join(p.rstrip(".") for p in pend[:2]) + "."
     seg = round((palabras(guion_txt) + palabras(guion_pend)) / PALABRAS_POR_SEG)
     titulo = salida.get("titulo") or f.titulo
-    if es_inyeccion(titulo) or (_nums(titulo) - set().union(*[_nums_ev(d, set(d)) for d in ev.values()])):
+    if es_inyeccion(titulo) or (_nums(titulo) - set().union(*[_nums_ev(d) for d in ev.values()])):
         titulo = f"Lo que se sabe: {f.titulo[:90]}"
     todas = enf + brief + guion + copy
     return {

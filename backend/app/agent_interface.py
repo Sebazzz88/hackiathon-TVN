@@ -5,7 +5,7 @@ marcados como sintéticos. En AGENT_MODE=live se importan desde backend/app/agen
 (créalo tú) con las MISMAS firmas. Ver NOTA_PERSONA_1.md.
 """
 import os
-from .models import Ficha, Componentes, QueryOut, Cita
+from .models import Componentes, Ficha, QueryOut
 
 AGENT_MODE = os.getenv("AGENT_MODE", "stub")
 
@@ -37,4 +37,4 @@ def generate_draft(ficha: Ficha) -> dict:
 
 
 if AGENT_MODE == "live":
-    from app.agent import answer_query, build_candidates, generate_draft  # noqa: F811
+    from app.agent import answer_query, build_candidates, generate_draft  # noqa: F401, F811

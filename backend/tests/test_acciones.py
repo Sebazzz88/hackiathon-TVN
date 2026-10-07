@@ -2,7 +2,6 @@
 La IA solo puede elegir entre filtrar_tema, abrir_ficha, responder y abstenerse; nunca se ejecuta texto libre."""
 import json
 import os
-import tempfile
 import types
 
 os.environ["LLM_OFFLINE"] = "1"
@@ -10,8 +9,9 @@ os.environ["LLM_OFFLINE"] = "1"
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import db, main, scoring  # noqa: E402
+from app import main  # noqa: E402
 from app.agent import acciones, pipeline, query  # noqa: E402
+from conftest import base_live  # noqa: E402
 
 IDS = {f.id_caso for f in pipeline.analizar()["fichas"]}
 
@@ -103,12 +103,7 @@ def test_filtrar_responde_con_numeros_reales_y_eventos():
 
 
 def test_bandeja_filtra_por_tema_y_ventana(monkeypatch):
-    monkeypatch.setattr(db, "DB_PATH", os.path.join(tempfile.mkdtemp(), "filtro.db"))
-    monkeypatch.setattr(main.agent, "AGENT_MODE", "live")
-    db.init()
-    db.replace_all([scoring.aplicar(f) for f in pipeline.seleccionar(pipeline.analizar()["fichas"])])
-    db.set_meta("agent_mode", "live")
-    db.set_meta("fichas_version", main.FICHAS_VERSION)
+    base_live(monkeypatch, "filtro.db")
     with TestClient(main.app) as c:
         todos = c.get("/api/inbox?limit=1000&tema=logistica_canal").json()
         semana = c.get("/api/inbox?limit=1000&tema=logistica_canal&dias=7").json()

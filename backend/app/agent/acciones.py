@@ -20,9 +20,11 @@ from . import llm, pipeline
 from .baseline import norm
 from .config import SIM_QUERY_MIN, TEMAS
 from .embed import embed
-from .security import consulta_maliciosa
+from .security import como_dato, consulta_maliciosa
 
 ACCIONES = ("filtrar_tema", "abrir_ficha", "responder", "abstenerse")
+PARAMETROS = {"filtrar_tema": {"tipo", "tema", "dias", "explicacion"}, "abrir_ficha": {"tipo", "id_caso", "explicacion"},
+              "responder": {"tipo", "explicacion"}, "abstenerse": {"tipo", "explicacion"}}
 DIAS_MAX = 90
 
 PALABRAS_TEMA = {
@@ -38,7 +40,9 @@ PALABRAS_TEMA = {
 _RX_FILTRAR = re.compile(r"\b(temas?|noticias?|agenda|bandeja|lista|muestra|mostrar|filtra|filtrar|que hay|ver)\b")
 _RX_ABRIR = re.compile(r"\b(abre|abrir|abreme|muestrame la ficha|ficha de|ficha del|ficha sobre)\b")
 _RX_COMANDO = re.compile(r"\b(abre|abrir|abreme|muestra|muestrame|mostrar|filtra|filtrar|lista|listar|ensename|quiero ver|ver los|ver las)\b")
-_RX_LIMPIAR = re.compile(r"\b(abre|abrir|abreme|muestrame|muestra|ensename|la|el|ficha|fichas|del|de|sobre|tema)\b")
+# Palabras del comando ("abre la ficha del ..."), sobre el texto ORIGINAL (con acentos): diluyen la similitud.
+_RX_LIMPIAR = re.compile(r"(?i)\b(abre|abrir|ábreme|abreme|muéstrame|muestrame|muestra|enséñame|ensename|la|el|ficha|fichas|"
+                         r"del|de|sobre|tema)\b")
 
 
 def _dias(q):
@@ -65,8 +69,7 @@ def _ficha_mas_parecida(pregunta):
     if not fichas:
         return None, 0.0
     # Se limpia sobre el texto ORIGINAL (con acentos y "S&P"): normalizarlo antes arruina el embedding.
-    limpia = " ".join(re.sub(r"(?i)\b(abre|abrir|ábreme|abreme|muéstrame|muestrame|muestra|enséñame|ensename|la|el|ficha|fichas|"
-                             r"del|de|sobre|tema)\b", " ", pregunta).split()) or pregunta
+    limpia = " ".join(_RX_LIMPIAR.sub(" ", pregunta).split()) or pregunta
     sims = T @ embed([limpia])[0]
     # Híbrido: semántica + coincidencia de palabras con el titular (una frase corta sola atrae notas genéricas).
     pal = {w for w in norm(limpia).split() if len(w) > 2}
@@ -106,9 +109,7 @@ def validar_accion(plan, ids_validos) -> tuple:
     tipo = plan.get("tipo")
     if tipo not in ACCIONES:
         return None, f"acción no permitida: {tipo!r}"
-    permitidos = {"filtrar_tema": {"tipo", "tema", "dias", "explicacion"}, "abrir_ficha": {"tipo", "id_caso", "explicacion"},
-                  "responder": {"tipo", "explicacion"}, "abstenerse": {"tipo", "explicacion"}}[tipo]
-    extra = set(plan) - permitidos
+    extra = set(plan) - PARAMETROS[tipo]
     if extra:
         return None, f"parámetros no permitidos: {sorted(extra)}"
     limpio = {"tipo": tipo, "explicacion": str(plan.get("explicacion", ""))[:200]}
@@ -155,7 +156,6 @@ def planificar(pregunta: str, ia: bool = False) -> dict:
         return {**reglas, "origen": "reglas"}
     f, s = _ficha_mas_parecida(pregunta)
     candidatos = f"Ficha candidata para abrir_ficha: id_caso={f.id_caso} titulo={f.titulo[:120]}" if f and s >= SIM_QUERY_MIN else "Sin ficha candidata."
-    from .security import como_dato
     salida, meta = llm.generar_json(SYSTEM_PLAN, f"{candidatos}\nPregunta (dato): «{como_dato(pregunta, 300)}»",
                                     SCHEMA_PLAN, "plan-v1", max_tokens=120)
     if not salida:

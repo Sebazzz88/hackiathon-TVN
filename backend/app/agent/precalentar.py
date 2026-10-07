@@ -1,5 +1,6 @@
-"""Genera con Claude los borradores y respuestas de la demo y los guarda en caché (data/cache/llm) para presentar
-sin internet (T10). Requiere LLM_API_KEY en .env.
+"""Genera con la IA generativa configurada (Hermes 3 local vía Ollama por defecto) los borradores y respuestas de la
+demo y los guarda en caché (data/cache/llm) para presentar sin internet (T10). Con un proveedor en la nube requiere
+LLM_API_KEY en .env.
 
 Uso (desde backend/):  .\\.venv\\Scripts\\python -m app.agent.precalentar [--top 10]
 """
@@ -7,7 +8,6 @@ import json
 import sys
 import time
 
-from .. import scoring
 from . import draft, llm, pipeline, query
 from .config import ROOT
 
@@ -38,7 +38,7 @@ def main():
     costo, t0 = 0.0, time.time()
     print(f"Modelo {est['modelo']} · {len(elegidas)} borradores · {len(dict.fromkeys(consultas))} consultas")
     for f in elegidas:
-        b = draft.generar(scoring.aplicar(f))
+        b = draft.generar(f)  # seleccionar() ya devuelve las fichas con su puntaje
         m = b.get("meta_llm", {})
         costo += m.get("costo_usd", 0) if m.get("origen") == "llm" else 0
         print(f"  borrador {f.id_caso:<18} {b.get('generador'):<28} afirmaciones={len(b.get('afirmaciones', []))} "

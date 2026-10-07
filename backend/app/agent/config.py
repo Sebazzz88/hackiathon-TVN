@@ -1,8 +1,10 @@
 """Configuración del agente. Sin secretos: la clave del LLM solo se lee de variables de entorno (.env)."""
 import os
+from datetime import timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
+PANAMA_TZ = timezone(timedelta(hours=-5), "PTY")  # Panamá no tiene horario de verano
 
 
 def data_dir() -> Path:

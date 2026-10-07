@@ -1,5 +1,6 @@
-from typing import Literal, Optional
-from pydantic import BaseModel, Field
+from typing import Literal
+
+from pydantic import BaseModel, Field, model_validator
 
 Estado = Literal["nuevo", "en_revision", "requiere_evidencia", "aprobado_como_borrador", "descartado"]
 EstadoEvidencia = Literal["insuficiente", "parcial", "suficiente_para_borrador"]
@@ -34,7 +35,7 @@ class Ficha(BaseModel):  # espejo de fichas.jsonl
     estado_evidencia: EstadoEvidencia
     faltante: list[str] = []
     base: str = "titular/metadatos"
-    borrador: Optional[dict] = None
+    borrador: dict | None = None
     estado_revision: Estado = "nuevo"
     sintetico: bool = False
     # --- Campos explicativos (opcionales; los llena el agente en modo live) ---
@@ -94,7 +95,7 @@ class QueryOut(BaseModel):
     estado: EstadoConsulta = "respondida"   # respondida | abstencion | contradiccion
     accion: str = ""                         # qué debe hacer la persona ahora
     abstencion: bool
-    respuesta: Optional[str] = None
+    respuesta: str | None = None
     citas: list[Cita] = []
     ids_fuente: list[str] = []
     faltante: list[str] = []
@@ -109,6 +110,13 @@ class QueryOut(BaseModel):
     ia_disponible: bool = False    # la UI puede ofrecer "Redactar con IA"
     base: str = "titular/metadatos"
     metodo: str = ""
+
+    @model_validator(mode="after")
+    def _estado_coherente(self):
+        """Una abstención nunca se presenta como respondida, la construya quien la construya (agente, stub o respaldo)."""
+        if self.abstencion and self.estado == "respondida":
+            self.estado = "abstencion"
+        return self
 
 
 class ReviewIn(BaseModel):
