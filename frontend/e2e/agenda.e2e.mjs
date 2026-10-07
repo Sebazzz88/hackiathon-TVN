@@ -90,7 +90,8 @@ try {
   await ev("document.querySelector('.interruptor input').click()");
   await esperarHasta("document.querySelector('.lista h1')?.textContent === 'Casos sintéticos' && document.querySelectorAll('.items .item').length > 1");
   await ev("document.querySelectorAll('.items .item')[1].click()");
-  ok("abrir una ficha sintética no apaga los casos de prueba", await esperarHasta("document.querySelector('.ficha-cab .sint')") && await ev("document.querySelector('.interruptor input').checked"));
+  ok("abrir una ficha sintética no apaga los casos de prueba", await esperarHasta("!!document.querySelector('.ficha-cab .sint')") && await ev("document.querySelector('.interruptor input').checked"),
+    await ev("location.hash + ' | ' + (document.querySelector('.ficha-cab .kicker')?.textContent || 'sin ficha') + ' | marcada=' + document.querySelector('.interruptor input')?.checked + ' | filas=' + document.querySelectorAll('.items .item').length"));
   await ev("history.back()"); await dormir(500);
   ok("sin errores de servidor (5xx) en toda la sesión", erroresRed.length === 0, erroresRed.join(" | "));
   ok("sin excepciones en la consola del navegador", erroresConsola.length === 0, erroresConsola.join(" | "));

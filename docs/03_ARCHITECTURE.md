@@ -46,15 +46,23 @@ Revisión humana (5 estados, revisor, comentario) → /api/export/fichas.jsonl �
 | GET | /health | modo, versión de reglas y pesos |
 | GET | /api/meta | fecha de corte, archivos y SHA-256 del snapshot |
 | GET | /api/quality-report | reporte de calidad |
-| GET | /api/inbox?limit=5&sinteticos=false | bandeja priorizada |
+| GET | /api/inbox?limit=5&sinteticos=false&tema=&dias= | bandeja priorizada (limit 1–1000; filtros por tema y ventana de días) |
 | GET | /api/fichas/{id} | ficha |
 | POST | /api/fichas/{id}/draft | genera borrador |
 | POST | /api/fichas/{id}/review | revisión humana |
-| POST | /api/query | consulta en español |
+| POST | /api/query | consulta en español: estado respondida, abstencion o contradiccion, acción sugerida y acción de interfaz validada |
+| GET | /api/validador | totales del validador de citas (emitidas, válidas, eliminadas y por qué) |
+| GET | /api/evidencia/{id} | registro fuente de una cita (noticia, indicador BM, sismo USGS) |
+| GET / POST | /api/jurado/pruebas | última corrida / correr T01–T10 en vivo (subproceso sin ventana, base temporal, sin red) |
+| GET | /api/jurado/metricas | agente vs baseline leído de `eval/results.json` |
 | GET | /api/eval | info del agente y resultados de evaluación |
 | GET | /api/export/fichas.jsonl | exportación para Notion |
 | GET | /api/audit | registro de acciones |
 | POST | /api/reset | regenera fichas desde el snapshot |
+| GET | / | interfaz compilada (`frontend/dist`), si existe: demo en un solo proceso con `run_demo.ps1` o Docker |
+
+Red de seguridad: si la consulta o el borrador fallan por cualquier motivo, la API responde 200 con una abstención que
+dice qué hacer (el detalle va al log). Probado en `backend/tests/test_robustez.py`.
 
 ## Proporcionalidad
 
