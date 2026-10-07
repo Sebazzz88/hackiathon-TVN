@@ -31,73 +31,130 @@ Todo funciona **sin internet** durante la demo.
 - **Hermes 3, local y gratuito, vía Ollama.** Redacta respuestas a consultas y la parte editorial de los borradores (título, enfoque, preguntas y copy), siempre a partir de la evidencia recuperada y pasando por un validador de citas. Sin el modelo usa respuestas en caché o una plantilla determinista.
 - **Comparación con un baseline.** El agente se compara con una búsqueda por palabras clave y un ranking por fecha. Ver [docs/07_EVALUATION.md](docs/07_EVALUATION.md).
 
-## Cómo encenderlo
+## Paso a paso: dejarlo funcionando desde cero
 
-Requisitos: Windows con PowerShell, **Python 3.12 o 3.13**, **Node.js 18 o superior** y, para la IA generativa, **Ollama** con `hermes3:3b` (ver más abajo).
+Todos los comandos son de **PowerShell** en Windows 10 u 11. Necesitas unos 5 GB libres y conexión a internet **solo la primera vez** (después todo corre sin internet).
 
-### Opción rápida (un comando)
+### 1. Instala los programas base (una sola vez)
 
-Desde la carpeta del repo, en PowerShell:
+Verifica si ya los tienes:
 
 ```powershell
-# La primera vez: instala dependencias, descarga el modelo (~0,22 GB) y enciende
-powershell -ExecutionPolicy Bypass -File .\iniciar.ps1 -Instalar
-
-# Las siguientes veces: solo enciende
-powershell -ExecutionPolicy Bypass -File .\iniciar.ps1
+git --version
+python --version     # debe ser 3.12 o 3.13
+node --version       # debe ser 18 o superior
 ```
 
-Se abren dos ventanas de PowerShell (backend e interfaz) y el navegador en **http://localhost:5173**. Para apagar, cierra esas dos ventanas.
+Si falta alguno, instálalo con winget (después **cierra y vuelve a abrir PowerShell**):
 
-### Opción manual
+```powershell
+winget install --id Git.Git -e
+winget install --id Python.Python.3.13 -e
+winget install --id OpenJS.NodeJS.LTS -e
+```
+
+### 2. Descarga el proyecto
+
+```powershell
+git clone https://github.com/Sebazzz88/hackiathon-TVN.git
+cd hackiathon-TVN
+git checkout feat/agente
+```
+
+### 3. Instala todo y enciéndelo con un solo comando
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\iniciar.ps1 -Instalar
+```
+
+Este comando hace, en orden:
+
+| Paso | Qué hace | Tarda (primera vez) |
+|---|---|---|
+| 1 | Crea `.env` a partir de `.env.example` | segundos |
+| 2 | Crea el entorno de Python e instala las dependencias | 2–4 min |
+| 3 | Descarga el modelo de embeddings multilingüe (~0,22 GB) | 1–2 min |
+| 4 | Instala la interfaz (Node) | 1–2 min |
+| 5 | Instala **Ollama** y descarga **Hermes 3** (~2 GB) | 5–10 min |
+| 6 | Enciende backend e interfaz, y abre el navegador | ~20 s |
+
+Al final verás `Backend listo. IA generativa conectada: hermes3:3b` y se abrirá **http://localhost:5173**. Se quedan abiertas dos ventanas de PowerShell (backend e interfaz): **no las cierres mientras uses la app**.
+
+### 4. Comprueba que todo quedó funcional
+
+1. En la cabecera de la página, el indicador **IA hermes3:3b · local** debe estar en verde.
+2. Pestaña **Agenda**: aparece el top 5 y una ficha a la derecha. El primero es "Canal de Panamá: Suspensión temporal de operaciones de potabilizadora de Miraflores".
+3. Pestaña **Datos**: 875 noticias válidas, 152 de TVN, 540/540 celdas del Banco Mundial y 82 sismos.
+4. Pestaña **Consultar**: pulsa el ejemplo "¿Cuál es la inflación de Panamá hoy?". Debe **abstenerse** y explicar que solo hay datos anuales.
+5. (Opcional) Corre las pruebas: deben pasar todas.
+
+```powershell
+cd backend
+.\.venv\Scripts\python -m pytest -q
+cd ..
+```
+
+### 5. Uso diario
+
+```powershell
+# Encender (lo de siempre; ya no necesita -Instalar)
+powershell -ExecutionPolicy Bypass -File .\iniciar.ps1
+
+# Apagar backend e interfaz
+powershell -ExecutionPolicy Bypass -File .\iniciar.ps1 -Apagar
+```
+
+### Si algo falla
+
+| Síntoma | Causa y solución |
+|---|---|
+| `iniciar.ps1` no se ejecuta | Usa exactamente el comando con `-ExecutionPolicy Bypass` y estando en la carpeta del proyecto |
+| `python` o `node` no se reconocen | Instala el programa (paso 1) y abre una PowerShell **nueva** |
+| La página dice "No hay conexión con el backend" | El backend no arrancó. Mira la ventana "Copiloto TVN - backend". Si el puerto 8000 está en uso, corre `-Apagar` y vuelve a encender |
+| Indicador de IA en amarillo ("solo embeddings") | Ollama no está encendido o falta el modelo. Corre `.\iniciar.ps1` (lo enciende y lo descarga) o manualmente `ollama pull hermes3:3b` |
+| Aviso "modelo local no disponible" en el backend | Falta el modelo de embeddings: `backend\.venv\Scripts\python -m app.agent.embed --descargar`. Mientras tanto usa un respaldo de menor calidad |
+| La IA tarda mucho | Normal sin GPU: ~1 minuto por respuesta. Lo ya generado queda en caché y sale al instante |
+| Quiero borrar mis revisiones | Apaga la app, borra `data\app.db` y enciéndela de nuevo |
+| No quiero usar IA generativa | Pon `LLM_OFFLINE=1` en `.env`. Todo funciona con caché y plantilla |
+
+### Instalación manual (alternativa al script)
 
 ```powershell
 Copy-Item .env.example .env
 
-# Backend (una vez)
 cd backend
-py -3.13 -m venv .venv
+py -3.13 -m venv .venv                 # o: python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -m app.agent.embed --descargar
-cd ..
-
-# Interfaz (una vez)
-cd frontend
+cd ..\frontend
 npm install
 cd ..
 
-# Encender — Terminal 1
+winget install --id Ollama.Ollama -e   # IA generativa local (opcional)
+ollama pull hermes3:3b
+
+# Terminal 1: backend
 cd backend
 .\.venv\Scripts\python -m uvicorn app.main:app --port 8000
-
-# Encender — Terminal 2
+# Terminal 2: interfaz
 cd frontend
 npm run dev
 ```
 
-Abre **http://localhost:5173**. La documentación de la API está en http://localhost:8000/docs.
+La documentación interactiva de la API está en http://localhost:8000/docs.
 
 ### IA generativa local y gratuita: Hermes 3 con Ollama
 
-La app usa **Hermes 3** (Nous Research, 3B parámetros), que corre en tu equipo con **Ollama**. Es gratuito, no necesita clave y funciona sin internet. Instálalo una vez:
+La app usa **Hermes 3** (Nous Research, 3B parámetros), que corre en tu equipo con **Ollama**. Es gratuito, no necesita clave y funciona sin internet. `iniciar.ps1 -Instalar` lo instala y lo descarga solo.
 
-```powershell
-winget install --id Ollama.Ollama -e     # instala Ollama
-ollama pull hermes3:3b                   # descarga Hermes 3 (~2 GB)
-```
-
-`iniciar.ps1` y el backend lo detectan solos (`LLM_PROVIDER=ollama`, `LLM_MODEL=hermes3:3b` en `.env`). En la cabecera, el indicador **IA** se pone verde con el nombre del modelo.
-
-**Qué hace Hermes en la app**
-
-| Lugar | Qué redacta | Cómo se controla |
+| Lugar | Qué redacta Hermes | Cómo se controla |
 |---|---|---|
 | Consultar | Botón **"Redactar respuesta con IA"** sobre los titulares encontrados | Cada frase debe citar una evidencia real |
 | Borrador | Título, enfoque de interés público, 3 preguntas de investigación y copy digital | El brief y el guion con los hechos y las cifras los arma el código, con sus citas |
 
 Todo lo que escribe la IA pasa por el **validador de citas**. Se elimina cualquier frase sin cita válida, con cifras o fechas que no estén en la fuente, o con instrucciones inyectadas. La interfaz muestra qué escribió la IA y qué descartó el validador.
 
-**Velocidad.** En un portátil sin GPU, Hermes tarda alrededor de 1 minuto por respuesta o borrador. La interfaz muestra un contador mientras trabaja. Lo ya generado queda en caché (`data/cache/llm/`) y sale al instante. Para la demo, precalienta la caché antes (tarda unos 30–40 min la primera vez):
+**Demo sin internet: precalienta la caché.** Genera con Hermes los borradores y respuestas de la demo y los guarda en `data/cache/llm/` (tarda 30–40 min la primera vez):
 
 ```powershell
 cd backend
@@ -106,7 +163,7 @@ cd ..
 git add data/cache/llm; git commit -m "data: cache Hermes para demo offline"; git push origin feat/agente
 ```
 
-**Otros proveedores (opcional).** En `.env` puedes cambiar `LLM_PROVIDER` a `openai`, para APIs compatibles como Kimi (Moonshot) o Groq, usando `LLM_BASE_URL` y `LLM_API_KEY`. También puedes usar `anthropic` (Claude) con `LLM_API_KEY`. Sin ningún modelo disponible, el sistema usa la caché o una plantilla determinista: nunca se cae.
+**Otros proveedores (opcional).** En `.env`, `LLM_PROVIDER=openai` sirve para APIs compatibles como Kimi (Moonshot) o Groq, con `LLM_BASE_URL` y `LLM_API_KEY`. `LLM_PROVIDER=anthropic` usa Claude con `LLM_API_KEY`. Sin ningún modelo disponible, el sistema usa la caché o una plantilla determinista: nunca se cae.
 
 ## Recorrido por la interfaz
 
@@ -157,15 +214,6 @@ python data\scripts\validate.py
 
 Diccionario, licencias y desviaciones del PDF: [docs/06_DATASET.md](docs/06_DATASET.md).
 
-## Si algo falla
-
-| Síntoma | Solución |
-|---|---|
-| La interfaz dice "No hay conexión con el backend" | El backend no está encendido o no está en el puerto 8000 |
-| Aviso "modelo local no disponible" en el backend | Falta el modelo: `backend\.venv\Scripts\python -m app.agent.embed --descargar`. Mientras tanto se usa un respaldo léxico de menor calidad |
-| Quiero empezar de cero las revisiones | Borra `data\app.db` y reinicia el backend |
-| `iniciar.ps1` no se ejecuta | Úsalo con `powershell -ExecutionPolicy Bypass -File .\iniciar.ps1` |
-
 ## Estructura
 
 ```
@@ -176,5 +224,5 @@ frontend/src/        interfaz (App.jsx, views/, lib.js, style.css)
 data/                snapshot, scripts de descarga y validación, casos sintéticos
 eval/                benchmark, etiquetas y evaluación
 docs/                documentación (01–12) y export para Notion (docs/notion_export/)
-iniciar.ps1          instala y enciende todo en Windows
+iniciar.ps1          instala, enciende y apaga todo en Windows (incluye Ollama + Hermes 3)
 ```

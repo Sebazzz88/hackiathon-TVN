@@ -23,7 +23,7 @@ Fecha: 2026-10-06. Rama `feat/agente`. Verificado con 24 pruebas (0 fallos, 0 om
 | Contradicciones visibles | Sí | T05; 10/10 en benchmark | Solo contradicciones numéricas |
 | Agencia replicada = 1 | Sí | T02 | Detección por agencia citada o texto casi idéntico |
 | Anti-inyección | Sí | T07 + prueba con LLM simulado | Patrones + aislamiento `<DATO>` + validador |
-| LLM con caché y salida JSON (borradores y consultas) | Sí | Con cliente simulado (borrador y consulta) | **No probado con clave real**; falta precalentar la caché (`python -m app.agent.precalentar`) |
+| IA generativa (consultas y borradores), caché y JSON | Sí | **Probada con Hermes 3 3B real** vía Ollama (local, gratuito) y con clientes simulados | Consulta 45–75 s y borrador híbrido ~73 s en CPU; falta terminar y versionar la caché del precalentado (`python -m app.agent.precalentar`) |
 | Sin internet (T10) | Sí | T10 | Plantilla + caché + respaldo léxico |
 | Baseline comparado | Sí | `eval/run_eval.py` | Palabras clave, reglas, fecha |
 | Benchmark 60 (30/10/10/10; 40/20) | Sí | `eval/benchmark.jsonl` | Etiquetas **pendientes de revisión humana**; reservado no ciego |
@@ -49,7 +49,7 @@ Fecha: 2026-10-06. Rama `feat/agente`. Verificado con 24 pruebas (0 fallos, 0 om
 
 - 🔴 **Notion sin cargar.** Sin el espacio, el acceso del jurado y el pitch desde Notion, la entrega no se admite.
 - 🔴 **Etiquetas sin revisión humana.** Todas las métricas del benchmark son preliminares; un jurado puede descartarlas.
-- 🟠 **LLM no probado con clave real** y sin borradores en caché: la demo muestra solo la plantilla.
+- 🟠 **Caché de Hermes sin versionar aún:** sin ella, cada respuesta nueva tarda ~1 min en la demo.
 - 🟠 **Precision@5 y validez de sustento pendientes:** son métricas pedidas explícitamente.
 - 🟠 **Repositorio y PR:** el trabajo está en `feat/agente`; el jurado verá `main` si no se fusiona. Confirmar que el jurado tenga acceso al repo.
 - 🟠 **Guion corto** en temas de una sola fuente (9/18 en 45–60 s).
