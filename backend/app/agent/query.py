@@ -167,9 +167,11 @@ def redactar_con_ia(pregunta, top, extractiva: QueryOut, llamar: bool = True) ->
     if not ok:
         extractiva.meta_llm = {**meta, "nota": "la IA no dejó afirmaciones válidas; se muestra la respuesta extractiva"}
         extractiva.eliminadas = fuera
+        extractiva.validador = draft.resumen_validador(len(fuera), fuera)
         return extractiva
     return extractiva.model_copy(update={
         "respuesta": " ".join(a["texto"] for a in ok) + f"\n{LEYENDA}",
         "afirmaciones": ok, "eliminadas": fuera, "faltante": [x for x in salida.get("faltante", []) if not es_inyeccion(x)],
         "citas": [Cita(afirmacion=a["texto"], tipo=a["tipo"], **c) for a in ok for c in a["citas"]] + extractiva.citas,
+        "validador": draft.resumen_validador(len(ok) + len(fuera), fuera),
         "metodo": "recuperacion_semantica+ia", "generador": f"{meta['origen']}:{llm.modelo()}", "meta_llm": meta})

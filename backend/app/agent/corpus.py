@@ -105,6 +105,7 @@ def fecha_corte():
     return parse_dt(manifest().get("fecha_corte_UTC", "")) or datetime.now(timezone.utc)
 
 
+@lru_cache(maxsize=1)
 def registro_evidencia() -> dict:
     """Todas las evidencias citables: id -> {tipo, campos disponibles}."""
     reg = {n.id: {"tipo": "noticia", "campos": {"titulo", "medio", "url", "fecha_publicacion", "fecha_deteccion"}, "obj": n}
@@ -116,6 +117,40 @@ def registro_evidencia() -> dict:
     return reg
 
 
+def registro_publico(id_ev: str):
+    """Registro FUENTE de una evidencia citable, listo para mostrar: lo que dice el corpus, sin interpretación.
+    None si el id no existe en el corpus (una cita a ese id no es válida)."""
+    from datetime import datetime, timezone
+    if id_ev.startswith("AGR:"):
+        return {"tipo": "agrupacion", "id": id_ev, "titulo": "Dato calculado por el sistema", "url": None,
+                "campos": {"id_caso": id_ev[4:], "metodo": "agrupación semántica de titulares + procedencia (agencia replicada = 1)"},
+                "nota": "No es una fuente externa: es el recuento que hizo el sistema al agrupar los titulares del evento."}
+    reg = registro_evidencia().get(id_ev)
+    if not reg:
+        return None
+    o = reg["obj"]
+    if reg["tipo"] == "noticia":
+        nota = "Solo titular y metadatos: no se leyó el artículo."
+        if not o.fecha_publicacion:
+            nota += " GDELT informa la fecha de DETECCIÓN, no la de publicación."
+        return {"tipo": "noticia", "id": id_ev, "titulo": o.titulo, "url": o.url, "sintetico": o.sintetico,
+                "campos": {"titulo": o.titulo, "medio": o.dominio, "url": o.url, "idioma": o.idioma or "—",
+                           "fecha_publicacion": o.fecha_publicacion or None, "fecha_deteccion": o.fecha_deteccion or None,
+                           "origen": o.origen}, "nota": nota}
+    if reg["tipo"] == "indicador":
+        return {"tipo": "indicador", "id": id_ev, "titulo": f"{o['indicador_id']} · {o['pais_iso3']} · {o['anio']}",
+                "url": o["fuente_url"],
+                "campos": {"pais": o["pais_iso3"], "indicador": o["indicador_id"], "anio": o["anio"], "valor": o["valor"],
+                           "unidad": o["unidad"], "licencia": o["licencia"], "fecha_extraccion": o["fecha_extraccion"]},
+                "nota": f"Dato ANUAL del Banco Mundial para {o['anio']}: no es una medición de hoy y puede revisarse."}
+    t = datetime.fromtimestamp(o["time"] / 1000, tz=timezone.utc).isoformat(timespec="seconds") if o.get("time") else None
+    return {"tipo": "sismo", "id": id_ev, "titulo": f"M{o['magnitude']} · {o['place']}", "url": o["url"],
+            "campos": {"magnitude": o["magnitude"], "place": o["place"], "time": t, "depth": o["depth"],
+                       "latitude": o["latitude"], "longitude": o["longitude"], "status": o["status"]},
+            "nota": "USGS 2024, caja regional lat 5–12, lon −86/−76. Sirve solo como hecho sísmico, no como evidencia de daños."}
+
+
 def limpiar_cache():
+    registro_evidencia.cache_clear()
     for fn in (noticias, indicadores, eventos, manifest):
         fn.cache_clear()
