@@ -3,6 +3,8 @@ import { EVIDENCIA, api, horaPA, textoProcedencia } from "../lib.js";
 import { Cita, Tipo } from "./Ficha.jsx";
 
 const EJEMPLOS = [
+  "Temas de logística de esta semana",
+  "Abre la ficha del grado de inversión de S&P",
   "¿Cuál fue la inflación de Panamá en 2023?",
   "¿Qué dijo S&P sobre el grado de inversión de Panamá?",
   "¿Afectará El Niño los tránsitos por el Canal de Panamá?",
@@ -69,7 +71,13 @@ export default function Consulta({ inicial, irAFicha, navegar }) {
     setOcupado(true);
     setError("");
     api("/query", "POST", { pregunta: p })
-      .then((x) => { setR(x); setOcupado(false); })
+      .then((x) => {
+        setR(x); setOcupado(false);
+        // La consulta maneja la interfaz: solo con acciones validadas por el backend.
+        const a = x.accion_ui || {};
+        if (a.tipo === "filtrar_tema") navegar({ vista: "agenda", tema: a.tema, dias: a.dias ?? null, c: p, ficha: null, sint: false, n: 30 });
+        else if (a.tipo === "abrir_ficha" && x.eventos?.[0]) irAFicha(a.id_caso, "resumen", { sint: x.eventos[0].sintetico });
+      })
       .catch((e) => { setError(e.message); setOcupado(false); });
   };
 

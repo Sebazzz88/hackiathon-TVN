@@ -65,3 +65,12 @@ test("una respuesta tardía de otra ficha no reemplaza la que está abierta", ()
   assert.equal(fichaVigente({ id_caso: "A" }, "B"), false);   // el borrador de A llegó cuando ya se abrió B
   assert.equal(fichaVigente(null, "B"), false);
 });
+
+test("filtro por tema y ventana de días se conserva y se valida", () => {
+  const h = construir({ tema: "logistica_canal", dias: 7, c: "temas de logística de esta semana", n: 10 });
+  const r = parsear(h);
+  assert.deepEqual([r.tema, r.dias, r.c, r.n], ["logistica_canal", 7, "temas de logística de esta semana", 10]);
+  assert.equal(parsear("#/agenda?t=farandula&d=365").tema, null);   // tema inventado o ventana fuera de rango: se ignoran
+  assert.equal(parsear("#/agenda?t=farandula&d=365").dias, null);
+  assert.equal(construir({ c: "texto sin filtro" }), "#/agenda");     // la consulta solo viaja si hay filtro
+});

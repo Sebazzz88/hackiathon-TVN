@@ -101,11 +101,16 @@ def quality_report():
 
 
 @app.get("/api/inbox", response_model=Bandeja)
-def inbox(limit: int = 5, sinteticos: bool = False):
+def inbox(limit: int = 5, sinteticos: bool = False, tema: str | None = None, dias: int | None = None):
     """Bandeja priorizada: solo las `limit` fichas pedidas (máx. 1000), traídas con una consulta SQL. Por defecto solo
     reales; sinteticos=true lista los casos controlados de prueba. En modo stub (datos DEMO) no se filtra."""
     limit = max(1, min(limit, MAX_BANDEJA))
-    total, filas = db.inbox(limit, sinteticos if agent.AGENT_MODE == "live" else None)
+    desde = None
+    if dias:
+        from datetime import timedelta
+        from .agent.corpus import fecha_corte
+        desde = (fecha_corte() - timedelta(days=max(1, min(dias, 90)))).isoformat(timespec="minutes")
+    total, filas = db.inbox(limit, sinteticos if agent.AGENT_MODE == "live" else None, tema or None, desde)
     items = []
     for d in filas:
         try:

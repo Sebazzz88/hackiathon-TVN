@@ -38,21 +38,22 @@ def init():
         c.execute("CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT, accion TEXT, id_caso TEXT, detalle TEXT)")
         # migración de bases creadas por versiones anteriores: columnas de orden + relleno desde el JSON
         cols = _columnas(c, "fichas")
-        for nombre, tipo in (("puntaje", "REAL"), ("u", "REAL"), ("sint", "INTEGER")):
+        for nombre, tipo in (("puntaje", "REAL"), ("u", "REAL"), ("sint", "INTEGER"), ("tema", "TEXT"), ("fecha", "TEXT")):
             if nombre not in cols:
                 c.execute(f"ALTER TABLE fichas ADD COLUMN {nombre} {tipo}")
-        for r in c.execute("SELECT id_caso, data FROM fichas WHERE puntaje IS NULL").fetchall():
+        for r in c.execute("SELECT id_caso, data FROM fichas WHERE puntaje IS NULL OR tema IS NULL").fetchall():
             d = json.loads(r["data"])
-            c.execute("UPDATE fichas SET puntaje=?, u=?, sint=? WHERE id_caso=?",
-                      (d.get("puntaje", 0), d.get("componentes", {}).get("U", 0), int(bool(d.get("sintetico"))), r["id_caso"]))
+            c.execute("UPDATE fichas SET puntaje=?, u=?, sint=?, tema=?, fecha=? WHERE id_caso=?",
+                      (d.get("puntaje", 0), d.get("componentes", {}).get("U", 0), int(bool(d.get("sintetico"))),
+                       d.get("tema", ""), d.get("fecha_ultima", ""), r["id_caso"]))
         c.execute("CREATE INDEX IF NOT EXISTS ix_fichas_orden ON fichas(sint, puntaje DESC, u DESC, id_caso)")
 
 
 def _fila(f):
-    return (f.id_caso, f.model_dump_json(), f.puntaje, f.componentes.U, int(bool(f.sintetico)))
+    return (f.id_caso, f.model_dump_json(), f.puntaje, f.componentes.U, int(bool(f.sintetico)), f.tema or "", f.fecha_ultima or "")
 
 
-_INS = "INSERT OR REPLACE INTO fichas(id_caso,data,puntaje,u,sint) VALUES(?,?,?,?,?)"
+_INS = "INSERT OR REPLACE INTO fichas(id_caso,data,puntaje,u,sint,tema,fecha) VALUES(?,?,?,?,?,?,?)"
 
 
 def save(f):
@@ -79,10 +80,17 @@ def count():
         return c.execute("SELECT COUNT(*) FROM fichas").fetchone()[0]
 
 
-def inbox(limit, sint=None):
+def inbox(limit, sint=None, tema=None, desde=None):
     """(total, [ficha dict]) de las `limit` fichas con más puntaje. Orden del reto: puntaje desc, urgencia desc, ID.
-    sint=None -> todas; True/False -> solo sintéticas / solo reales."""
-    donde, args = ("", []) if sint is None else ("WHERE sint=?", [int(bool(sint))])
+    sint=None -> todas; True/False -> solo sintéticas / solo reales. tema: filtra por tema. desde: ISO UTC mínimo."""
+    conds, args = [], []
+    if sint is not None:
+        conds.append("sint=?"); args.append(int(bool(sint)))
+    if tema:
+        conds.append("tema=?"); args.append(tema)
+    if desde:
+        conds.append("fecha>=?"); args.append(desde)
+    donde = ("WHERE " + " AND ".join(conds)) if conds else ""
     with conn() as c:
         total = c.execute(f"SELECT COUNT(*) FROM fichas {donde}", args).fetchone()[0]
         rows = c.execute(f"SELECT data FROM fichas {donde} ORDER BY puntaje DESC, u DESC, id_caso ASC LIMIT ?",
