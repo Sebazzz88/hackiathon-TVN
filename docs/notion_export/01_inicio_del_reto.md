@@ -1,4 +1,4 @@
-# Inicio del reto — Copiloto TVN · De la señal a la decisión
+# Inicio del reto — Nexo · Copiloto editorial para TVN · De la señal a la decisión
 
 | Campo | Contenido |
 |---|---|

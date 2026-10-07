@@ -72,7 +72,7 @@ export default function Agenda({ corte, ruta, navegar }) {
     setErrorLista("");
     const filtro = (tema ? `&tema=${tema}` : "") + (dias ? `&dias=${dias}` : "");
     api(`/inbox?limit=${n === "max" ? N_MAX : n}&sinteticos=${sint}${filtro}`, "GET", undefined, ac.signal)
-      .then((d) => { setLista({ items: d.items, total: d.total }); setCargando(false); })
+      .then((d) => { setLista({ items: Array.isArray(d?.items) ? d.items : [], total: d?.total ?? 0 }); setCargando(false); })
       .catch((e) => { if (cancelado(e)) return; setErrorLista(e.message); setCargando(false); });
     return () => ac.abort();
   }, [n, sint, tema, dias, version]);

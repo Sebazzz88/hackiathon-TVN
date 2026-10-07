@@ -1,4 +1,4 @@
-# Copiloto TVN — hackIAthon Panamá 2026
+# Nexo · Copiloto editorial para TVN — hackIAthon Panamá 2026
 - Reto: docs/reto_TVN.pdf. Resumen en docs/RETO.md (créalo una vez; después lee solo el resumen).
 - Entrega: jueves 8 oct 2026, 23:59 (Panamá). Código congelado el jueves 18:00.
 - Rama: main (feat/agente ya se fusionó en main el 7 oct 2026). Se trabaja directo en main. No crear ramas ni repos. No usar el .git de la carpeta exterior.

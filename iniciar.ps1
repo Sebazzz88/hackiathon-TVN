@@ -1,4 +1,4 @@
-﻿# Copiloto TVN: instala, enciende y apaga todo en Windows (backend, interfaz e IA local Hermes 3 vía Ollama).
+﻿# Nexo · Copiloto editorial para TVN: instala, enciende y apaga todo en Windows (backend, interfaz e IA local Hermes 3 vía Ollama).
 # Uso, desde la carpeta del repo:
 #   powershell -ExecutionPolicy Bypass -File .\iniciar.ps1 -Instalar   # la primera vez: instala todo y enciende
 #   powershell -ExecutionPolicy Bypass -File .\iniciar.ps1             # las siguientes veces: enciende
@@ -93,9 +93,9 @@ if ($ollama) {
 # ---------------------------------------------------------------- encender
 Apagar-App  # evita dos copias si ya estaba encendida
 Paso "Encendiendo backend en http://localhost:8000"
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "`$host.UI.RawUI.WindowTitle='Copiloto TVN - backend'; cd '$raiz\backend'; & '$py' -m uvicorn app.main:app --port 8000"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "`$host.UI.RawUI.WindowTitle='Nexo - backend'; cd '$raiz\backend'; & '$py' -m uvicorn app.main:app --port 8000"
 Paso "Encendiendo interfaz en http://localhost:5173"
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "`$host.UI.RawUI.WindowTitle='Copiloto TVN - interfaz'; cd '$raiz\frontend'; npm run dev"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "`$host.UI.RawUI.WindowTitle='Nexo - interfaz'; cd '$raiz\frontend'; npm run dev"
 
 $ok = $false
 for ($i = 0; $i -lt 40 -and -not $ok; $i++) {
@@ -107,7 +107,7 @@ if ($ok) {
     $txt = if ($ia.conectado) { "IA generativa conectada: $($ia.modelo)" } else { "IA generativa no disponible: $($ia.motivo)" }
     Write-Host "Backend listo. $txt" -ForegroundColor Green
 } else {
-    Write-Host "El backend tarda en responder; revisa la ventana 'Copiloto TVN - backend'." -ForegroundColor Yellow
+    Write-Host "El backend tarda en responder; revisa la ventana 'Nexo - backend'." -ForegroundColor Yellow
 }
 Start-Sleep 3
 Start-Process "http://localhost:5173"

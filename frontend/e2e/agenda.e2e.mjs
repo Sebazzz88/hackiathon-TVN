@@ -51,6 +51,7 @@ try {
     const d = JSON.parse(m.data);
     if (d.id && pendientes.has(d.id)) { pendientes.get(d.id)(d); pendientes.delete(d.id); }
     else if (d.method === "Runtime.exceptionThrown") erroresConsola.push(d.params.exceptionDetails.text + " " + (d.params.exceptionDetails.exception?.description || ""));
+    else if (d.method === "Runtime.consoleAPICalled" && d.params.type === "error") erroresConsola.push("console.error: " + d.params.args.map((x) => x.value ?? x.description ?? "").join(" ").slice(0, 3000));
     else if (d.method === "Network.responseReceived" && d.params.response.status >= 500) erroresRed.push(`${d.params.response.status} ${d.params.response.url}`);
   };
   await enviar("Runtime.enable"); await enviar("Network.enable"); await enviar("Page.enable");
@@ -65,7 +66,8 @@ try {
 
   // --- Clics rápidos, sin esperar: el último debe ganar aunque las respuestas lleguen desordenadas
   for (const t of ["10", "30", "5", "10", "5", "30", "10", "5"]) await clic(".seg", t);
-  ok("tras clics rápidos 10,30,5,10,5,30,10,5 queda exactamente en 5", await asentado(5), `h1="${await h1()}"`);
+  ok("tras clics rápidos 10,30,5,10,5,30,10,5 queda exactamente en 5", await asentado(5),
+    `h1="${await h1()}" hash=${await ev("location.hash")} pantalla="${(await ev("document.querySelector('.contenido')?.innerText || ''")).slice(0, 200).replace(/\s+/g, " ")}"`);
   await dormir(1500);
   ok("y sigue en 5 después de que lleguen respuestas tardías", (await filas()) === 5);
 

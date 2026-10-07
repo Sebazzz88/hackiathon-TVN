@@ -1,4 +1,4 @@
-"""Agente IA del Copiloto TVN (AGENT_MODE=live). Mismas firmas que app/agent_interface.py."""
+"""Agente IA de Nexo (copiloto editorial para TVN) (AGENT_MODE=live). Mismas firmas que app/agent_interface.py."""
 from ..models import Ficha, QueryOut
 
 

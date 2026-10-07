@@ -34,6 +34,18 @@ class Contenedor extends Component {
   }
 }
 
+/** Símbolo de Nexo: la señal (trazo) que se une a la decisión (punto rojo). Hereda el color del texto. */
+function MarcaNexo() {
+  return (
+    <svg className="marca-simbolo" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <path d="M14 42 V22 C14 11 25 10 30 18 L39 35 C43 44 50 44 50 36 V28" fill="none" stroke="currentColor"
+        strokeWidth="11" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="14" cy="54" r="6" fill="currentColor" />
+      <circle cx="50" cy="12" r="8" fill="var(--acento)" />
+    </svg>
+  );
+}
+
 export default function App() {
   const [ruta, setRuta] = useState(() => parsear(window.location.hash));
   const [meta, setMeta] = useState(null);
@@ -67,11 +79,12 @@ export default function App() {
         Saltar al contenido
       </a>
       <header className="cabecera">
-        <div className="marca">
-          <span className="marca-tvn">TVN</span>
+        <a className="marca" href="#/agenda" aria-label="Nexo, copiloto editorial: ir a la agenda">
+          <MarcaNexo />
+          <span className="marca-nombre" aria-hidden="true">Nex<span className="marca-o">o</span></span>
           <span className="marca-sep" aria-hidden="true" />
-          <span className="marca-txt">Copiloto editorial</span>
-        </div>
+          <span className="marca-txt" aria-hidden="true">Copiloto editorial</span>
+        </a>
         <nav className="tabs" aria-label="Secciones">
           {VISTAS.map(([k, t]) => (
             <button key={k} className={vista === k ? "tab on" : "tab"} onClick={() => navegar({ vista: k, ficha: null })}

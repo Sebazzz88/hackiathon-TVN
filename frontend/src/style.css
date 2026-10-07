@@ -48,12 +48,14 @@ a { color: var(--azul); text-decoration: none; } a:hover { text-decoration: unde
   padding: 0 24px; height: 56px; background: var(--barra); color: var(--barra-txt);
   border-bottom: 3px solid var(--acento);
 }
-.marca { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
-.marca-tvn { font-weight: 900; font-size: 1.25rem; letter-spacing: .04em; }
+.marca { display: flex; align-items: center; gap: 8px; white-space: nowrap; color: inherit; text-decoration: none; }
+.marca-simbolo { width: 26px; height: 26px; flex: none; }
+.marca-nombre { font-weight: 800; font-size: 1.3rem; letter-spacing: -.03em; line-height: 1; }
+.marca-o { color: var(--acento); margin-left: -1px; }
 .marca-sep { width: 1px; height: 20px; background: rgba(255, 255, 255, .3); }
 .marca-txt { font-size: .95rem; opacity: .9; }
 .tabs { display: flex; gap: 2px; height: 100%; }
-.tab { background: none; border: 0; color: var(--barra-txt); opacity: .7; padding: 0 14px; height: 100%; border-bottom: 3px solid transparent; margin-bottom: -3px; font-weight: 600; }
+.tab { background: none; border: 0; color: var(--barra-txt); opacity: .7; padding: 0 14px; height: 100%; border-bottom: 3px solid transparent; margin-bottom: -3px; font-weight: 600; white-space: nowrap; flex: none; }
 .tab:hover { opacity: 1; }
 .tab.on { opacity: 1; border-bottom-color: #fff; }
 .estado-ia { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700;

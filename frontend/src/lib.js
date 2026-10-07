@@ -20,7 +20,14 @@ export async function api(path, method = "GET", body, signal) {
       const r = await fetch(url, {
         method, signal, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined,
       });
-      const d = await r.json().catch(() => ({}));
+      // Si se cancela mientras se lee el cuerpo, la cancelación debe propagarse: antes se convertía en {} y la vista
+      // recibía una "respuesta" sin datos (la agenda se rompía con clics rápidos).
+      let d = {};
+      try { d = await r.json(); } catch (e) {
+        if (e.name === "AbortError" || signal?.aborted) throw e;
+        if (r.ok) throw new ApiError("La respuesta del servidor llegó incompleta. Reintenta.", { estado: r.status, transitorio: true });
+      }
+      if (signal?.aborted) throw new DOMException("cancelada", "AbortError");
       if (r.ok) return d;
       const detalle = typeof d.detail === "string" ? d.detail : null;
       throw new ApiError(detalle || (r.status >= 500

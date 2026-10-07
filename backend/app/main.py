@@ -45,7 +45,7 @@ async def lifespan(_):
     yield
 
 
-app = FastAPI(title="Copiloto TVN – De la señal a la decisión", lifespan=lifespan)
+app = FastAPI(title="Nexo · Copiloto editorial – De la señal a la decisión", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"], allow_methods=["*"], allow_headers=["*"])
 
 

@@ -1,4 +1,4 @@
-﻿# Copiloto TVN: demo en UN comando, UNA ventana y UN puerto (http://localhost:8000). Sin login ni credenciales.
+﻿# Nexo · Copiloto editorial para TVN: demo en UN comando, UNA ventana y UN puerto (http://localhost:8000). Sin login ni credenciales.
 # Requisito: haber instalado una vez con  powershell -ExecutionPolicy Bypass -File .\iniciar.ps1 -Instalar
 # Uso, desde la carpeta del repo:
 #   powershell -ExecutionPolicy Bypass -File .\run_demo.ps1            # con Hermes 3 local si Ollama está encendido
@@ -41,6 +41,6 @@ if (-not $SinNavegador) {
         }
     } | Out-Null
 }
-Write-Host "Copiloto TVN en http://localhost:$Puerto  ·  Ctrl+C para apagar" -ForegroundColor Green
+Write-Host "Nexo · Copiloto editorial en http://localhost:$Puerto  ·  Ctrl+C para apagar" -ForegroundColor Green
 Push-Location (Join-Path $raiz "backend")
 try { & $py -m uvicorn app.main:app --host 127.0.0.1 --port $Puerto } finally { Pop-Location; Get-Job | Remove-Job -Force }

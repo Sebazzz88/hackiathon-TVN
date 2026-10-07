@@ -1,4 +1,6 @@
-# Copiloto TVN — "De la señal a la decisión"
+<p align="center"><img src="frontend/public/nexo-logo.svg" alt="Nexo · Copiloto editorial" width="330"></p>
+
+# Nexo · Copiloto editorial para TVN — "De la señal a la decisión"
 
 Prototipo para la mesa editorial de TVN, hecho para el hackIAthon Panamá 2026.
 
@@ -123,7 +125,7 @@ desarrollo (no tiene Docker); la ruta verificada es `run_demo.ps1`.
 |---|---|
 | `iniciar.ps1` no se ejecuta | Usa exactamente el comando con `-ExecutionPolicy Bypass` y estando en la carpeta del proyecto |
 | `python` o `node` no se reconocen | Instala el programa (paso 1) y abre una PowerShell **nueva** |
-| La página dice "No hay conexión con el backend" | El backend no arrancó. Mira la ventana "Copiloto TVN - backend". Si el puerto 8000 está en uso, corre `-Apagar` y vuelve a encender |
+| La página dice "No hay conexión con el backend" | El backend no arrancó. Mira la ventana "Nexo - backend". Si el puerto 8000 está en uso, corre `-Apagar` y vuelve a encender |
 | Indicador de IA en amarillo ("solo embeddings") | Ollama no está encendido o falta el modelo. Corre `.\iniciar.ps1` (lo enciende y lo descarga) o manualmente `ollama pull hermes3:3b` |
 | Aviso "modelo local no disponible" en el backend | Falta el modelo de embeddings: `backend\.venv\Scripts\python -m app.agent.embed --descargar`. Mientras tanto usa un respaldo de menor calidad |
 | La IA tarda mucho | Normal sin GPU: ~1 minuto por respuesta. Lo ya generado queda en caché y sale al instante |
