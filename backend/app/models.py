@@ -44,6 +44,9 @@ class Ficha(BaseModel):  # espejo de fichas.jsonl
     respaldado: list[str] = []             # qué está respaldado (con id de evidencia)
     accion: str = ""                       # acción recomendada al usuario
     fuentes_independientes: int = 0        # procedencias distintas (agencia replicada = 1)
+    fuentes_totales: int = 0               # notas/titulares agrupados en el evento (duplicados incluidos)
+    procedencias_independientes: int = 0   # procedencias distintas: mismo dominio o misma agencia = 1
+    procedencias: list[dict] = []          # desglose: quién, de qué tipo y cuántas notas
     registros: int = 0                     # titulares agrupados (duplicados incluidos)
     noticias: list[dict] = []              # registros agrupados con medio, fechas y procedencia
     contexto: list[dict] = []              # indicadores BM / eventos USGS con período y unidad
@@ -66,6 +69,8 @@ class BandejaItem(BaseModel):
     estado_evidencia: EstadoEvidencia
     estado_revision: Estado
     fuentes_independientes: int = 0
+    fuentes_totales: int = 0
+    procedencias_independientes: int = 0
     registros: int = 0
     fecha_ultima: str = ""
     sintetico: bool = False

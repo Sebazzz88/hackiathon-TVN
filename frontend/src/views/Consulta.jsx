@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { EVIDENCIA, api } from "../lib.js";
+import { EVIDENCIA, api, textoProcedencia } from "../lib.js";
 import { Cita, Tipo } from "./Ficha.jsx";
 
 const EJEMPLOS = [
@@ -113,7 +113,7 @@ export default function Consulta({ inicial, irAFicha, navegar }) {
                       <span className="titular">{e.titulo}</span>
                       <span className="meta">
                         {e.sintetico && <em className="sint">caso sintético · </em>}
-                        {e.medio} · {e.registros} titular(es) · {e.fuentes_independientes} fuente(s) indep. · {EVIDENCIA[e.estado_evidencia]}
+                        {e.medio} · {textoProcedencia(e)} · {EVIDENCIA[e.estado_evidencia]}
                         {e.contradicciones > 0 && <b> · versiones incompatibles</b>}
                       </span>
                     </button>

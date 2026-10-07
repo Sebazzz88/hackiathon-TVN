@@ -25,6 +25,7 @@ def cliente():
     db.init()
     db.replace_all([scoring.aplicar(f) for f in pipeline.seleccionar(pipeline.analizar()["fichas"])])
     db.set_meta("agent_mode", "live")
+    db.set_meta("fichas_version", main.FICHAS_VERSION)
     with TestClient(main.app) as c:
         yield c
     mp.undo()

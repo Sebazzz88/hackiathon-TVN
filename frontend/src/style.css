@@ -273,3 +273,7 @@ textarea { resize: vertical; }
 .visor-fila.citado { background: color-mix(in srgb, var(--acento) 9%, transparent); outline: 1px solid color-mix(in srgb, var(--acento) 45%, transparent); }
 .visor-marca { margin-left: 6px; font-size: .65rem; text-transform: uppercase; background: var(--acento); color: #fff; padding: 0 5px; border-radius: 3px; }
 .visor-abrir { display: inline-block; margin-top: 8px; font-weight: 600; }
+
+.proc-resumen { font-size: 1.02rem; margin-bottom: 4px; }
+.proc-lista { margin: 0 0 6px; padding-left: 18px; display: grid; gap: 3px; font-size: .9rem; }
+.sello-proc { border-color: var(--barra); }

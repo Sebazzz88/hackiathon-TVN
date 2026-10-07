@@ -81,6 +81,13 @@ export const EVIDENCIA = {
   suficiente_para_borrador: "Suficiente para borrador",
 };
 
+/** "6 notas · 3 procedencias independientes" (mismo dominio o misma agencia = 1 procedencia). */
+export function textoProcedencia(f) {
+  const notas = f.fuentes_totales || f.registros || 0;
+  const proc = f.procedencias_independientes || f.fuentes_independientes || 0;
+  return `${notas} nota${notas === 1 ? "" : "s"} · ${proc} procedencia${proc === 1 ? "" : "s"} independiente${proc === 1 ? "" : "s"}`;
+}
+
 export const TIPOS = { hecho: "Hecho", declaracion: "Declaración", inferencia: "Inferencia", hipotesis: "Hipótesis" };
 
 const fmt = new Intl.DateTimeFormat("es-PA", {
