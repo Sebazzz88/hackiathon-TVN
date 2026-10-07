@@ -67,6 +67,11 @@ def correr():
         if xml.exists():
             for tc in ET.parse(xml).getroot().iter("testcase"):
                 nombre = tc.get("name", "")
+                if "\\x" in nombre or "\\u" in nombre:  # pytest escapa los acentos de los parámetros en el XML
+                    try:
+                        nombre = nombre.encode("ascii").decode("unicode_escape")
+                    except (UnicodeError, ValueError):
+                        pass
                 base = nombre.split("[")[0]
                 tid = base.split("_")[1] if base.startswith("test_T") else None
                 if tid not in PRUEBAS:
