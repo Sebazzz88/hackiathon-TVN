@@ -249,3 +249,50 @@ def test_titulares_legitimos_no_son_inyeccion(t):
 def test_consulta_devuelve_eventos_con_ficha_guardada(fichas):
     r = query.responder("¿Qué dijo S&P sobre el grado de inversión de Panamá?")
     assert r.eventos and all(e["id_caso"] in {f.id_caso for f in pipeline.seleccionar(list(fichas.values()))} for e in r.eventos)
+
+
+def test_consulta_redactada_por_ia_con_cliente_simulado(fichas, tmp_path, monkeypatch):
+    """La IA redacta la respuesta con la evidencia recuperada; el validador elimina lo no respaldado; caché offline."""
+    import types
+    import anthropic
+    salida = {"abstener": False, "faltante": ["Comunicado oficial del MEF"],
+              "afirmaciones": [{"texto": "Según laestrella.com.pa, S & P ratificó el grado de inversión de Panamá.",
+                                "tipo": "declaracion", "citas": [{"id_evidencia": "G11b756ff2a", "campo": "titulo"}]},
+                               {"texto": "La economía crecerá 9% el próximo año.", "tipo": "hecho",
+                                "citas": [{"id_evidencia": "G11b756ff2a", "campo": "titulo"}]}]}
+    llamadas = []
+
+    class Cliente:
+        def __init__(self, **kw):
+            self.messages = self
+
+        def create(self, **kw):
+            llamadas.append(kw)
+            return types.SimpleNamespace(stop_reason="end_turn", content=[types.SimpleNamespace(type="text", text=json.dumps(salida))],
+                                         usage=types.SimpleNamespace(input_tokens=800, output_tokens=200))
+
+    monkeypatch.setattr(anthropic, "Anthropic", Cliente)
+    monkeypatch.setenv("LLM_OFFLINE", "0")
+    monkeypatch.setenv("LLM_API_KEY", "clave-de-prueba")
+    monkeypatch.setenv("LLM_CACHE_DIR", str(tmp_path))
+    q = "¿Qué dijo S&P sobre el grado de inversión de Panamá?"
+    r = query.responder(q)
+    assert r.generador.startswith("llm:") and r.metodo == "recuperacion_semantica+ia"
+    assert len(r.afirmaciones) == 1 and "S & P ratificó" in r.respuesta
+    assert any("9" in e["texto"] for e in r.eliminadas)  # cifra inventada eliminada
+    assert "<DATOS>" in llamadas[0]["messages"][0]["content"]
+    r2 = query.responder(q)
+    assert r2.generador.startswith("cache:") and len(llamadas) == 1
+
+
+def test_validador_fechas_no_respaldan_cifras_sueltas(fichas):
+    """Regresión: el mes de una fecha (septiembre = 9) no puede 'respaldar' un '9%' inventado."""
+    f = fichas["EV-G226d8217c0"]
+    ev = draft.evidencias(f)
+    cita = [{"id_evidencia": "G11b756ff2a", "campo": "titulo"}]
+    ok, fuera = draft.validar([
+        {"texto": "La economía crecerá 9% el próximo año.", "tipo": "hecho", "citas": cita},
+        {"texto": "Detectado el 01/01/2020 a las 10:00.", "tipo": "hecho", "citas": cita},
+        {"texto": f"laestrella.com.pa {draft.cuando(ev['G11b756ff2a'])}: S & P ratifica el grado BBB.", "tipo": "declaracion", "citas": cita},
+    ], ev, "brief")
+    assert len(ok) == 1 and len(fuera) == 2

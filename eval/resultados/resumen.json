@@ -1,5 +1,5 @@
 {
- "generado_utc": "2026-10-06T22:16:50+00:00",
+ "generado_utc": "2026-10-07T03:05:20+00:00",
  "particiones": {
   "dev": {
    "sustentada": {
@@ -601,7 +601,7 @@
    "eliminadas": 0,
    "brief_palabras": 170,
    "copy_palabras": 18,
-   "guion_s": 58,
+   "guion_s": 59,
    "preguntas": 3,
    "leyenda": true
   },
@@ -614,7 +614,7 @@
    "eliminadas": 0,
    "brief_palabras": 209,
    "copy_palabras": 24,
-   "guion_s": 60,
+   "guion_s": 61,
    "preguntas": 3,
    "leyenda": true
   },
@@ -825,11 +825,11 @@
   "nota": "Falta eval/seleccion_editor.json (selección independiente de un editor). No se reporta Precision@5."
  },
  "tiempos": {
-  "pipeline_s": 4.59,
+  "pipeline_s": 5.5,
   "consulta_mediana_s": 0.004,
-  "consulta_p95_s": 0.01,
-  "borrador_mediana_s": 0.001,
-  "borrador_p95_s": 0.002,
+  "consulta_p95_s": 0.011,
+  "borrador_mediana_s": 0.002,
+  "borrador_p95_s": 0.003,
   "n_consultas": 60,
   "n_borradores": 18,
   "entorno": "CPU local Windows, embeddings ONNX locales, LLM desactivado (plantilla/caché)"
@@ -940,13 +940,13 @@
   },
   {
    "nombre": "Tiempo por consulta (mediana / p95)",
-   "agente": "0.004 s / 0.01 s",
+   "agente": "0.004 s / 0.011 s",
    "baseline": null,
-   "nota": "meta mediana ≤ 15 s; pipeline completo 4.59 s"
+   "nota": "meta mediana ≤ 15 s; pipeline completo 5.5 s"
   },
   {
    "nombre": "Tiempo por borrador (mediana / p95)",
-   "agente": "0.001 s / 0.002 s",
+   "agente": "0.002 s / 0.003 s",
    "baseline": null,
    "nota": "0 USD en esta ejecución (LLM_OFFLINE=1: plantilla determinista o caché)."
   }

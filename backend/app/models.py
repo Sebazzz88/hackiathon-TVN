@@ -67,6 +67,10 @@ class QueryOut(BaseModel):
     faltante: list[str] = []
     versiones: list[dict] = []   # contradicciones relevantes a la consulta
     eventos: list[dict] = []     # eventos recuperados (para abrir su ficha)
+    afirmaciones: list[dict] = []  # respuesta redactada por IA, ya validada (texto, tipo, citas)
+    eliminadas: list[dict] = []    # afirmaciones de la IA descartadas por el validador
+    generador: str = ""            # extractivo | llm:<modelo> | cache:<modelo>
+    meta_llm: dict = {}            # tokens, costo y segundos de la llamada (sin datos sensibles)
     base: str = "titular/metadatos"
     metodo: str = ""
 

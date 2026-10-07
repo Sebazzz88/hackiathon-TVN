@@ -42,12 +42,12 @@ Código: `backend/app/agent/` (versión `agente-v1`). Se activa con `AGENT_MODE=
 2. Indicador detectado: país fuera del paquete → abstención; "hoy", "actual" o año fuera de 2010–2024 → abstención explicando que solo hay datos anuales; valor nulo → abstención; si no, valor con país, año, unidad y cita `WB:…`.
 3. Noticias: recuperación semántica sobre eventos. Similitud máxima < 0,45 → abstención. Si se pide una cifra y ningún titular la tiene → abstención. Se muestran todas las versiones de una contradicción.
 
-La respuesta es extractiva (no usa LLM): reproduce titulares y valores con su cita.
+Indicadores: respuesta determinista (cifras exactas del Banco Mundial, sin LLM). Noticias: con la IA generativa conectada, Claude redacta la respuesta solo con la evidencia recuperada (prompt `respuesta-v1`, salida JSON por esquema, pregunta y titulares tratados como DATO). Pasa por el mismo validador que los borradores; si no queda ninguna frase válida, o no hay clave ni caché, se muestra la respuesta extractiva (titulares con su cita).
 
 ## Borrador y validador
 
 - **Generador:** Claude (`LLM_MODEL`, por defecto `claude-opus-5-5`, `effort=low`, salida JSON por esquema). Si hay respuesta en caché (`data/cache/llm/`) se usa sin red. Sin clave, sin internet o con error: plantilla determinista.
-- **Validador** (en código, para ambos generadores): elimina la afirmación si no tiene cita, cita un id ajeno a la ficha, cita un campo inexistente, cita una fuente con posible inyección, contiene instrucciones, o tiene cifras que no aparecen en la evidencia citada. Un "hecho" que solo cita titulares pasa a "declaración". Recorta a 250/80 palabras y estima el guion a 2,5 palabras/s.
+- **Validador** (en código, para borradores y respuestas, con LLM o plantilla): elimina la afirmación si no tiene cita, cita un id ajeno a la ficha, cita un campo inexistente, cita una fuente con posible inyección, contiene instrucciones, tiene cifras que no aparecen en la evidencia citada, o fechas y horas distintas a las de la evidencia. Las fechas de la fuente no respaldan números sueltos: el mes 9 de una fecha no valida un "9%" inventado (regresión encontrada con una prueba). Un "hecho" que solo cita titulares pasa a "declaración". Recorta a 250/80 palabras y estima el guion a 2,5 palabras/s.
 
 ### Prompt de sistema (`draft-v1`)
 

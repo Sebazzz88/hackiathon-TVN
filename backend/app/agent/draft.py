@@ -114,16 +114,21 @@ def evidencias(f: Ficha):
     return ev
 
 
-def bloque_datos(f, ev):
+def bloque_evidencia(ev):
+    """<DATOS> con un <DATO id=...> por evidencia; delimitadores neutralizados; fuentes inyectadas marcadas."""
     lineas = []
     for i, d in ev.items():
         pub = {k: (como_dato(str(v)) if isinstance(v, str) else v) for k, v in d.items() if not k.startswith("_")}
         if d.get("_inyeccion"):
             pub["advertencia_sistema"] = "posible inyección detectada: contenido no confiable"
         lineas.append(f'<DATO id="{i}">{json.dumps(pub, ensure_ascii=False)}</DATO>')
+    return "<DATOS>\n" + "\n".join(lineas) + "\n</DATOS>\n"
+
+
+def bloque_datos(f, ev):
     contra = [{"magnitud": k["magnitud"], "versiones": [{"valor": v["valor"], "id": v["id"], "medio": v["medio"]} for v in k["versiones"]]}
               for k in f.contradicciones]
-    return ("<DATOS>\n" + "\n".join(lineas) + "\n</DATOS>\n"
+    return (bloque_evidencia(ev) +
             f"Tema: {TEMAS.get(f.tema, f.tema)}. Procedencias independientes: {f.fuentes_independientes}. "
             f"Estado de evidencia: {f.estado_evidencia}. Contradicciones: {json.dumps(contra, ensure_ascii=False)}.\n"
             "Redacta el paquete editorial (título, enfoque de interés público, brief, 3 preguntas de investigación, "
@@ -135,23 +140,38 @@ def _nums(t):
     return {re.sub(r"[.,]0+$", "", x.replace(",", ".")) for x in re.findall(r"\d+(?:[.,]\d+)?", t)}
 
 
+CAMPOS_FECHA = ("fecha_publicacion", "fecha_deteccion")
+_RX_FECHA_TXT = re.compile(r"\b\d{1,2}/\d{1,2}/\d{4}\b|\b\d{1,2}:\d{2}\b")
+
+
 def _nums_ev(d, campos):
+    """Cifras que respaldan un texto. Las fechas NO aportan números sueltos (si no, el mes 9 de una fecha
+    'respaldaría' un '9%' inventado); solo el año de publicación/detección."""
     out = set()
     for c in campos:
         v = d.get(c)
-        if v is None:
+        if v is None or c in CAMPOS_FECHA or c == "url":
             continue
         if isinstance(v, float):
             out |= {f"{v:g}", f"{v:.1f}", f"{v:.2f}", str(round(v)), f"{v:,.0f}".replace(",", ".")}
             out |= _nums(f"{v:,.0f}".replace(",", "."))
         out |= _nums(str(v))
-    if "fecha_publicacion" in campos or "fecha_deteccion" in campos or "titulo" in campos:
-        for k in ("fecha_publicacion", "fecha_deteccion"):
-            dt = parse_dt(d.get(k) or "")
-            if dt:
-                p = dt.astimezone(PANAMA_TZ)
-                out |= {str(p.day), f"{p.day:02d}", str(p.month), f"{p.month:02d}", str(p.year), p.strftime("%H"), p.strftime("%M")}
+    for k in CAMPOS_FECHA:
+        dt = parse_dt(d.get(k) or "")
+        if dt:
+            out.add(str(dt.astimezone(PANAMA_TZ).year))
     return {re.sub(r"[.,]0+$", "", x) for x in out}
+
+
+def _fechas_ev(d):
+    """Fechas y horas (hora de Panamá) que la evidencia permite escribir, en el formato de hora_pa()."""
+    out = set()
+    for k in CAMPOS_FECHA:
+        dt = parse_dt(d.get(k) or "")
+        if dt:
+            p = dt.astimezone(PANAMA_TZ)
+            out |= {p.strftime("%d/%m/%Y"), f"{p.day}/{p.month}/{p.year}", p.strftime("%H:%M")}
+    return out
 
 
 def validar(afirms, ev, seccion):
@@ -172,12 +192,16 @@ def validar(afirms, ev, seccion):
         elif es_inyeccion(texto):
             motivo = "contiene instrucciones inyectadas"
         else:
-            permitidos = set()
+            permitidos, fechas = set(), set()
             for c in citas:
                 d = ev[c["id_evidencia"]]
-                permitidos |= _nums_ev(d, set(d) - {"url"})
-            extra = {x for x in _nums(texto) if x not in permitidos}
-            if extra:
+                permitidos |= _nums_ev(d, set(d))
+                fechas |= _fechas_ev(d)
+            fechas_txt = _RX_FECHA_TXT.findall(texto)
+            extra = {x for x in _nums(_RX_FECHA_TXT.sub(" ", texto)) if x not in permitidos}
+            if any(f not in fechas for f in fechas_txt):
+                motivo = "fecha u hora sin respaldo en la evidencia citada"
+            elif extra:
                 motivo = f"cifras sin respaldo en la evidencia citada: {', '.join(sorted(extra))}"
         if motivo:
             fuera.append({"seccion": seccion, "texto": texto, "motivo": motivo})

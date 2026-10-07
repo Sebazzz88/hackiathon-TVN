@@ -12,6 +12,7 @@ import json
 import os
 import sys
 import time
+from pathlib import Path
 
 from .config import data_dir
 
@@ -27,8 +28,13 @@ def _clave():
     return os.getenv("LLM_API_KEY") or os.getenv("ANTHROPIC_API_KEY") or ""
 
 
+def cache_dir():
+    d = os.getenv("LLM_CACHE_DIR")
+    return Path(d) if d else data_dir() / "cache" / "llm"
+
+
 def _ruta(key):
-    return data_dir() / "cache" / "llm" / f"{key}.json"
+    return cache_dir() / f"{key}.json"
 
 
 def cache_key(system, user, schema, version):
@@ -69,3 +75,11 @@ def generar_json(system: str, user: str, schema: dict, version: str):
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps({"meta": meta, "salida": salida}, ensure_ascii=False, indent=1), encoding="utf-8")
     return salida, {**meta, "origen": "llm", "cache_key": key}
+
+
+def estado() -> dict:
+    """Estado de la IA generativa para la interfaz. Nunca expone la clave."""
+    clave, offline = bool(_clave()), os.getenv("LLM_OFFLINE") == "1"
+    d = cache_dir()
+    return {"modelo": modelo(), "clave_configurada": clave, "offline": offline, "conectado": clave and not offline,
+            "respuestas_en_cache": len(list(d.glob("*.json"))) if d.exists() else 0}
