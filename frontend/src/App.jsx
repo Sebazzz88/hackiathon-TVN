@@ -5,6 +5,7 @@ import Agenda from "./views/Agenda.jsx";
 import Consulta from "./views/Consulta.jsx";
 import Datos from "./views/Datos.jsx";
 import Evaluacion from "./views/Evaluacion.jsx";
+import VisorEvidencia from "./views/VisorEvidencia.jsx";
 
 const VISTAS = [
   ["agenda", "Agenda"],
@@ -98,6 +99,8 @@ export default function App() {
           {vista === "evaluacion" && <Evaluacion irAFicha={irAFicha} />}
         </Contenedor>
       </main>
+
+      <VisorEvidencia />
 
       <footer className="pie">
         Prototipo hackIAthon 2026 · Datos públicos (TVN RSS solo metadatos, GDELT, Banco Mundial, USGS) ·

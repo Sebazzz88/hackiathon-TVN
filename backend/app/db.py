@@ -106,6 +106,24 @@ def audit():
         return [dict(r) for r in c.execute("SELECT * FROM audit ORDER BY id DESC LIMIT 200")]
 
 
+def validador_totales():
+    """Suma de todo lo que el validador ha revisado desde que existe la base: emitidas, válidas, eliminadas y por qué."""
+    tot = {"revisiones": 0, "emitidas": 0, "validas": 0, "eliminadas": 0, "por_codigo": {}}
+    with conn() as c:
+        filas = c.execute("SELECT detalle FROM audit WHERE accion='validador'").fetchall()
+    for r in filas:
+        try:
+            d = json.loads(r["detalle"])
+        except (TypeError, ValueError):
+            continue
+        tot["revisiones"] += 1
+        for k in ("emitidas", "validas", "eliminadas"):
+            tot[k] += int(d.get(k, 0))
+        for cod, n in d.get("por_codigo", {}).items():
+            tot["por_codigo"][cod] = tot["por_codigo"].get(cod, 0) + int(n)
+    return tot
+
+
 def set_meta(k, v):
     with conn() as c:
         c.execute("INSERT OR REPLACE INTO meta VALUES(?,?)", (k, v))

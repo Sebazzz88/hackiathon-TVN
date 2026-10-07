@@ -1,4 +1,5 @@
 import { COMPONENTES, EVIDENCIA, TEMAS, TIPOS, estadoTxt, hace, horaPA } from "../lib.js";
+import { ETIQUETAS, abrirEvidencia } from "../evidencia.js";
 import Borrador from "./Borrador.jsx";
 import Revision from "./Revision.jsx";
 
@@ -11,7 +12,12 @@ const SECCIONES = [
 ];
 
 export function Cita({ id, campo }) {
-  return <code className="cita" title={`Evidencia ${id}, campo ${campo}`}>{id}·{campo}</code>;
+  return (
+    <button type="button" className="cita" title={`Abrir el registro fuente de ${id} (campo ${campo})`}
+      onClick={() => abrirEvidencia(id, campo)}>
+      {id} · {ETIQUETAS[campo] || campo}
+    </button>
+  );
 }
 
 export function Tipo({ t }) {
@@ -140,7 +146,7 @@ function Fuentes({ f }) {
                 <a href={n.url} target="_blank" rel="noreferrer">{n.titulo}</a>
                 <span className="meta">
                   {n.medio} · {n.fecha_publicacion ? `publicado ${horaPA(n.fecha_publicacion)}` : `detectado ${horaPA(n.fecha_deteccion)}`}
-                  {n.recirculada && " · publicación antigua"}{n.inyeccion_detectada && " · posible inyección (no confiable)"} · <code>{n.id}</code>
+                  {n.recirculada && " · publicación antigua"}{n.inyeccion_detectada && " · posible inyección (no confiable)"} · <Cita id={n.id} campo="titulo" />
                 </span>
               </li>
             ))}

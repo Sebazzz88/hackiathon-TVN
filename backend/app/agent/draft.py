@@ -16,6 +16,7 @@ from datetime import timedelta, timezone
 from ..models import Ficha
 from . import llm
 from .config import LEYENDA, TEMAS
+from .baseline import norm
 from .corpus import parse_dt, registro_evidencia
 from .security import como_dato, es_inyeccion
 
@@ -263,23 +264,84 @@ def _fechas_en_texto(texto):
     return out
 
 
+# ---- sustento textual: el CAMPO citado debe contener lo que la frase afirma
+UMBRAL_SUSTENTO = 0.5
+_PALABRAS_VACIAS = set("""para como pero esto esta este estos estas entre sobre desde hasta cuando donde cual cuales tiene tienen
+ fue fueron seran sera habia hay segun ante tras mediante durante tambien ademas aunque porque que quien quienes muy mas menos
+ los las del una unos unas por con sin son mismo misma otro otra""".split())
+_BOILERPLATE = set("""fecha publicacion disponible detectado detecto gdelt hora panama reporto publico declaro informo medio
+ titular titulares verificacion curso procedencia procedencias independientes repeticion corroboracion version versiones
+ contexto dato anual banco mundial medicion actual puede revisarse agruparon agrupado""".split())
+_RX_CITA_TEXTUAL = re.compile(r"[«\"]([^»\"]{8,})[»\"]")
+
+
+def _tokens(t):
+    return [w for w in norm(t).split() if len(w) >= 4 and w not in _PALABRAS_VACIAS and w not in _BOILERPLATE]
+
+
+def _stem(w):
+    return w[:5]
+
+
+def sustento_textual(texto, citas, ev):
+    """(cobertura 0-1 | None, motivo). Comprueba que el campo CITADO contenga lo que la frase afirma.
+    - Si la frase entrecomilla algo («…»), eso debe ser literalmente parte del campo.
+    - Si no, al menos UMBRAL_SUSTENTO de sus palabras de contenido deben aparecer en los campos citados.
+    None = no aplica (campos numéricos: ya los cubre el control de cifras)."""
+    campos = []
+    for c in citas:
+        v = ev[c["id_evidencia"]].get(c["campo"])
+        if isinstance(v, str) and len(v) > 8:
+            campos.append(norm(v))
+    if not campos:
+        return None, ""
+    conjunto = " ".join(campos)
+    cit = _RX_CITA_TEXTUAL.search(texto)
+    if cit:
+        ok = norm(cit.group(1)) in conjunto
+        return (1.0 if ok else 0.0), "" if ok else "lo entrecomillado no aparece en el campo citado"
+    medios = {t for c in citas for t in re.split(r"[.\-]", str(ev[c["id_evidencia"]].get("medio", "")).lower()) if t}
+    contenido = [w for w in _tokens(texto) if w not in medios]
+    if len(contenido) < 3:
+        return None, ""
+    propios = {_stem(w) for w in conjunto.split()}
+    cubiertas = sum(1 for w in contenido if _stem(w) in propios)
+    cob = cubiertas / len(contenido)
+    return cob, "" if cob >= UMBRAL_SUSTENTO else f"el campo citado no contiene lo afirmado (cobertura {cob:.0%})"
+
+
 def validar(afirms, ev, seccion):
+    """Validador POSTERIOR al LLM, en código. Elimina toda afirmación que:
+      sin_cita            no cite nada
+      fuera_de_ficha      cite una evidencia que no pertenece a esta ficha
+      fuera_del_corpus    cite un id que no existe en el corpus (snapshot completo)
+      campo_inexistente   cite un campo que esa evidencia no tiene
+      fuente_inyectada    cite una fuente con posible inyección
+      inyeccion           contenga instrucciones
+      fecha / cifras      escriba fechas o cifras que no están en la evidencia citada
+      sin_sustento        cite un campo de texto que no contiene lo que la frase afirma
+    Cada eliminada lleva su `codigo` para contarlas y registrarlas."""
+    reg = registro_evidencia()
     ok, fuera = [], []
     for a in afirms or []:
         texto, tipo, citas = (a.get("texto") or "").strip(), a.get("tipo"), a.get("citas") or []
-        motivo = None
+        motivo = codigo = None
         if not texto:
             continue
         if not citas:
-            motivo = "sin cita"
+            motivo, codigo = "sin cita", "sin_cita"
         elif any(c.get("id_evidencia") not in ev for c in citas):
-            motivo = "cita a evidencia inexistente o ajena a la ficha"
+            ajenos = [c.get("id_evidencia") for c in citas if c.get("id_evidencia") not in ev]
+            if any(i not in reg and not str(i).startswith("AGR:") for i in ajenos):
+                motivo, codigo = "cita a una evidencia que no existe en el corpus", "fuera_del_corpus"
+            else:
+                motivo, codigo = "cita a una evidencia ajena a esta ficha", "fuera_de_ficha"
         elif any(c.get("campo") not in ev[c["id_evidencia"]] or c.get("campo", "").startswith("_") for c in citas):
-            motivo = "campo citado no existe en la evidencia"
+            motivo, codigo = "campo citado no existe en la evidencia", "campo_inexistente"
         elif any(ev[c["id_evidencia"]].get("_inyeccion") for c in citas):
-            motivo = "cita una fuente con posible inyección (no confiable)"
+            motivo, codigo = "cita una fuente con posible inyección (no confiable)", "fuente_inyectada"
         elif es_inyeccion(texto):
-            motivo = "contiene instrucciones inyectadas"
+            motivo, codigo = "contiene instrucciones inyectadas", "inyeccion"
         else:
             permitidos, fechas = set(), set()
             for c in citas:
@@ -292,17 +354,31 @@ def validar(afirms, ev, seccion):
                 resto = resto.replace(frag, " ")
             extra = {x for x in _nums(resto) if x not in permitidos}
             if any(f not in fechas for f, _ in fechas_txt):
-                motivo = "fecha u hora sin respaldo en la evidencia citada"
+                motivo, codigo = "fecha u hora sin respaldo en la evidencia citada", "fecha"
             elif extra:
-                motivo = f"cifras sin respaldo en la evidencia citada: {', '.join(sorted(extra))}"
+                motivo, codigo = f"cifras sin respaldo en la evidencia citada: {', '.join(sorted(extra))}", "cifras"
+            elif tipo in ("hecho", "declaracion"):  # inferencias e hipótesis son interpretación: se citan, pero no se contrastan palabra a palabra
+                _, m = sustento_textual(texto, citas, ev)
+                if m:
+                    motivo, codigo = m, "sin_sustento"
         if motivo:
-            fuera.append({"seccion": seccion, "texto": texto, "motivo": motivo})
+            fuera.append({"seccion": seccion, "texto": texto, "motivo": motivo, "codigo": codigo})
             continue
         if tipo == "hecho" and all("titulo" in ev[c["id_evidencia"]] for c in citas):
             tipo = "declaracion"  # un titular no es un hecho verificado
-        ok.append({"seccion": seccion, "texto": texto, "tipo": tipo if tipo in ("hecho", "declaracion", "inferencia", "hipotesis") else "inferencia",
+        ok.append({"seccion": seccion, "texto": texto,
+                   "tipo": tipo if tipo in ("hecho", "declaracion", "inferencia", "hipotesis") else "inferencia",
                    "citas": [{"id_evidencia": c["id_evidencia"], "campo": c["campo"]} for c in citas]})
     return ok, fuera
+
+
+def resumen_validador(emitidas, eliminadas):
+    """Conteo para registrar: cuántas frases emitió el modelo, cuántas sobrevivieron y por qué se eliminó el resto."""
+    por = {}
+    for e in eliminadas:
+        k = e.get("codigo", "otro")
+        por[k] = por.get(k, 0) + 1
+    return {"emitidas": emitidas, "validas": emitidas - len(eliminadas), "eliminadas": len(eliminadas), "por_codigo": por}
 
 
 def _recortar(afirms, limite):
@@ -408,6 +484,7 @@ def generar(f: Ficha) -> dict:
     guion, e3 = validar(recuperar_citas(salida.get("guion"), ev), ev, "guion")
     copy, e4 = validar(recuperar_citas(salida.get("copy"), ev), ev, "copy")
     elim = e1 + e2 + e3 + e4
+    emitidas = len(enf) + len(brief) + len(guion) + len(copy) + len(elim)
     if not enf:  # si la IA no dejó nada válido en una sección, se usa la plantilla (las eliminadas quedan a la vista)
         enf, _ = validar([base["enfoque"]], ev, "enfoque")
     if not copy:
@@ -440,6 +517,6 @@ def generar(f: Ficha) -> dict:
             "Excede 60 s: recortar en edición."),
         "copy": " ".join(a["texto"] for a in copy), "copy_palabras": sum(palabras(a["texto"]) for a in copy),
         "afirmaciones": todas, "citas": [{"afirmacion": a["texto"], "tipo": a["tipo"], **c} for a in todas for c in a["citas"]],
-        "eliminadas": elim,
+        "eliminadas": elim, "validador": resumen_validador(emitidas, elim),
         "cobertura_citas": {"con_cita_valida": len(todas), "emitidas": len(todas), "eliminadas_por_validador": len(elim)},
     }

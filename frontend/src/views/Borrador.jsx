@@ -132,11 +132,12 @@ function Paquete({ b }) {
       </section>
 
       <p className="nota">
-        Cobertura de citas: {b.cobertura_citas.con_cita_valida}/{b.cobertura_citas.emitidas} afirmaciones con cita válida.
+        Validador en código: {b.validador ? `${b.validador.emitidas} afirmaciones emitidas · ${b.validador.validas} válidas · ${b.validador.eliminadas} eliminadas` : `${b.cobertura_citas.con_cita_valida}/${b.cobertura_citas.emitidas} con cita válida`}.
+        Cada cita se puede abrir para ver su registro fuente.
       </p>
       {b.eliminadas?.length > 0 && (
         <details className="eliminadas">
-          <summary>{b.eliminadas.length} afirmación(es) eliminadas por el validador</summary>
+          <summary>{b.eliminadas.length} afirmación(es) eliminadas por el validador{b.validador?.por_codigo && ` (${Object.entries(b.validador.por_codigo).map(([k, n]) => `${n} ${k.replaceAll("_", " ")}`).join(", ")})`}</summary>
           <ul>{b.eliminadas.map((e, i) => <li key={i}><s>{e.texto}</s> <span className="nota">— {e.motivo}</span></li>)}</ul>
         </details>
       )}

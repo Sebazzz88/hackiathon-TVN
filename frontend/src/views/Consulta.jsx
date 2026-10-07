@@ -85,6 +85,7 @@ export default function Consulta({ inicial, irAFicha, navegar }) {
                     ))}
                   </ul>
                   {r.faltante?.length > 0 && <ul className="pendientes">{r.faltante.map((x) => <li key={x}>{x}</li>)}</ul>}
+                  {r.validador?.emitidas > 0 && <p className="nota">Validador en código: {r.validador.emitidas} frases de la IA · {r.validador.validas} válidas · {r.validador.eliminadas} eliminadas.</p>}
                   {r.eliminadas?.length > 0 && (
                     <details className="eliminadas"><summary>{r.eliminadas.length} frase(s) de la IA descartadas por el validador</summary>
                       <ul>{r.eliminadas.map((e, i) => <li key={i}><s>{e.texto}</s> <span className="nota">— {e.motivo}</span></li>)}</ul>

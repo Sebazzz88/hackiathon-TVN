@@ -112,6 +112,8 @@ def get_ficha(id_caso: str):
 def query(q: QueryIn):
     out = agent.answer_query(q.pregunta, q.ia)
     db.log("query", "", f"abstencion={out.abstencion}")  # no se registra el texto completo
+    if out.validador:
+        db.log("validador", "", json.dumps(out.validador))
     return out
 
 
@@ -123,6 +125,8 @@ def draft(id_caso: str):
         f.estado_revision = "en_revision"
     db.save(f)
     db.log("draft", id_caso, (f.borrador or {}).get("generador", ""))
+    if (f.borrador or {}).get("validador"):
+        db.log("validador", id_caso, json.dumps(f.borrador["validador"]))
     return f
 
 
@@ -140,6 +144,22 @@ def review(id_caso: str, r: ReviewIn):
     db.save(f)
     db.log("review", id_caso, f"{r.estado} por {r.revisor}: {r.comentario}")
     return f
+
+
+@app.get("/api/validador")
+def validador():
+    """Cuántas afirmaciones ha revisado el validador y cuántas eliminó (acumulado, desde el registro de auditoría)."""
+    return db.validador_totales()
+
+
+@app.get("/api/evidencia/{id_ev:path}")
+def evidencia(id_ev: str):
+    """Registro FUENTE de una cita (titular, medio, fechas, URL; o indicador, país, año, unidad), para abrirlo desde la UI."""
+    from .agent import corpus
+    r = corpus.registro_publico(id_ev)
+    if not r:
+        raise HTTPException(404, f"La evidencia «{id_ev}» no existe en el corpus.")
+    return r
 
 
 @app.get("/api/audit")
