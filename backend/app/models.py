@@ -105,6 +105,7 @@ class QueryOut(BaseModel):
     generador: str = ""            # extractivo | llm:<modelo> | cache:<modelo>
     meta_llm: dict = {}            # tokens, costo y segundos de la llamada (sin datos sensibles)
     validador: dict = {}           # emitidas / válidas / eliminadas por el validador y por qué
+    accion_ui: dict = {}           # acción validada sobre la interfaz: filtrar_tema | abrir_ficha | responder | abstenerse
     ia_disponible: bool = False    # la UI puede ofrecer "Redactar con IA"
     base: str = "titular/metadatos"
     metodo: str = ""

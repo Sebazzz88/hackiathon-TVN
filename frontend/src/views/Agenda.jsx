@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { api, cancelado, COMPONENTES, EVIDENCIA, TEMAS, estadoTxt, hace, textoProcedencia } from "../lib.js";
-import { N_MAX, TAMANOS, fichaVigente } from "../rutas.js";
+import { N_MAX, TAMANOS, TEMAS_IDS, VENTANAS, fichaVigente } from "../rutas.js";
 import Ficha from "./Ficha.jsx";
 
 /** Una fila de la lista. Memoizada: al cambiar de ficha solo se repinta la que cambia, no las 30. */
@@ -38,7 +38,7 @@ const Fila = memo(function Fila({ f, k, activa, corte, onAbrir }) {
  * pisa a la del "5": el último clic siempre gana.
  */
 export default function Agenda({ corte, ruta, navegar }) {
-  const { n, sint, ficha, seccion } = ruta;
+  const { n, sint, ficha, seccion, tema, dias, c } = ruta;
   const [lista, setLista] = useState({ items: [], total: 0 });
   const [sel, setSel] = useState(null);
   const [cargando, setCargando] = useState(true);
@@ -53,15 +53,16 @@ export default function Agenda({ corte, ruta, navegar }) {
   // ---- lista ----
   useEffect(() => {
     const ac = new AbortController();
-    const nueva = `${n}|${sint}`;
+    const nueva = `${n}|${sint}|${tema}|${dias}`;
     if (clave.current !== nueva) { setCargando(true); setLista((l) => ({ ...l, items: [] })); }  // otro filtro: no mostrar la lista vieja
     clave.current = nueva;
     setErrorLista("");
-    api(`/inbox?limit=${n === "max" ? N_MAX : n}&sinteticos=${sint}`, "GET", undefined, ac.signal)
+    const filtro = (tema ? `&tema=${tema}` : "") + (dias ? `&dias=${dias}` : "");
+    api(`/inbox?limit=${n === "max" ? N_MAX : n}&sinteticos=${sint}${filtro}`, "GET", undefined, ac.signal)
       .then((d) => { setLista({ items: d.items, total: d.total }); setCargando(false); })
       .catch((e) => { if (cancelado(e)) return; setErrorLista(e.message); setCargando(false); });
     return () => ac.abort();
-  }, [n, sint, version]);
+  }, [n, sint, tema, dias, version]);
 
   // ---- ficha: la de la URL; si no hay, la primera de la lista ----
   const idActivo = ficha || lista.items[0]?.id_caso || null;
@@ -116,6 +117,27 @@ export default function Agenda({ corte, ruta, navegar }) {
           <button className={n === "max" ? "seg on max" : "seg max"} aria-pressed={n === "max"}
             title={`Mostrar todos los ${que} disponibles`} onClick={() => navegar({ n: "max", ficha, seccion })}>Máx</button>
         </div>
+        <div className="filtros-tema" role="group" aria-label="Filtrar la agenda">
+          <label>Tema
+            <select value={tema || ""} onChange={(e) => navegar({ tema: e.target.value || null, ficha: null, c: "" })}>
+              <option value="">Todos</option>
+              {TEMAS_IDS.map((t) => <option key={t} value={t}>{TEMAS[t]}</option>)}
+            </select>
+          </label>
+          <label>Periodo
+            <select value={dias || ""} onChange={(e) => navegar({ dias: e.target.value ? Number(e.target.value) : null, ficha: null, c: "" })}>
+              <option value="">Todo el snapshot</option>
+              {VENTANAS.map((d) => <option key={d} value={d}>{d === 1 ? "Último día" : `Últimos ${d} días`}</option>)}
+            </select>
+          </label>
+        </div>
+        {(tema || dias) && (
+          <p className="filtro-activo" role="status">
+            {c ? <>Filtrado por tu consulta «{c}»: </> : <>Filtro: </>}
+            <b>{tema ? TEMAS[tema] : "todos los temas"}{dias ? ` · últimos ${dias} día${dias === 1 ? "" : "s"} (respecto del corte)` : ""}</b>
+            <button className="quitar-filtro" onClick={() => navegar({ tema: null, dias: null, c: "", ficha: null })}>Quitar filtro ✕</button>
+          </p>
+        )}
         <label className="interruptor">
           <input type="checkbox" checked={sint} onChange={(e) => navegar({ sint: e.target.checked, ficha: null })} />
           <span>Ver casos de prueba (inyección, contradicciones, recirculada, agencia replicada)</span>
@@ -133,7 +155,7 @@ export default function Agenda({ corte, ruta, navegar }) {
             Solo hay {lista.total} {que} disponibles, así que no se pueden mostrar {n}. Son todos los que existen.
           </p>
         )}
-        {vacio && <p className="vacio">No hay temas para mostrar con este filtro.</p>}
+        {vacio && <p className="vacio">No hay temas para mostrar con este filtro. Prueba con otro tema, un periodo más largo o quita el filtro.</p>}
 
         <ol className="items" aria-busy={cargando}>
           {lista.items.map((f, k) => <Fila key={f.id_caso} f={f} k={k} activa={idActivo === f.id_caso} corte={corte} onAbrir={abrir} />)}

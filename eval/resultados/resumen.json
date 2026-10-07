@@ -1,5 +1,5 @@
 {
- "generado_utc": "2026-10-07T16:15:28+00:00",
+ "generado_utc": "2026-10-07T16:20:43+00:00",
  "particiones": {
   "dev": {
    "sustentada": {
@@ -825,11 +825,11 @@
   "nota": "Falta eval/seleccion_editor.json (selección independiente de un editor). No se reporta Precision@5."
  },
  "tiempos": {
-  "pipeline_s": 4.35,
-  "consulta_mediana_s": 0.004,
-  "consulta_p95_s": 0.011,
+  "pipeline_s": 4.37,
+  "consulta_mediana_s": 0.005,
+  "consulta_p95_s": 0.012,
   "borrador_mediana_s": 0.002,
-  "borrador_p95_s": 0.003,
+  "borrador_p95_s": 0.002,
   "n_consultas": 60,
   "n_borradores": 18,
   "entorno": "CPU local Windows, embeddings ONNX locales, LLM desactivado (plantilla/caché)"
@@ -940,13 +940,13 @@
   },
   {
    "nombre": "Tiempo por consulta (mediana / p95)",
-   "agente": "0.004 s / 0.011 s",
+   "agente": "0.005 s / 0.012 s",
    "baseline": null,
-   "nota": "meta mediana ≤ 15 s; pipeline completo 4.35 s"
+   "nota": "meta mediana ≤ 15 s; pipeline completo 4.37 s"
   },
   {
    "nombre": "Tiempo por borrador (mediana / p95)",
-   "agente": "0.002 s / 0.003 s",
+   "agente": "0.002 s / 0.002 s",
    "baseline": null,
    "nota": "0 USD en esta ejecución (LLM_OFFLINE=1: plantilla determinista o caché)."
   }
