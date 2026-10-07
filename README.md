@@ -104,6 +104,20 @@ powershell -ExecutionPolicy Bypass -File .\iniciar.ps1
 powershell -ExecutionPolicy Bypass -File .\iniciar.ps1 -Apagar
 ```
 
+**Modo demo (recomendado para presentar): un comando, una ventana, un puerto.** El backend sirve también la interfaz
+compilada en **http://localhost:8000**. Sin login ni credenciales. Se apaga con Ctrl+C en la misma ventana.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_demo.ps1            # con Hermes si Ollama está encendido
+powershell -ExecutionPolicy Bypass -File .\run_demo.ps1 -Offline   # 100 % sin red: caché de la IA, plantilla o abstención
+```
+
+Si la IA falla a mitad de la demo, el sistema no muestra pantallas de error: usa la caché, luego la plantilla
+determinista y, si no hay evidencia, una abstención que dice qué falta y qué hacer.
+
+Alternativa con Docker (`docker compose up --build` → http://localhost:8000). **PENDIENTE: no probado** en el equipo de
+desarrollo (no tiene Docker); la ruta verificada es `run_demo.ps1`.
+
 ### Si algo falla
 
 | Síntoma | Causa y solución |
@@ -169,10 +183,11 @@ git add data/cache/llm; git commit -m "data: cache Hermes para demo offline"; gi
 
 | Pestaña | Qué muestra |
 |---|---|
-| **Agenda** | Top 5, 10 o 30 temas. Cada uno muestra el puntaje (rojo = prioridad alta), el estado de evidencia y una barra con los 5 componentes. Al abrir un tema aparece su ficha con las sub-pestañas **Ficha**, **Fuentes**, **Puntaje**, **Borrador** y **Revisión**. La casilla "Ver casos de prueba" muestra los casos sintéticos: inyección, contradicciones, noticia antigua y agencia replicada |
+| **Agenda** | Top 5, 10 o 30 temas, otro número a elección o **Máx** (todos). «¿Qué pasaría si…?» reordena con otros pesos sin guardar nada. Cada uno muestra el puntaje (rojo = prioridad alta), el estado de evidencia y una barra con los 5 componentes. Al abrir un tema aparece su ficha con las sub-pestañas **Ficha**, **Fuentes**, **Puntaje**, **Borrador** y **Revisión**. La casilla "Ver casos de prueba" muestra los casos sintéticos: inyección, contradicciones, noticia antigua y agencia replicada |
 | **Consultar** | Preguntas en español con ejemplos listos, incluida una abstención y un intento de inyección |
 | **Datos** | Reporte de calidad del snapshot, catálogo con SHA-256 y límites de cobertura |
 | **Evaluación** | Métricas del agente frente al baseline, con numerador y denominador |
+| **Modo jurado** | Botón «Correr T01–T10 ahora»: ejecuta las pruebas de aceptación en vivo (~10 s, sin red) y muestra verde/rojo con la evidencia de cada una. Tabla agente vs baseline leída de `eval/results.json` y atajos a las preguntas típicas del jurado |
 
 Las horas se muestran en hora de Panamá. La "antigüedad" se mide contra la fecha de corte del snapshot, no contra el reloj, para que la demo sea reproducible.
 
@@ -182,6 +197,9 @@ Las horas se muestran en hora de Panamá. La "antigüedad" se mide contra la fec
 - `http://localhost:5173/#/ficha/SINT-S-INY-001/resumen` abre una fuente que intenta dar órdenes al sistema.
 - `http://localhost:5173/#/consulta?q=¿Cuál es la inflación de Panamá hoy?` muestra una abstención.
 - `http://localhost:5173/#/evaluacion` abre las métricas.
+- `http://localhost:5173/#/jurado` abre el Modo jurado.
+
+Con `run_demo.ps1` los mismos enlaces funcionan cambiando `5173` por `8000`.
 
 ## Pruebas y evaluación
 
@@ -189,7 +207,22 @@ Las horas se muestran en hora de Panamá. La "antigüedad" se mide contra la fec
 cd backend
 .\.venv\Scripts\python -m pytest -q             # pruebas T01–T10 del reto y regresiones
 cd ..
-backend\.venv\Scripts\python eval\run_eval.py   # agente vs baseline → eval\resultados\
+backend\.venv\Scripts\python eval\run_eval.py   # agente vs baseline → eval\resultados\ y eval\results.json
+
+cd frontend
+npm test                                        # rutas, puntaje, fechas y contraste de colores (Node)
+# Con la app encendida (por defecto en :5173; para run_demo usa $env:APP_URL="http://localhost:8000"):
+node e2e\agenda.e2e.mjs                         # navegador real sin ventana: 5/10/30, casos de prueba, clics rápidos
+node e2e\funciones.e2e.mjs                      # Máx, otro número, regenerar borrador, citas, Modo jurado, accesibilidad
+cd ..
+```
+
+**Páginas de Notion generadas desde el sistema** (matriz T01–T10 observada, catálogo, fichas y bitácora de revisiones):
+
+```powershell
+cd backend
+.\.venv\Scripts\python -m app.notion_export --correr   # escribe docs\notion_export\05, 10, 11 y 12
+cd ..
 ```
 
 Las etiquetas del benchmark las propuso un asistente de IA y están **pendientes de revisión humana**. Ver [docs/07_EVALUATION.md](docs/07_EVALUATION.md).

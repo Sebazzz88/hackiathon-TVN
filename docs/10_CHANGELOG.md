@@ -16,6 +16,16 @@ Rama `feat/agente` (PR abierto a `main`). Autor: Sebastián, con asistencia de C
 | 2026-10-06 | IA generativa integrada en consultas (Claude redacta con evidencia recuperada + validador), estado de IA en la cabecera, generador visible en borradores y respuestas, `python -m app.agent.precalentar` para la caché offline, `LLM_CACHE_DIR` | ver `git log` |
 | 2026-10-06 | IA generativa local y gratuita: Hermes 3 3B vía Ollama (proveedor por defecto), borrador híbrido, botón "Redactar con IA", normalización de citas de modelos pequeños, fechas en palabras en el validador | ver `git log` |
 | 2026-10-07 | Agenda: URL como única fuente de verdad, cancelación de respuestas viejas, selector de cantidad con número personalizado y Máx, aviso "solo hay N", bandeja por SQL (solo las N pedidas), migración de la base, manejador de errores en JSON, borradores en curso compartidos | ver `git log` |
+| 2026-10-07 | Evidencia verificable en código: validador contra el corpus (citas a registros inexistentes, campos inventados, sin sustento textual), conteo de eliminadas y citas clicables que abren el registro fuente | 1d7af7b |
+| 2026-10-07 | Procedencia visible: "N notas, M procedencias independientes" | e210b8a |
+| 2026-10-07 | Consulta con tres estados (respondida, abstención, contradicción lado a lado) y acción sugerida | 29c312e |
+| 2026-10-07 | La consulta maneja la interfaz con acciones de una lista cerrada validada (filtrar_tema, abrir_ficha, responder, abstenerse) | b098b85 |
+| 2026-10-07 | Pruebas independientes del orden y aisladas de la base real (`conftest.py`) | 970e6eb |
+| 2026-10-07 | Puntaje explicado por componente y vista "¿qué pasaría si…?" sin guardar | 38d0808 |
+| 2026-10-07 | Modo jurado: T01–T10 en vivo con evidencia; métricas leídas de `eval/results.json` | 195ef90 |
+| 2026-10-07 | Demo robusta sin red (IA caída → caché → plantilla/abstención, nunca 500), `run_demo.ps1`, Docker (sin probar), prueba de que no hay credenciales en el repo, caché de Hermes versionada | e491581 |
+| 2026-10-07 | Export a Notion generado desde el sistema (`python -m app.notion_export`) | cb90a22 |
+| 2026-10-07 | UX editorial accesible: banner titular/metadatos en ficha y borrador, publicación ≠ detección, errores con acción, salto al contenido, contraste AA comprobado por prueba | a0b2822 |
 
 ## Pruebas fallidas y su corrección (para Notion)
 
@@ -35,3 +45,4 @@ Rama `feat/agente` (PR abierto a `main`). Autor: Sebastián, con asistencia de C
 | Uso real de la web | Error 500 al elegir 30 | No reproducible desde la API. Causas probables: backend ocupado con la IA y proxy de Vite apuntando a `localhost` (IPv6) con el backend en IPv4; el error además nunca se borraba | Proxy a `127.0.0.1`, reintento de GET, error con botón Reintentar |
 | Uso real de la web | Solo 8 casos de prueba aunque se pidan 10 | Solo existen 8 sintéticos | Aviso "solo hay N", campo "otro número" y botón Máx |
 | Uso real de la web | Regenerar borrador no mostraba nada | Si se cambiaba de ficha durante el minuto de generación, la respuesta tardía reemplazaba la ficha activa por otra. Además el proxy cortaba a 120 s | Respuesta tardía solo aplica si es la ficha abierta; generaciones en curso compartidas; proxy a 10 min |
+| e2e en navegador | "Abrir una ficha sintética no apaga los casos de prueba" fallaba | Error del script de prueba: pedía un nodo del DOM "por valor" y CDP lo devuelve vacío; la pantalla estaba bien | `!!` en la condición; 16/16 |

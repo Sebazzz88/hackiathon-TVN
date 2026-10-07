@@ -32,6 +32,19 @@ Fecha: 2026-10-06. Rama `feat/agente`. Verificado con 24 pruebas (0 fallos, 0 om
 | Docs 01–12 | Sí | | 12_AI_USAGE: Codex y ChatGPT **pendientes** de completar por el autor |
 | Notion (8 páginas, ≥ 8 tareas, ≥ 3 decisiones, ≥ 5 fichas, matriz, pitch) | Contenido listo en `docs/notion_export/` | **No cargado** | **Condición de admisión** |
 
+## Verificación al 2026-10-07 (después de los 9 diferenciadores)
+
+| Qué | Resultado | Estado |
+|---|---|---|
+| `cd backend; pytest -q` | 127 passed | VERIFICADO |
+| `cd frontend; npm test` | 20 passed (rutas, puntaje, fechas, contraste AA) | VERIFICADO |
+| `node e2e/agenda.e2e.mjs` (Edge sin ventana, app en un proceso) | 16/16 | VERIFICADO |
+| `node e2e/funciones.e2e.mjs` (Máx, otro número, regenerar, citas, Modo jurado, accesibilidad) | 20/20 | VERIFICADO (IA en modo offline: plantilla) |
+| Modo jurado T01–T10 en vivo | 10/10 en verde | VERIFICADO |
+| Regenerar borrador con Hermes real en pantalla | — | PENDIENTE (verificado solo con plantilla offline) |
+| `docker compose up` | — | PENDIENTE (equipo sin Docker) |
+| Contraste en modo de alto contraste de Windows / lector de pantalla | — | PENDIENTE (solo contraste de la paleta comprobado por prueba) |
+
 ## Puntaje estimado (rúbrica de 100, mirada de jurado)
 
 | Dimensión | Peso | Nota 0–5 | Puntos | Por qué |
