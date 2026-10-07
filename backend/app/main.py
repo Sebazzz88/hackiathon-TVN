@@ -49,7 +49,14 @@ def meta():
     return {"version": m.get("version"), "fecha_corte_UTC": m.get("fecha_corte_UTC"), "archivos": m.get("archivos", {}),
             "consultas": len(m.get("consultas", [])), "consultas_fallidas": len(m.get("consultas_fallidas", [])),
             "licencia_condiciones": m.get("licencia_condiciones"), "nota_intervalo": m.get("nota_intervalo"),
-            "fichas": len(db.all_fichas()), "agent_mode": agent.AGENT_MODE}
+            "fichas": len(db.all_fichas()), "agent_mode": agent.AGENT_MODE, "ia": _estado_ia()}
+
+
+def _estado_ia():
+    if agent.AGENT_MODE != "live":
+        return {"conectado": False, "modo": "stub"}
+    from .agent import embed, llm
+    return {**llm.estado(), "embeddings": "multilingües locales (ONNX)" if embed.BACKEND != "hash" else "respaldo léxico"}
 
 
 @app.get("/api/quality-report")

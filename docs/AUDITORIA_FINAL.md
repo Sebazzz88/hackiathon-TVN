@@ -23,7 +23,7 @@ Fecha: 2026-10-06. Rama `feat/agente`. Verificado con 24 pruebas (0 fallos, 0 om
 | Contradicciones visibles | Sí | T05; 10/10 en benchmark | Solo contradicciones numéricas |
 | Agencia replicada = 1 | Sí | T02 | Detección por agencia citada o texto casi idéntico |
 | Anti-inyección | Sí | T07 + prueba con LLM simulado | Patrones + aislamiento `<DATO>` + validador |
-| LLM con caché y salida JSON | Sí | Solo con cliente simulado | **No probado con clave real**; no hay caché de borradores |
+| LLM con caché y salida JSON (borradores y consultas) | Sí | Con cliente simulado (borrador y consulta) | **No probado con clave real**; falta precalentar la caché (`python -m app.agent.precalentar`) |
 | Sin internet (T10) | Sí | T10 | Plantilla + caché + respaldo léxico |
 | Baseline comparado | Sí | `eval/run_eval.py` | Palabras clave, reglas, fecha |
 | Benchmark 60 (30/10/10/10; 40/20) | Sí | `eval/benchmark.jsonl` | Etiquetas **pendientes de revisión humana**; reservado no ciego |
@@ -68,13 +68,11 @@ Todos los comandos son de PowerShell, desde la carpeta del repo.
 powershell -ExecutionPolicy Bypass -File .\iniciar.ps1
 ```
 
-**2. (Opcional, recomendado) Borradores con Claude y caché para la demo offline.** Edita `.env` y pon `LLM_API_KEY=tu-clave`. Luego, con el backend encendido:
+**2. (Recomendado) Activar la IA generativa y precalentar la caché para la demo offline.** Edita `.env` y pon `LLM_API_KEY=tu-clave`. Luego:
 
 ```powershell
-foreach ($id in "EV-G226d8217c0","EV-Gb01bc434a8","EV-G97e3e7b0a7","EV-G1454ad17a8","SINT-S-CON-001") {
-  Invoke-RestMethod -Method Post "http://localhost:8000/api/fichas/$id/draft" | Select-Object id_caso, @{n="generador";e={$_.borrador.generador}}
-}
-git add data/cache/llm; git commit -m "data: caché de borradores LLM para demo offline"; git push origin feat/agente
+cd backend; .\.venv\Scripts\python -m app.agent.precalentar; cd ..
+git add data/cache/llm; git commit -m "data: cache LLM para demo offline"; git push origin feat/agente
 ```
 
 **3. Revisar las etiquetas.** Abre y corrige las columnas `tema_humano`, `mismo_evento` y `esperado`. Escribe tu nombre en `revisado_por`.

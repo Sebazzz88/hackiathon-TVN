@@ -56,6 +56,14 @@ export default function App() {
             </button>
           ))}
         </nav>
+        {meta?.ia && (
+          <div className={"estado-ia" + (meta.ia.conectado ? " on" : "")}
+            title={meta.ia.conectado
+              ? `IA generativa conectada (${meta.ia.modelo}). Embeddings ${meta.ia.embeddings}.`
+              : `IA generativa sin conectar: falta LLM_API_KEY en .env${meta.ia.respuestas_en_cache ? ` (${meta.ia.respuestas_en_cache} respuestas en caché)` : ""}. La IA local de embeddings sí está activa.`}>
+            <i className="ia-punto" /> IA {meta.ia.conectado ? meta.ia.modelo.replace("claude-", "Claude ").replaceAll("-", " ") : meta.ia.respuestas_en_cache ? "en caché" : "local"}
+          </div>
+        )}
         <div className="corte" title="Los datos son un snapshot congelado: la urgencia se mide contra esta fecha">
           {corte ? <>Corte <b>{fechaPA(corte)}</b> · {horaPA(corte).split(", ").pop()} PTY</> : "…"}
           {meta?.agent_mode && meta.agent_mode !== "live" && <span className="modo">modo {meta.agent_mode}</span>}

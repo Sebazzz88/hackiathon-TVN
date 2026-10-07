@@ -13,6 +13,7 @@ Rama `feat/agente` (PR abierto a `main`). Autor: Sebastián, con asistencia de C
 | 2026-10-06 | Etapa 4: benchmark de 60 consultas, etiquetas de temas y pares, `eval/run_eval.py` | ver `git log` |
 | 2026-10-06 | Revisión de código y nueva UI: separación de patrones de inyección (fuente vs consulta), todas las fichas guardadas (las consultas abren cualquier evento), pipeline refactorizado, fecha de detección nunca presentada como publicación, UI editorial minimalista con rutas directas, `iniciar.ps1`, README | ver `git log` |
 | 2026-10-06 | Etapa 5: clon limpio verificado (métricas idénticas), export Notion completo (catálogo, 7 fichas generadas, matriz T01–T10, presentación), T04 nulo determinista, `docs/AUDITORIA_FINAL.md` | ver `git log` |
+| 2026-10-06 | IA generativa integrada en consultas (Claude redacta con evidencia recuperada + validador), estado de IA en la cabecera, generador visible en borradores y respuestas, `python -m app.agent.precalentar` para la caché offline, `LLM_CACHE_DIR` | ver `git log` |
 
 ## Pruebas fallidas y su corrección (para Notion)
 
@@ -24,3 +25,4 @@ Rama `feat/agente` (PR abierto a `main`). Autor: Sebastián, con asistencia de C
 | Revisión de código | Titulares legítimos ("prioridad máxima a la vacunación", "sin fuentes de agua", "Fábrica de…") se marcaban como inyección y perdían evidencia | Patrones de consulta aplicados también a fuentes | Patrones separados; prueba de regresión |
 | Revisión de código | Un evento recuperado por una consulta podía no tener ficha (404) | Solo se guardaban las 60 mejores fichas | Se guardan todas; prueba de regresión |
 | Revisión visual | El borrador decía "reportó el …" con la fecha de detección de GDELT | La plantilla usaba la detección como publicación | Texto explícito: "fecha de publicación no disponible; detectado por GDELT el …" |
+| Prueba de consulta con IA | El validador aceptó "La economía crecerá 9% el próximo año" | El mes de la fecha de detección (septiembre = 9) contaba como cifra respaldada | Las fechas solo respaldan fechas escritas como fecha (dd/mm/aaaa, hh:mm); prueba de regresión |

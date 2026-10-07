@@ -54,7 +54,16 @@ a { color: var(--azul); text-decoration: none; } a:hover { text-decoration: unde
 .tab { background: none; border: 0; color: var(--barra-txt); opacity: .7; padding: 0 14px; height: 100%; border-bottom: 3px solid transparent; margin-bottom: -3px; font-weight: 600; }
 .tab:hover { opacity: 1; }
 .tab.on { opacity: 1; border-bottom-color: #fff; }
-.corte { margin-left: auto; font-size: .82rem; opacity: .85; white-space: nowrap; }
+.estado-ia { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700;
+  border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 3px 10px; white-space: nowrap; cursor: help; }
+.estado-ia .ia-punto { background: #fbbf24; }
+.estado-ia.on .ia-punto { background: #4ade80; box-shadow: 0 0 0 3px rgba(74, 222, 128, .25); }
+.ia-punto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--cI); margin-right: 4px; vertical-align: 1px; }
+.respuesta-ia { border-bottom: 1px solid var(--linea); margin-bottom: 12px; padding-bottom: 6px; }
+.respuesta-ia .afirmaciones li { font-size: 1rem; }
+.generador { font-size: .82rem; color: var(--suave); }
+.generador.ia { color: var(--tinta); font-weight: 600; }
+.corte { margin-left: 12px; font-size: .82rem; opacity: .85; white-space: nowrap; }
 .modo { margin-left: 8px; background: var(--acento); color: #fff; border-radius: 4px; padding: 1px 6px; font-size: .75rem; }
 .contenido { flex: 1; width: 100%; max-width: 1360px; margin: 0 auto; padding: 24px; }
 .pie { padding: 14px 24px; font-size: .78rem; color: var(--suave); border-top: 1px solid var(--linea); text-align: center; }

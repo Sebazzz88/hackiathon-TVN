@@ -59,6 +59,24 @@ export default function Consulta({ inicial, irAFicha }) {
             <ul className="pendientes">{r.faltante.map((x) => <li key={x}>{x}</li>)}</ul>
           ) : r.eventos?.length ? (
             <>
+              {r.afirmaciones?.length > 0 && (
+                <div className="respuesta-ia">
+                  <p className="kicker"><i className="ia-punto" /> Redactado por IA · {r.generador?.split(":").pop()}
+                    {r.generador?.startsWith("cache:") && " · desde caché"} · validado contra la evidencia</p>
+                  <ul className="afirmaciones">
+                    {r.afirmaciones.map((a, i) => (
+                      <li key={i}><Tipo t={a.tipo} /> {a.texto} {a.citas.map((c, j) => <Cita key={j} id={c.id_evidencia} campo={c.campo} />)}</li>
+                    ))}
+                  </ul>
+                  {r.faltante?.length > 0 && <ul className="pendientes">{r.faltante.map((x) => <li key={x}>{x}</li>)}</ul>}
+                  {r.eliminadas?.length > 0 && (
+                    <details className="eliminadas"><summary>{r.eliminadas.length} frase(s) de la IA descartadas por el validador</summary>
+                      <ul>{r.eliminadas.map((e, i) => <li key={i}><s>{e.texto}</s> <span className="nota">— {e.motivo}</span></li>)}</ul>
+                    </details>
+                  )}
+                  <h3 className="kicker">Eventos en los que se basa</h3>
+                </div>
+              )}
               <ul className="eventos">
                 {r.eventos.map((e) => (
                   <li key={e.id_caso}>
@@ -79,7 +97,7 @@ export default function Consulta({ inicial, irAFicha }) {
           ) : (
             <p className="lead">{r.respuesta}</p>
           )}
-          {r.citas?.length > 0 && (
+          {r.citas?.length > 0 && !r.afirmaciones?.length && (
             <>
               <h3 className="kicker">Citas</h3>
               <ul className="afirmaciones">

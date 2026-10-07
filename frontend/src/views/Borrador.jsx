@@ -21,7 +21,7 @@ export default function Borrador({ f, onCambio }) {
         <button className="primario" onClick={generar} disabled={ocupado}>
           {ocupado ? "Generando…" : b ? "Regenerar borrador" : "Generar paquete editorial"}
         </button>
-        {b?.generador && <span className="nota">Generador: <code>{b.generador}</code>{b.meta_llm?.costo_usd != null && ` · ${b.meta_llm.costo_usd} USD`}</span>}
+        {b?.generador && <Generador b={b} />}
       </div>
       {error && <p className="error">{error}</p>}
       {!b && !ocupado && (
@@ -34,6 +34,23 @@ export default function Borrador({ f, onCambio }) {
       {b?.abstencion && <p className="pendiente">{b.faltante?.join(" ")}</p>}
       {b && !b.stub && !b.abstencion && <Paquete b={b} />}
     </div>
+  );
+}
+
+function Generador({ b }) {
+  const ia = b.generador.startsWith("llm:") || b.generador.startsWith("cache:");
+  const m = b.meta_llm || {};
+  return (
+    <span className={"generador" + (ia ? " ia" : "")}>
+      {ia ? (
+        <><i className="ia-punto" /> Redactado por IA · {b.generador.split(":").pop()}
+          {b.generador.startsWith("cache:") && " · desde caché"}
+          {m.tokens_entrada != null && ` · ${m.tokens_entrada + m.tokens_salida} tokens`}
+          {m.costo_usd != null && ` · ${m.costo_usd} USD`}</>
+      ) : (
+        <>Plantilla sin IA generativa{m.motivo && ` (${m.motivo})`}</>
+      )}
+    </span>
   );
 }
 

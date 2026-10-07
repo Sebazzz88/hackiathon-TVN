@@ -28,7 +28,7 @@ Todo funciona **sin internet** durante la demo.
 
 **Dónde está la IA.**
 - **Embeddings multilingües locales** (ONNX, sin GPU). Clasifican en 6 temas, agrupan titulares del mismo hecho aunque estén en otro idioma y buscan por significado.
-- **Claude (opcional).** Redacta los borradores. Sin clave usa respuestas guardadas en caché o una plantilla determinista.
+- **Claude.** Redacta los borradores y las respuestas a consultas, siempre a partir de la evidencia recuperada y pasando por un validador de citas. Se activa con una clave en `.env`; sin ella usa respuestas en caché o una plantilla determinista.
 - **Comparación con un baseline.** El agente se compara con una búsqueda por palabras clave y un ranking por fecha. Ver [docs/07_EVALUATION.md](docs/07_EVALUATION.md).
 
 ## Cómo encenderlo
@@ -77,16 +77,30 @@ npm run dev
 
 Abre **http://localhost:5173**. La documentación de la API está en http://localhost:8000/docs.
 
-### Borradores con Claude (opcional)
+### Activar la IA generativa (Claude)
 
-Pon tu clave en `.env` (este archivo nunca se sube al repo):
+La IA local de embeddings está siempre activa. La IA generativa, Claude, redacta los **borradores** y las **respuestas a consultas** sobre noticias. Para activarla:
 
-```
-LLM_API_KEY=tu-clave
-LLM_MODEL=claude-opus-5-5
-```
+1. Consigue una clave en https://console.anthropic.com (sección *API Keys*).
+2. Abre `.env` en la raíz del proyecto y escribe la clave. Este archivo nunca se sube a GitHub.
 
-Cada borrador generado se guarda en `data/cache/llm/`. Así la demo puede repetirse **sin internet** con los mismos textos. Para forzar el modo sin red pon `LLM_OFFLINE=1`.
+   ```
+   LLM_API_KEY=tu-clave-aqui
+   LLM_MODEL=claude-opus-5-5
+   LLM_OFFLINE=0
+   ```
+
+3. Reinicia la app: cierra las dos ventanas y vuelve a correr `iniciar.ps1`. En la cabecera, el indicador **IA** se pone verde con el nombre del modelo.
+4. Para la demo sin internet, precalienta la caché. Genera los borradores y respuestas de la demo y los guarda en `data/cache/llm/`:
+
+   ```powershell
+   cd backend
+   .\.venv\Scripts\python -m app.agent.precalentar
+   cd ..
+   git add data/cache/llm; git commit -m "data: cache LLM para demo offline"; git push origin feat/agente
+   ```
+
+Todo lo que redacta la IA pasa por el **validador de citas**. Se elimina cualquier frase sin cita válida, con cifras o fechas que no estén en la fuente, o con instrucciones inyectadas. En la interfaz se ve qué escribió la IA, qué descartó el validador, los tokens y el costo. Sin clave o sin internet, el sistema usa la caché y, si no la hay, una plantilla determinista: nunca se cae.
 
 ## Recorrido por la interfaz
 
