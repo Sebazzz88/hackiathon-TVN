@@ -26,6 +26,9 @@ Desarrollado en `feat/agente` y fusionado en `main` el 2026-10-07; desde entonce
 | 2026-10-07 | Demo robusta sin red (IA caída → caché → plantilla/abstención, nunca 500), `run_demo.ps1`, Docker (sin probar), prueba de que no hay credenciales en el repo, caché de Hermes versionada | e491581 |
 | 2026-10-07 | Export a Notion generado desde el sistema (`python -m app.notion_export`) | cb90a22 |
 | 2026-10-07 | UX editorial accesible: banner titular/metadatos en ficha y borrador, publicación ≠ detección, errores con acción, salto al contenido, contraste AA comprobado por prueba | a0b2822 |
+| 2026-10-07 | Marca Nexo (logo, favicon, cabecera, nombre) y arreglo de la agenda con clics rápidos | 8a31b11 |
+| 2026-10-07 | Pulido del backend sin cambiar resultados (reutilización, código muerto fuera, estado de consulta coherente); la evaluación da los mismos números | 1db2f21 |
+| 2026-10-07 | Pulido del frontend sin cambiar la interfaz (una sola fuente para vistas/secciones/temas/pesos, componentes y arnés e2e compartidos) | 4ce1a63 |
 
 ## Pruebas fallidas y su corrección (para Notion)
 
@@ -46,3 +49,4 @@ Desarrollado en `feat/agente` y fusionado en `main` el 2026-10-07; desde entonce
 | Uso real de la web | Solo 8 casos de prueba aunque se pidan 10 | Solo existen 8 sintéticos | Aviso "solo hay N", campo "otro número" y botón Máx |
 | Uso real de la web | Regenerar borrador no mostraba nada | Si se cambiaba de ficha durante el minuto de generación, la respuesta tardía reemplazaba la ficha activa por otra. Además el proxy cortaba a 120 s | Respuesta tardía solo aplica si es la ficha abierta; generaciones en curso compartidas; proxy a 10 min |
 | e2e en navegador | "Abrir una ficha sintética no apaga los casos de prueba" fallaba | Error del script de prueba: pedía un nodo del DOM "por valor" y CDP lo devuelve vacío; la pantalla estaba bien | `!!` en la condición; 16/16 |
+| e2e en navegador | Con clics rápidos en 5/10/30, ~1 de cada 3 corridas mostraba «Esta vista tuvo un problema» | Una petición cancelada mientras se leía la respuesta se convertía en `{}` y la lista quedaba sin `items` | La cancelación se propaga en `api()`; 4 pruebas nuevas y 10/10 corridas e2e en verde (8a31b11) |
