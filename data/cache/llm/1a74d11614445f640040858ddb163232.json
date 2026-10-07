@@ -1,0 +1,40 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 1051,
+  "tokens_salida": 196,
+  "costo_usd": 0.0,
+  "segundos": 48.9,
+  "prompt_version": "respuesta-v2"
+ },
+ "salida": {
+  "abstener": false,
+  "afirmaciones": [
+   {
+    "texto": "Según prensa.com, el titulo es: 'Aprueban en segundo debate presupuesto del Canal de Panamá'. [G0954e05695c0]",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G0954e05695",
+      "campo": "titulo"
+     }
+    ]
+   },
+   {
+    "texto": "También lo confirma la publicación laestrella.com.pa, con el titulo 'Diputados aprueban en segundo debate el presupuesto del Canal de Panamá'. [Ga5ae694e2d]",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "Ga5ae694e2d",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ],
+  "faltante": [
+   "inferencia",
+   "hipotesis:"
+  ]
+ }
+}

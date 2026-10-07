@@ -1,0 +1,39 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 1011,
+  "tokens_salida": 213,
+  "costo_usd": 0.0,
+  "segundos": 54.06,
+  "prompt_version": "respuesta-v2"
+ },
+ "salida": {
+  "abstener": false,
+  "afirmaciones": [
+   {
+    "texto": "Según prensa.com, la calificadora Moody evalúa si Panamá cobra el grado de inversión de inversión este año [{G226d8217c0, campo: titulo}]",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "titulo"
+     }
+    ]
+   },
+   {
+    "texto": "Moody indica que Cobre Panamá puede incidir en el grado de inversión, según panamaamerica.com.pa [{Gb01bc434a8, campo: titulo}]",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "Gb01bc434a8",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ],
+  "faltante": [
+   "informe detallado sobre las preocupaciones específicas de Moody's sobre Cobre Panamá y el grado de inversión"
+  ]
+ }
+}

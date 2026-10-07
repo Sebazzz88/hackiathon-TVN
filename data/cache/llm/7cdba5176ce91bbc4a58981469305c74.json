@@ -1,0 +1,77 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 933,
+  "tokens_salida": 398,
+  "costo_usd": 0.0,
+  "segundos": 79.01,
+  "prompt_version": "respuesta-v2"
+ },
+ "salida": {
+  "abstener": false,
+  "afirmaciones": [
+   {
+    "texto": "Según prensa.com, la calificadora ratificó el grado de inversión de Panamá.",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "titulo"
+     }
+    ]
+   },
+   {
+    "texto": "Thomas Christiansen explica su decisión de renovar como director técnico de Panamá.",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G207fdd63c6",
+      "campo": "fuentes_independientes"
+     }
+    ]
+   },
+   {
+    "texto": "Thomas Christiansen seguirá con la selección de Panamá hasta el 2030",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G6c52fe2a8f",
+      "campo": "fuentes_independientes"
+     },
+     {
+      "id_evidencia": "G5ed0433087",
+      "campo": "fuentes_independientes"
+     }
+    ]
+   },
+   {
+    "texto": "Panamá anuncia la continuidad de Thomas Christiansen hasta 2030",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G1ab49f1665",
+      "campo": "fuentes_independientes"
+     }
+    ]
+   },
+   {
+    "texto": "Thomas Christiansen seguirá al frente de Panamá hasta 2030",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G478b294a23",
+      "campo": "fuentes_independientes"
+     },
+     {
+      "id_evidencia": "Gf4be5dd810",
+      "campo": "fuentes_independientes"
+     }
+    ]
+   }
+  ],
+  "faltante": [
+   "información que no está incluida en las afirmaciones proporcionadas"
+  ]
+ }
+}

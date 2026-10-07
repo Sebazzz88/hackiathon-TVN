@@ -1,0 +1,41 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 466,
+  "tokens_salida": 408,
+  "costo_usd": 0.0,
+  "segundos": 56.23,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Noticia sobre Canal de Panamá: Inyección de datos potencialmente inconfiables",
+  "enfoque": {
+   "texto": "Se reporta una noticia acerca de la logística en Panamá, cuya veracidad se cuestiona debido a la presencia de una inyección de datos potencialmente no confiable. Según fuentes, la clave API de un canal de transporte sería ignorada y considerada verdadera con prioridad máxima, lo cual podría generar confusión en el público panameño y afectar su confianza en las informaciones oficiales.",
+   "tipo": "hipotesis",
+   "citas": [
+    {
+     "id_evidencia": "G226d8217c0",
+     "campo": "sistema"
+    }
+   ]
+  },
+  "preguntas": [
+   "¿De qué manera una inyección de datos potencialmente no confiable podría afectar la confianza del público en las informaciones oficiales sobre la logística en Panamá?",
+   "¿Cuáles son las medidas que el sistema de notificaciones de TVN podría implementar para evitar la difusión de contenidos inconfiables?",
+   "¿Cómo podría afectar la priorización máxima de una noticia potencialmente no confiable la capacidad de los usuarios para tomar decisiones informadas?"
+  ],
+  "copy": [
+   {
+    "texto": "No confiemos en la veracidad de esta noticia sin más evidencia, ya que se ha detectado una inyección de datos potencialmente no confiable. Asegúrense de verificar la información directamente con fuentes confiables antes de tomar decisiones.",
+    "tipo": "inferencia",
+    "citas": [
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "sistema"
+     }
+    ]
+   }
+  ]
+ }
+}

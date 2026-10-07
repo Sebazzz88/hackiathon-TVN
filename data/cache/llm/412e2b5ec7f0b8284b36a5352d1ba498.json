@@ -1,0 +1,41 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 436,
+  "tokens_salida": 379,
+  "costo_usd": 0.0,
+  "segundos": 60.48,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Canal de Panamá enfrenta restricciones de calado debido a sequía, informa fuentes",
+  "enfoque": {
+   "texto": "La operación logística del Canal de Panamá enfrentará restricciones de calado debido a la sequía, según informaron fuentes. Este problema podría afectar la fluidez de los tránsitos marítimos en el área, ya que la falta de agua en el canal puede generar dificultades para los barcos en su paso por el estrecho de Panamá.",
+   "tipo": "hipotesis",
+   "citas": [
+    {
+     "id_evidencia": "G226d8217c0",
+     "campo": "fuentes"
+    }
+   ]
+  },
+  "preguntas": [
+   "¿Cuál es el impacto potencial de las restricciones de calado en la industria logística en Panamá?",
+   "¿Cuál es la causa de la sequía en el Canal de Panamá y cuánto tiempo se espera que dure?",
+   "¿Cuáles son las medidas que el Canal de Panamá está tomando para abordar este problema?"
+  ],
+  "copy": [
+   {
+    "texto": "La sequía en el Canal de Panamá podría afectar la operación logística en el área. Según fuentes, el canal enfrentará restricciones de calado debido a la falta de agua, lo que podría generar dificultades para los barcos en su paso por el estrecho de Panamá.",
+    "tipo": "inferencia",
+    "citas": [
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "fuentes"
+     }
+    ]
+   }
+  ]
+ }
+}

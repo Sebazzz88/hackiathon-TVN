@@ -1,0 +1,39 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 1361,
+  "tokens_salida": 178,
+  "costo_usd": 0.0,
+  "segundos": 30.14,
+  "prompt_version": "respuesta-v2"
+ },
+ "salida": {
+  "abstener": false,
+  "afirmaciones": [
+   {
+    "texto": "Según prensa.com, la calificadora S & P ratificó el grado de inversión de Panamá en BBB - y mantiene perspectiva estable.",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "titulo"
+     }
+    ]
+   },
+   {
+    "texto": "S & P Global ratificó el grado de inversión de Panamá, según panamaamerica.com.pa.",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G1b46030073",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ],
+  "faltante": [
+   "lo que no fue mencionado en las afirmaciones"
+  ]
+ }
+}

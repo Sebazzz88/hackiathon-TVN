@@ -1,0 +1,57 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 781,
+  "tokens_salida": 413,
+  "costo_usd": 0.0,
+  "segundos": 74.73,
+  "prompt_version": "respuesta-v2"
+ },
+ "salida": {
+  "abstener": false,
+  "afirmaciones": [
+   {
+    "texto": "Según la prensa panameña, Dagoberto Yin Carrizo fue un ícono de la música típica panameña. De acuerdo a infobae.com, él era un 'referente de la música típica popular panameña' y según diaadia.com.pa, Dagoberto Yin Carrizo falleció 'el maestro del acordeón que marcó la música panameña'. Según laestrella.com.pa y telemetro.com, Dagoberto Yin Carrizo era un 'ícono de la música típica panameña' y 'fallece Dagoberto Yin Carrizo, acordeonista y compositor de la música típica panameña'. Todas las fuentes coinciden en que Dagoberto Yin Carrizo era un reconocido músico panameño que se desempeñaba en el acordeón y en la composición de música típica panameña.",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "Gafbecc7950",
+      "campo": "titulo"
+     },
+     {
+      "id_evidencia": "G4576bdfa",
+      "campo": "titulo"
+     },
+     {
+      "id_evidencia": "Ge3c4dd5ebd",
+      "campo": "texto"
+     },
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "texto"
+     },
+     {
+      "id_evidencia": "G6293864cad",
+      "campo": "texto"
+     },
+     {
+      "id_evidencia": "Gafbecc7950",
+      "campo": "medio"
+     },
+     {
+      "id_evidencia": "G4576bdfa",
+      "campo": "medio"
+     },
+     {
+      "id_evidencia": "Ge3c4dd5ebd",
+      "campo": "medio"
+     }
+    ]
+   }
+  ],
+  "faltante": [
+   "hipotesis"
+  ]
+ }
+}

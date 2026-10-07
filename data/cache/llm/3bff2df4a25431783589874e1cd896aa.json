@@ -1,0 +1,41 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 432,
+  "tokens_salida": 436,
+  "costo_usd": 0.0,
+  "segundos": 61.5,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Reforzar oficina técnica de AMP en Vietnam para aumentar presencia marítima",
+  "enfoque": {
+   "texto": "Panamá fortalecerá su presencia en el mercado marítimo vietnamita abriendo una nueva oficina de servicio técnico de la Autoridad Marítima Panameña (AMP) en Ho Chi Minh, capital del país asiático. Según informó tvn.com.pa, la decisión busca mejorar la atención y respaldo a la flota panameña en el mercado asiático, lo que permitirá una mayor competitividad y protección de los intereses nacionales en el ámbito marítimo.",
+   "tipo": "hipotesis",
+   "citas": [
+    {
+     "id_evidencia": "G226d8217c0",
+     "campo": "titulo"
+    }
+   ]
+  },
+  "preguntas": [
+   "¿Cuál es el objetivo principal de abrir esta nueva oficina de AMP en Vietnam?",
+   "¿Cuáles son los desafíos que enfrentará Panamá en este mercado marítimo?",
+   "¿Cuál es el impacto potencial de esta estrategia en la competitividad de la flota panameña en el ámbito asiático?"
+  ],
+  "copy": [
+   {
+    "texto": "Panamá amplía su presencia en el mercado marítimo asiático con la apertura de una nueva oficina de servicio técnico de la Autoridad Marítima Panameña (AMP) en Ho Chi Minh, capital de Vietnam. La decisión busca mejorar la atención y respaldo a la flota panameña en el mercado asiático, lo que permitirá una mayor competitividad y protección de los intereses nacionales en el ámbito marítimo, según informó tvn.com.pa.",
+    "tipo": "inferencia",
+    "citas": [
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ]
+ }
+}

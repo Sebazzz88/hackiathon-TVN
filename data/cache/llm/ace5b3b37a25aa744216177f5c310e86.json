@@ -1,0 +1,41 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 606,
+  "tokens_salida": 321,
+  "costo_usd": 0.0,
+  "segundos": 51.83,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Panamá y Costa Rica Agilan Paso Aduanero de Carga, Según EFE",
+  "enfoque": {
+   "texto": "La firma de un acuerdo entre Panamá y Costa Rica permitirá agilizar el paso aduanero de carga entre ambos países, lo que beneficiará a las empresas y a la economía panameña y costarricense, según informa EFE.",
+   "tipo": "hipotesis",
+   "citas": [
+    {
+     "id_evidencia": "G226d8217c0",
+     "campo": "titulo"
+    }
+   ]
+  },
+  "preguntas": [
+   "¿Cuál es el impacto económico que tendría este acuerdo en Panamá y Costa Rica?",
+   "¿Cuáles son las medidas específicas que se implementarán para agilizar el paso aduanero de carga?",
+   "¿Cuál es el rol de otras instituciones regionales en el proceso de implementación de este acuerdo?"
+  ],
+  "copy": [
+   {
+    "texto": "Festejamos la firma de un acuerdo entre Panamá y Costa Rica que permitirá agilizar el paso aduanero de carga entre ambos países. Esto beneficiará a las empresas y a la economía panameña y costarricense.",
+    "tipo": "inferencia",
+    "citas": [
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ]
+ }
+}

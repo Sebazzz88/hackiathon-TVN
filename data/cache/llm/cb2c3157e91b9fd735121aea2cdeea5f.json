@@ -1,0 +1,47 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 836,
+  "tokens_salida": 274,
+  "costo_usd": 0.0,
+  "segundos": 57.61,
+  "prompt_version": "respuesta-v2"
+ },
+ "salida": {
+  "abstener": false,
+  "afirmaciones": [
+   {
+    "texto": "Según critica.com.pa, Chichero representará a Panamá en la carrera a los Premios Oscar y Goya [{Gd81a4829a6, titulo}]",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "Gd81a4829a6",
+      "campo": "titulo"
+     },
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "id_medio"
+     }
+    ]
+   },
+   {
+    "texto": "También según diaadia.com.pa, Chichero representará a Panamá en los Goya 2027 y buscará una nominación al Óscar [{Gce75775a9d, titulo}]",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "Gce75775a9d",
+      "campo": "titulo"
+     },
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "id_medio"
+     }
+    ]
+   }
+  ],
+  "faltante": [
+   "evidencia para confirmar si Chichero irá a los premios Oscar directamente, ya que las fuentes consultadas solo mencionan la participación en los Goya"
+  ]
+ }
+}

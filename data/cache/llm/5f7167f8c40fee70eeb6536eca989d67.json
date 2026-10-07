@@ -1,0 +1,41 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 512,
+  "tokens_salida": 365,
+  "costo_usd": 0.0,
+  "segundos": 53.29,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Choque en el Corredor Norte: 2 heridos y cierre parcial",
+  "enfoque": {
+   "texto": "Un choque en el Corredor Norte panameño dejó 2 heridos y ocasionó un cierre parcial en la vía, según informaciones parciales de dos fuentes independientes. El accidente podría tener impactos significativos en el transporte y la economía local, ya que el Corredor Norte es una vía estratégica que une Panamá con su vecino nicaragüense.",
+   "tipo": "hipotesis",
+   "citas": [
+    {
+     "id_evidencia": "AGR:SINT-S-CON-003",
+     "campo": "registros"
+    }
+   ]
+  },
+  "preguntas": [
+   "¿Cuál es la causa del choque en el Corredor Norte?",
+   "¿Cuál es la condición de los heridos?",
+   "¿Cuáles son las expectativas de reabertura de la vía?"
+  ],
+  "copy": [
+   {
+    "texto": "Choque en el Corredor Norte deja 2 heridos y cierre parcial en la vía panameña. Según fuentes independientes, un accidente en la ruta estratégica que une Panamá con Nicaragua dejó 2 heridos y ocasionó un cierre parcial. Esperamos más detalles sobre la causa del choque y las próximas acciones para el transporte y la economía local.",
+    "tipo": "inferencia",
+    "citas": [
+     {
+      "id_evidencia": "S-CON-003",
+      "campo": "fecha_deteccion"
+     }
+    ]
+   }
+  ]
+ }
+}

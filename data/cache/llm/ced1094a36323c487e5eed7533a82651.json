@@ -1,0 +1,41 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 429,
+  "tokens_salida": 353,
+  "costo_usd": 0.0,
+  "segundos": 51.76,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Sinaproc extiende vigilancia por lluvias, tormentas y vientos",
+  "enfoque": {
+   "texto": "Panamá enfrentará un mayor riesgo de deslizamientos de tierra, caídas de árboles y daños en infraestructura debido a las lluvias torrenciales y tormentas que se avecinan. Según la calificadora Sinaproc, la vigilancia de riesgos naturales se extiende hasta el viernes, lo que podría afectar a la población panameña.",
+   "tipo": "hipotesis",
+   "citas": [
+    {
+     "id_evidencia": "Ta0993c4b63",
+     "campo": "medio"
+    }
+   ]
+  },
+  "preguntas": [
+   "¿Cuáles son las áreas del país más propensas a deslizamientos de tierra y caídas de árboles debido a las lluvias torrenciales y tormentas?",
+   "¿Cuáles son las recomendaciones para evitar riesgos durante estas condiciones climáticas?",
+   "¿Cuál es el costo estimado de los daños en infraestructura debido a las tormentas y lluvias?"
+  ],
+  "copy": [
+   {
+    "texto": "La vigilancia de Sinaproc por lluvias, tormentas y vientos se extiende hasta el viernes. Asegura evitar deslizamientos de tierra y caídas de árboles en áreas del país.",
+    "tipo": "inferencia",
+    "citas": [
+     {
+      "id_evidencia": "Ta0993c4b63",
+      "campo": "medio"
+     }
+    ]
+   }
+  ]
+ }
+}
