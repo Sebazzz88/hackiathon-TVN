@@ -29,7 +29,7 @@ export async function api(path, method = "GET", body, signal) {
     } catch (e) {
       if (e.name === "AbortError") throw e;  // cancelada a propósito: no es un error
       const err = e instanceof ApiError ? e : new ApiError(
-        "No hay conexión con el backend (http://localhost:8000). ¿Está encendido?", { transitorio: true });
+        "No hay conexión con el backend. Enciéndelo (run_demo.ps1 o iniciar.ps1) y vuelve a intentarlo.", { transitorio: true });
       if (method === "GET" && err.transitorio && intento === 0) { await esperar(700); continue; }
       throw err;
     }

@@ -1,0 +1,39 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 761,
+  "tokens_salida": 186,
+  "costo_usd": 0.0,
+  "segundos": 34.5,
+  "prompt_version": "respuesta-v2"
+ },
+ "salida": {
+  "abstener": false,
+  "afirmaciones": [
+   {
+    "texto": "Según el titulado 'Fenómeno de El Niño amenaza la logística de Panamá'",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G396a98e433",
+      "campo": "titulo"
+     }
+    ]
+   },
+   {
+    "texto": "La fuente china news.china.com.cn reporta que '巴拿马运河管理局 ： 为保障水资源安全或将再减通航量'",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G74bb50b704",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ],
+  "faltante": [
+   "Información específica sobre el impacto de El Niño en los tránsitos diarios por el Canal de Panamá"
+  ]
+ }
+}

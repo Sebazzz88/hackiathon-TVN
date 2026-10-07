@@ -127,7 +127,13 @@ def get_ficha(id_caso: str):
 
 @app.post("/api/query", response_model=QueryOut)
 def query(q: QueryIn):
-    out = agent.answer_query(q.pregunta, q.ia)
+    try:
+        out = agent.answer_query(q.pregunta, q.ia)
+    except Exception:  # red de seguridad de la demo: nunca una pantalla de error, siempre una abstención que dice qué hacer
+        log.exception("La consulta falló; se responde con abstención")
+        out = QueryOut(abstencion=True, estado="abstencion", metodo="respaldo",
+                       faltante=["El agente no pudo completar esta consulta (el detalle quedó en el log del backend)."],
+                       accion="Reintenta la consulta. Mientras tanto, la agenda y las fichas siguen disponibles: no dependen de la IA.")
     db.log("query", "", f"abstencion={out.abstencion}")  # no se registra el texto completo
     if out.validador:
         db.log("validador", "", json.dumps(out.validador))
@@ -137,7 +143,14 @@ def query(q: QueryIn):
 @app.post("/api/fichas/{id_caso}/draft", response_model=Ficha)
 def draft(id_caso: str):
     f = _ficha(id_caso)
-    f.borrador = agent.generate_draft(f)
+    try:
+        f.borrador = agent.generate_draft(f)
+    except Exception:  # misma red de seguridad: se informa con una abstención, no con un error 500
+        log.exception("El borrador de %s falló; se responde con abstención", id_caso)
+        return f.model_copy(update={"borrador": {
+            "generador": "ninguno", "abstencion": True, "citas": [],
+            "faltante": ["No se pudo generar el borrador (el detalle quedó en el log del backend). Reintenta con «Regenerar»; "
+                         "la ficha, sus fuentes y su evidencia siguen disponibles."]}})
     if f.estado_revision == "nuevo":
         f.estado_revision = "en_revision"
     db.save(f)
@@ -228,3 +241,17 @@ def reset():
     sembrar(conservar=False)
     db.log("reset")
     return {"ok": True, "fichas": db.count()}
+
+
+# Demo en un solo proceso: si existe la interfaz compilada (frontend/dist), el backend la sirve en "/" (run_demo.ps1, Docker).
+# Se monta al final para que /api y /health tengan prioridad. Con "npm run dev" (puerto 5173) esto no interviene.
+def _montar_interfaz():
+    import os
+    from pathlib import Path
+    from fastapi.staticfiles import StaticFiles
+    dist = Path(os.getenv("FRONTEND_DIST") or db.ROOT / "frontend" / "dist")
+    if (dist / "index.html").exists():
+        app.mount("/", StaticFiles(directory=dist, html=True), name="interfaz")
+
+
+_montar_interfaz()

@@ -1,0 +1,39 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 775,
+  "tokens_salida": 195,
+  "costo_usd": 0.0,
+  "segundos": 40.82,
+  "prompt_version": "respuesta-v2"
+ },
+ "salida": {
+  "abstener": false,
+  "afirmaciones": [
+   {
+    "texto": "Según prensa.com, la calificadora ratificó el grado de inversión de estudiar la atmósfera terrestre desde Panamá.",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "titulo"
+     }
+    ]
+   },
+   {
+    "texto": "También según panamaamerica.com.pa, la NASA opera desde Panamá una misión para estudiar la atmósfera terrestre.",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G4eeaddd694",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ],
+  "faltante": [
+   "Información sobre la específica misión de la NASA en Panamá, como su objetivo y detalles técnicos."
+  ]
+ }
+}

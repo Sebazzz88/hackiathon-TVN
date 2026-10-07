@@ -1,0 +1,41 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 515,
+  "tokens_salida": 395,
+  "costo_usd": 0.0,
+  "segundos": 60.36,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Apagón en San Miguelito deja sin luz a 45 mil clientes, según fuentes",
+  "enfoque": {
+   "texto": "El apagón que afectó a gran parte de San Miguelito ha dejado a alreden de 45 mil clientes sin luz, según informan fuentes independientes. La parcial calificadora confirmó el grado de inversión en el área, lo que sugiere que el problema podría estar relacionado con un problema en la infraestructura eléctrica local.",
+   "tipo": "hipotesis",
+   "citas": [
+    {
+     "id_evidencia": "AGR:SINT-S-CON-005",
+     "campo": "registros"
+    }
+   ]
+  },
+  "preguntas": [
+   "¿Cuál es la razón por la que tan solo un 20% de los clientes en San Miguelito tuvieron acceso a energía, si la calificadora confirmó un grado de inversión de 45 mil clientes?",
+   "¿Cuáles son las próximas acciones que la empresa eléctrica está considerando para solucionar el problema y restablecer el servicio a los clientes afectados?",
+   "copy"
+  ],
+  "copy": [
+   {
+    "texto": "El apagón en San Miguelito ha dejado a 45 mil clientes sin luz, según informan fuentes independientes. La empresa eléctrica confirmó un grado de inversión de 45 mil clientes, pero solo un 20% de los clientes pudieron acceder a energía. La calificadora sugiere que el problema podría estar relacionado con un problema en la infraestructura eléctrica local.",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "S-CON-006",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ]
+ }
+}

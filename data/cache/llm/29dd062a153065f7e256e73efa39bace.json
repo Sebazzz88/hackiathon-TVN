@@ -1,0 +1,53 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 756,
+  "tokens_salida": 488,
+  "costo_usd": 0.0,
+  "segundos": 86.23,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Moody Evalúa Si Panamá Preservará el Grado de Inversión Este Año",
+  "enfoque": {
+   "texto": "Moody's calificadora ha evaluado si Panamá conservará su grado de inversión para este año, tras publicar un comunicado en el que menciona que el cobre panameño puede influir en el nivel de inversión del país.",
+   "tipo": "hipotesis",
+   "citas": [
+    {
+     "id_evidencia": "G8c67410fe4",
+     "campo": "MEF"
+    },
+    {
+     "id_evidencia": "Gb01bc434a8",
+     "campo": "panamaamerica.com.pa"
+    },
+    {
+     "id_evidencia": "G55b50a63f1",
+     "campo": "critica.com.pa"
+    }
+   ]
+  },
+  "preguntas": [
+   "¿Cuál es el impacto potencial del cobre panameño en el grado de inversión del país, según Moody's calificadora?",
+   "¿Cuáles son las estrategias que Panamá ha implementado para preservar su grado de inversión, según la respuesta de MEF?",
+   "¿Cuáles son las expectativas de Moody's en cuanto a la conservación del grado de inversión para Panamá para este año, y cuáles son las razones que justifican estas expectativas?"
+  ],
+  "copy": [
+   {
+    "texto": "Moody's calificadora ha alertado sobre el potencial impacto del cobre panameño en el grado de inversión del país. Según la entidad, el cobre puede incidir en el nivel de inversión de Panamá. La MEF ha respondido a estas preocupaciones, asegurando que Panamá hace lo suficiente para preservar su grado de inversión. #Moody #Inversión #Panamá",
+    "tipo": "inferencia",
+    "citas": [
+     {
+      "id_evidencia": "G8c67410fe4",
+      "campo": "laestrella.com.pa"
+     },
+     {
+      "id_evidencia": "Gb01bc434a8",
+      "campo": "panamaamerica.com.pa"
+     }
+    ]
+   }
+  ]
+ }
+}

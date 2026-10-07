@@ -1,0 +1,53 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 507,
+  "tokens_salida": 438,
+  "costo_usd": 0.0,
+  "segundos": 67.97,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Hospital de Changuinola recibe alza en casos de intoxicación",
+  "enfoque": {
+   "texto": "El Hospital de Changuinola enfrenta una situación de emergencia debido a la intoxicación de numerosos pacientes. Según informan fuentes independientes, el centro asistencial ha recibido un total de 12 y 31 pacientes, respectivamente, en los últimos días. Estas cifras, publicadas por el medio c.test y b.test, alertan sobre un problema de salud grave que requiere atención inmediata y una investigación para determinar las causas de esta situación.",
+   "tipo": "hipotesis",
+   "citas": [
+    {
+     "id_evidencia": "G226d8217c0",
+     "campo": "titulo"
+    },
+    {
+     "id_evidencia": "S-CON-010",
+     "campo": "fuentes_independientes"
+    },
+    {
+     "id_evidencia": "S-CON-009",
+     "campo": "fecha_deteccion"
+    }
+   ]
+  },
+  "preguntas": [
+   "¿Cuál es la causa principal de la intoxicación en el Hospital de Changuinola?",
+   "¿Cuál es el rol del gobierno local en la atención de estos casos?",
+   "¿Cuáles son las medidas que se han tomado para prevenir futuros casos de intoxicación?"
+  ],
+  "copy": [
+   {
+    "texto": "El Hospital de Changuinola enfrenta una crisis debido a la intoxicación de numerosos pacientes. Según fuentes independientes, el centro asistencial ha recibido 12 y 31 pacientes en los últimos días. #ChanguinolaIntoxicación #SaludPanamá",
+    "tipo": "inferencia",
+    "citas": [
+     {
+      "id_evidencia": "S-CON-009",
+      "campo": "fecha_deteccion"
+     },
+     {
+      "id_evidencia": "S-CON-010",
+      "campo": "fuentes_independientes"
+     }
+    ]
+   }
+  ]
+ }
+}

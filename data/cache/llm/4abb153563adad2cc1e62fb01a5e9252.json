@@ -1,0 +1,41 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 708,
+  "tokens_salida": 378,
+  "costo_usd": 0.0,
+  "segundos": 65.0,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Precio del diésel en Panamá baja 5 o 8 centavos por galón desde el viernes",
+  "enfoque": {
+   "texto": "El precio del diésel en Panamá disminuyó 5 o 8 centavos por galón a partir del viernes, según informaron fuentes energéticas. Este descenso en el costo del combustible podría beneficiar a los conductores y a las industrias que dependen de este combustible como fuente de energía.",
+   "tipo": "hipotesis",
+   "citas": [
+    {
+     "id_evidencia": "S-CON-007",
+     "campo": "fuentes energéticas"
+    }
+   ]
+  },
+  "preguntas": [
+   "¿Cuál es la razón por la que el precio del diésel disminuyó 5 o 8 centavos por galón en Panamá?",
+   "¿Cuáles son las industrias y conductores que podrían beneficiarse con este descenso en el precio del diésel?",
+   "¿Cuáles son las fuentes energéticas que informaron este cambio en el precio del diésel?"
+  ],
+  "copy": [
+   {
+    "texto": "El precio del diésel en Panamá disminuyó 5 centavos por galón desde el viernes, según informaron fuentes energéticas. Esto podría beneficiar a los conductores y a las industrias que dependen de este combustible como fuente de energía.",
+    "tipo": "inferencia",
+    "citas": [
+     {
+      "id_evidencia": "S-CON-007",
+      "campo": "fuentes energéticas"
+     }
+    ]
+   }
+  ]
+ }
+}

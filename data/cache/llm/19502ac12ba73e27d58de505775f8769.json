@@ -1,0 +1,41 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 433,
+  "tokens_salida": 355,
+  "costo_usd": 0.0,
+  "segundos": 53.83,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Suspensión Temporal en Operaciones de Potabilizadora de Miraflores",
+  "enfoque": {
+   "texto": "La potabilizadora de agua de Miraflores en Panamá enfrentará una suspensión temporal de sus operaciones este miércoles, según informó tvn.com.pa. Este evento podría generar preocupación en la población panameña, ya que afectaría el acceso a un recurso básico y vital como el agua potable.",
+   "tipo": "hipotesis",
+   "citas": [
+    {
+     "id_evidencia": "T7bb199ba28",
+     "campo": "fecha_publicacion"
+    }
+   ]
+  },
+  "preguntas": [
+   "¿Cuál es la razón por la que se decidió suspender temporalmente las operaciones de la potabilizadora de Miraflores?",
+   "¿Cuál es el impacto potencial de esta suspensión en la población panameña?",
+   "¿Se han tomado medidas previas para minimizar los posibles efectos negativos de esta suspensión?"
+  ],
+  "copy": [
+   {
+    "texto": "Nueva noticia: La potabilizadora de agua de Miraflores en Panamá enfrentará una suspensión temporal de sus operaciones este miércoles, según informó tvn.com.pa. #AguaPotable #Miraflores",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "T7bb199ba28",
+      "campo": "fecha_publicacion"
+     }
+    ]
+   }
+  ]
+ }
+}

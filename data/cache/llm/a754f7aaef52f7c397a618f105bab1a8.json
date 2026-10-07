@@ -1,0 +1,39 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 686,
+  "tokens_salida": 218,
+  "costo_usd": 0.0,
+  "segundos": 32.51,
+  "prompt_version": "respuesta-v2"
+ },
+ "salida": {
+  "abstener": false,
+  "afirmaciones": [
+   {
+    "texto": "Según el reporte preliminar publicado por 'sintetico-b.test' el 5 de octube de 2026, las lluvias en Chiriquí dejaron 40 viviendas afectadas.",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "S-CON-002",
+      "campo": "titulo"
+     }
+    ]
+   },
+   {
+    "texto": "Asimismo, el reporte preliminar publicado por 'sintetico-a.test' el 5 de octube de 2026, menciona que las lluvias dejaron 3 viviendas afectadas.",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "S-CON-001",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ],
+  "faltante": [
+   "No se incluye información sobre el número total de viviendas afectadas en los datos proporcionados."
+  ]
+ }
+}

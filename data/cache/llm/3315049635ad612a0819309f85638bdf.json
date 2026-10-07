@@ -1,0 +1,36 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 520,
+  "tokens_salida": 304,
+  "costo_usd": 0.0,
+  "segundos": 44.41,
+  "prompt_version": "draft-local-v1"
+ },
+ "salida": {
+  "titulo": "Lluvia en Chiriquí deja 40 viviendas afectadas, según informes parciales",
+  "enfoque": {
+   "texto": "Las intensas lluvias en Chiriquí han dejado 40 viviendas en situación de afectación, según informes parciales de dos fuentes independientes. Estos eventos naturales podrían afectar la vida cotidiana de la población local en la región.",
+   "tipo": "hipotesis",
+   "citas": []
+  },
+  "preguntas": [
+   "¿Cuál es la cantidad exacta de viviendas afectadas en Chiriquí de acuerdo con las fuentes consultadas?",
+   "¿Cuáles son las causas de las intensas lluvias en Chiriquí que han ocasionado el daño a las viviendas?",
+   "¿Cuáles son las medidas de protección y prevención que se han implementado para evitar daños similares en el futuro?"
+  ],
+  "copy": [
+   {
+    "texto": "Las intensas lluvias en Chiriquí han dejado 40 viviendas afectadas, según informes parciales de dos fuentes independientes. #Chiriqui #Lluvia",
+    "tipo": "inferencia",
+    "citas": [
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ]
+ }
+}

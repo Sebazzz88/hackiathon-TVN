@@ -126,8 +126,11 @@ def generar_json(system: str, user: str, schema: dict, version: str, max_tokens=
     key = cache_key(system, user, schema, version)
     p = _ruta(key)
     if p.exists():
-        d = json.loads(p.read_text(encoding="utf-8"))
-        return d["salida"], {**d["meta"], "origen": "cache", "cache_key": key}
+        try:
+            d = json.loads(p.read_text(encoding="utf-8"))
+            return d["salida"], {**d["meta"], "origen": "cache", "cache_key": key}
+        except (ValueError, KeyError, OSError):  # caché dañada: se ignora (y se reescribe si el modelo responde)
+            print(f"[llm] caché ilegible {key}; se ignora", file=sys.stderr)
     if solo_cache:
         return None, {"origen": "sin_llm", "motivo": "no solicitado (sin respuesta en caché)", "cache_key": key}
     ok, motivo = disponible()

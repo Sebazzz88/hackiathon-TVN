@@ -1,0 +1,37 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 1023,
+  "tokens_salida": 186,
+  "costo_usd": 0.0,
+  "segundos": 46.59,
+  "prompt_version": "respuesta-v2"
+ },
+ "salida": {
+  "abstener": false,
+  "afirmaciones": [
+   {
+    "texto": "Según telemetro.com, el precio de la gasolina en Panamá subirá desde este viernes 16 de octubre [{G86701c186f registros, Fuentes independientes: 1}]",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G86701c186f",
+      "campo": "titulo"
+     }
+    ]
+   },
+   {
+    "texto": "La fuente de prensa.com indica que la gasolina subirá de precio otra vez [{Ga02663d71f registros, Fuentes independientes: 2}]",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "Ga02663d71f",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ],
+  "faltante": []
+ }
+}

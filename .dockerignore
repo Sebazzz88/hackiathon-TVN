@@ -1,0 +1,12 @@
+.git
+**/node_modules
+**/.venv
+**/venv
+**/__pycache__
+frontend/dist
+data/app.db
+data/models
+docs/reto_TVN.pdf
+.env
+.env.*
+logs

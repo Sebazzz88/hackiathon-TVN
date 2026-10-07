@@ -1,0 +1,40 @@
+{
+ "meta": {
+  "proveedor": "ollama",
+  "modelo": "hermes3:3b",
+  "tokens_entrada": 917,
+  "tokens_salida": 243,
+  "costo_usd": 0.0,
+  "segundos": 55.31,
+  "prompt_version": "respuesta-v2"
+ },
+ "salida": {
+  "abstener": false,
+  "afirmaciones": [
+   {
+    "texto": "Según prensa.com, el título de la noticia es 'Tratados Torrijos - Carter: entresijos de la historia'. [Ga22d8cd527, titulo]",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G226d8217c0",
+      "campo": "titulo"
+     }
+    ]
+   },
+   {
+    "texto": "Panamá conmemora 49 años de los Tratados Torrijos - Carter, que abrieron paso al control nacional del Canal. Según spanish.xinhuanet.com, la noticia es 'Especial: Panamá conmemora 49 años de los Tratados Torrijos - Carter, que abrieron paso al control nacional del Canal'. [G7e5229cbfd, titulo]",
+    "tipo": "declaracion",
+    "citas": [
+     {
+      "id_evidencia": "G7e5229cbfd",
+      "campo": "titulo"
+     }
+    ]
+   }
+  ],
+  "faltante": [
+   "texto",
+   "medio"
+  ]
+ }
+}
