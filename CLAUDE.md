@@ -1,11 +1,11 @@
 # Copiloto TVN — hackIAthon Panamá 2026
 - Reto: docs/reto_TVN.pdf. Resumen en docs/RETO.md (créalo una vez; después lee solo el resumen).
 - Entrega: jueves 8 oct 2026, 23:59 (Panamá). Código congelado el jueves 18:00.
-- Rama: feat/agente (PR abierto a main). No crear ramas ni repos. No usar el .git de la carpeta exterior.
+- Rama: main (feat/agente ya se fusionó en main el 7 oct 2026). Se trabaja directo en main. No crear ramas ni repos. No usar el .git de la carpeta exterior.
 - Stack fijo: FastAPI + SQLite + React/Vite. Sin dependencias grandes sin justificar.
 - IA en backend/app/agent/ con las firmas de backend/app/agent_interface.py (ver NOTA_PERSONA_1.md).
 - Prohibido inventar métricas, fuentes, citas o resultados. Todo se marca VERIFICADO o PENDIENTE.
 - No leer data/raw completo: usar head o muestras.
-- Antes de cada commit: cd backend; pytest -q. Commit + push a feat/agente al cerrar cada etapa.
+- Antes de cada commit: cd backend; pytest -q. Commit + push a main al cerrar cada etapa.
 - Reporte por etapa: HECHO / CAMBIOS / VERIFICADO / PENDIENTE / SIGUIENTE. Corto.
 - Comandos para el usuario: PowerShell (Windows).

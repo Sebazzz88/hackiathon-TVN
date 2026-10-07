@@ -64,7 +64,7 @@ Fecha: 2026-10-06. Rama `feat/agente`. Verificado con 24 pruebas (0 fallos, 0 om
 - 🔴 **Etiquetas sin revisión humana.** Todas las métricas del benchmark son preliminares; un jurado puede descartarlas.
 - 🟠 **Caché de Hermes sin versionar aún:** sin ella, cada respuesta nueva tarda ~1 min en la demo.
 - 🟠 **Precision@5 y validez de sustento pendientes:** son métricas pedidas explícitamente.
-- 🟠 **Repositorio y PR:** el trabajo está en `feat/agente`; el jurado verá `main` si no se fusiona. Confirmar que el jurado tenga acceso al repo.
+- ✅ **Repositorio:** `feat/agente` se fusionó en `main` el 2026-10-07. Confirmar que el jurado tenga acceso al repo.
 - 🟠 **Guion corto** en temas de una sola fuente (9/18 en 45–60 s).
 - 🟡 Cobertura de GDELT incompleta por el límite de tasa.
 - 🟡 El conjunto reservado no es ciego.
@@ -85,7 +85,7 @@ powershell -ExecutionPolicy Bypass -File .\iniciar.ps1
 
 ```powershell
 cd backend; .\.venv\Scripts\python -m app.agent.precalentar; cd ..
-git add data/cache/llm; git commit -m "data: cache LLM para demo offline"; git push origin feat/agente
+git add data/cache/llm; git commit -m "data: cache LLM para demo offline"; git push origin main
 ```
 
 **3. Revisar las etiquetas.** Abre y corrige las columnas `tema_humano`, `mismo_evento` y `esperado`. Escribe tu nombre en `revisado_por`.
@@ -113,13 +113,13 @@ start eval\resultados\afirmaciones_para_revision.csv
 ```powershell
 backend\.venv\Scripts\python eval\run_eval.py
 cd backend; .\.venv\Scripts\python -m pytest -q; cd ..
-git add eval docs; git commit -m "eval: etiquetas revisadas y métricas finales"; git push origin feat/agente
+git add eval docs; git commit -m "eval: etiquetas revisadas y métricas finales"; git push origin main
 ```
 
 **7. Notion (obligatorio).** Importa `docs\notion_export\*.md` (*Importar → Markdown*), completa revisor y decisión en las fichas y da acceso al jurado. Guía: `docs\notion_export\00_LEEME.md`.
 
 **8. Completar `docs\12_AI_USAGE.md`** con lo que hiciste con Codex y ChatGPT.
 
-**9. Fusionar a `main` antes del jueves 18:00.** Crea el PR en https://github.com/Sebazzz88/hackiathon-TVN/compare/main...feat/agente, revísalo y fusiónalo.
+**9. Fusionar a `main` antes del jueves 18:00.** HECHO el 2026-10-07 (fast-forward, 127 pruebas en verde en `main`).
 
 **10. Ensayar el pitch** con `docs\notion_export\08_presentacion_al_jurado.md`, sin internet.

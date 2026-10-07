@@ -58,7 +58,6 @@ winget install --id OpenJS.NodeJS.LTS -e
 ```powershell
 git clone https://github.com/Sebazzz88/hackiathon-TVN.git
 cd hackiathon-TVN
-git checkout feat/agente
 ```
 
 ### 3. Instala todo y enciéndelo con un solo comando
@@ -174,7 +173,7 @@ Todo lo que escribe la IA pasa por el **validador de citas**. Se elimina cualqui
 cd backend
 .\.venv\Scripts\python -m app.agent.precalentar --top 5
 cd ..
-git add data/cache/llm; git commit -m "data: cache Hermes para demo offline"; git push origin feat/agente
+git add data/cache/llm; git commit -m "data: cache Hermes para demo offline"; git push origin main
 ```
 
 **Otros proveedores (opcional).** En `.env`, `LLM_PROVIDER=openai` sirve para APIs compatibles como Kimi (Moonshot) o Groq, con `LLM_BASE_URL` y `LLM_API_KEY`. `LLM_PROVIDER=anthropic` usa Claude con `LLM_API_KEY`. Sin ningún modelo disponible, el sistema usa la caché o una plantilla determinista: nunca se cae.

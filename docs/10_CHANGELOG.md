@@ -2,7 +2,7 @@
 
 > Fecha, cambio, autor, PR
 
-Rama `feat/agente` (PR abierto a `main`). Autor: Sebastián, con asistencia de Claude Code.
+Desarrollado en `feat/agente` y fusionado en `main` el 2026-10-07; desde entonces se trabaja en `main`. Autor: Sebastián, con asistencia de Claude Code.
 
 | Fecha | Cambio | Commit |
 |---|---|---|

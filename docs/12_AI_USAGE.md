@@ -10,7 +10,7 @@ Registro honesto de las herramientas de IA usadas para construir el proyecto. La
 |---|---|
 | Propósito | Auditoría del repo, descarga y validación del snapshot, implementación del agente (`backend/app/agent/`), interfaz, pruebas T01–T10, benchmark, evaluación y documentación |
 | Prompt principal | Instrucción por etapas (0 auditoría, 1 datos reales, 2 IA, 3 interfaz, 4 evaluación, 5 entrega) con reglas del `CLAUDE.md`: no inventar métricas, marcar VERIFICADO/PENDIENTE, tests antes de cada commit |
-| Resultado | Código y documentos en la rama `feat/agente`. Cada etapa con commit y `pytest` en verde |
+| Resultado | Código y documentos en la rama `main` (desarrollado en `feat/agente` y fusionado el 2026-10-07). Cada etapa con commit y `pytest` en verde |
 | Iteraciones relevantes | (1) El primer umbral de réplica por similitud semántica fusionaba titulares distintos; se midió y se cambió a criterio léxico (D06). (2) La prueba T05 detectó que dos titulares con cifras distintas se marcaban como réplica; se corrigió (D08). (3) Clasificación con margen mínimo tras ver notas internacionales en "economía" (D07). (4) Relevancia de TVN ajustada (D09) |
 | Límites | Las etiquetas del benchmark y de temas fueron **propuestas por Claude** y requieren revisión humana antes de tomarse como resultados |
 
