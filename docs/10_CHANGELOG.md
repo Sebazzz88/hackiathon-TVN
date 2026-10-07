@@ -15,6 +15,7 @@ Rama `feat/agente` (PR abierto a `main`). Autor: Sebastián, con asistencia de C
 | 2026-10-06 | Etapa 5: clon limpio verificado (métricas idénticas), export Notion completo (catálogo, 7 fichas generadas, matriz T01–T10, presentación), T04 nulo determinista, `docs/AUDITORIA_FINAL.md` | ver `git log` |
 | 2026-10-06 | IA generativa integrada en consultas (Claude redacta con evidencia recuperada + validador), estado de IA en la cabecera, generador visible en borradores y respuestas, `python -m app.agent.precalentar` para la caché offline, `LLM_CACHE_DIR` | ver `git log` |
 | 2026-10-06 | IA generativa local y gratuita: Hermes 3 3B vía Ollama (proveedor por defecto), borrador híbrido, botón "Redactar con IA", normalización de citas de modelos pequeños, fechas en palabras en el validador | ver `git log` |
+| 2026-10-07 | Agenda: URL como única fuente de verdad, cancelación de respuestas viejas, selector de cantidad con número personalizado y Máx, aviso "solo hay N", bandeja por SQL (solo las N pedidas), migración de la base, manejador de errores en JSON, borradores en curso compartidos | ver `git log` |
 
 ## Pruebas fallidas y su corrección (para Notion)
 
@@ -29,3 +30,8 @@ Rama `feat/agente` (PR abierto a `main`). Autor: Sebastián, con asistencia de C
 | Prueba de consulta con IA | El validador aceptó "La economía crecerá 9% el próximo año" | El mes de la fecha de detección (septiembre = 9) contaba como cifra respaldada | Las fechas solo respaldan fechas escritas como fecha (dd/mm/aaaa, hh:mm); prueba de regresión |
 | Prueba real con Hermes 3 | La 1.ª respuesta perdió todas sus frases ("sin cita") | Hermes escribió los ids dentro del texto y citó medios en vez de ids | `recuperar_citas` + ejemplo de formato en el prompt; se valida igual |
 | Prueba real con Hermes 3 | Borrador completo: JSON truncado tras 228 s | Salida demasiado larga para un modelo de 3B en CPU | Modo híbrido (D17) |
+| Uso real de la web | Elegir 10 y volver a 5 se quedaba en 10 | Cada clic lanzaba una petición y la última en llegar ganaba, aunque fuera la vieja | URL como fuente de verdad + `AbortController`; prueba de rutas y de prefijos consistentes |
+| Uso real de la web | Casos de prueba + 5/10 daba error o se desincronizaba | Un efecto volvía a activar el interruptor al abrir una ficha sintética | Estado derivado de la URL; la ficha ya no toca el filtro |
+| Uso real de la web | Error 500 al elegir 30 | No reproducible desde la API. Causas probables: backend ocupado con la IA y proxy de Vite apuntando a `localhost` (IPv6) con el backend en IPv4; el error además nunca se borraba | Proxy a `127.0.0.1`, reintento de GET, error con botón Reintentar |
+| Uso real de la web | Solo 8 casos de prueba aunque se pidan 10 | Solo existen 8 sintéticos | Aviso "solo hay N", campo "otro número" y botón Máx |
+| Uso real de la web | Regenerar borrador no mostraba nada | Si se cambiaba de ficha durante el minuto de generación, la respuesta tardía reemplazaba la ficha activa por otra. Además el proxy cortaba a 120 s | Respuesta tardía solo aplica si es la ficha abierta; generaciones en curso compartidas; proxy a 10 min |

@@ -1,16 +1,52 @@
 // Utilidades compartidas: API, formatos (hora de Panamá) y catálogos de etiquetas.
 
-export async function api(path, method = "GET", body) {
-  const url = path.startsWith("/health") ? path : "/api" + path;
-  const r = await fetch(url, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : `Error ${r.status}`);
-  return d;
+const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** Error de red/servidor con un mensaje que dice qué hacer. `transitorio` = vale la pena reintentar. */
+export class ApiError extends Error {
+  constructor(mensaje, { estado = 0, transitorio = false } = {}) {
+    super(mensaje);
+    this.estado = estado;
+    this.transitorio = transitorio;
+  }
 }
+
+/** Llama al backend. Admite `signal` (para cancelar respuestas viejas) y reintenta UNA vez los GET que fallan por
+ *  red o error 5xx (el backend puede estar ocupado con la IA). Los 4xx (409, 422...) no se reintentan: son respuestas. */
+export async function api(path, method = "GET", body, signal) {
+  const url = path.startsWith("/health") ? path : "/api" + path;
+  for (let intento = 0; ; intento++) {
+    try {
+      const r = await fetch(url, {
+        method, signal, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined,
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) return d;
+      const detalle = typeof d.detail === "string" ? d.detail : null;
+      throw new ApiError(detalle || (r.status >= 500
+        ? "El servidor tuvo un problema. Reintenta; si persiste, revisa la ventana del backend."
+        : `No se pudo completar la solicitud (${r.status}).`), { estado: r.status, transitorio: r.status >= 500 });
+    } catch (e) {
+      if (e.name === "AbortError") throw e;  // cancelada a propósito: no es un error
+      const err = e instanceof ApiError ? e : new ApiError(
+        "No hay conexión con el backend (http://localhost:8000). ¿Está encendido?", { transitorio: true });
+      if (method === "GET" && err.transitorio && intento === 0) { await esperar(700); continue; }
+      throw err;
+    }
+  }
+}
+
+// Borradores que se están generando (la IA local tarda ~1 min). Viven fuera de los componentes: si cambias de ficha
+// o de pestaña mientras tanto, al volver se ve "Generando…" y no se lanza una segunda generación.
+const enCurso = new Map();
+export const generando = (id) => enCurso.has(id);
+export function generarBorrador(id) {
+  if (!enCurso.has(id)) enCurso.set(id, api(`/fichas/${id}/draft`, "POST").finally(() => enCurso.delete(id)));
+  return enCurso.get(id);
+}
+
+/** true si el error es una cancelación intencional (se ignora). */
+export const cancelado = (e) => e?.name === "AbortError";
 
 export const TEMAS = {
   economia: "Economía",

@@ -1,36 +1,96 @@
-import { useEffect, useRef, useState } from "react";
-import { api, COMPONENTES, EVIDENCIA, TEMAS, estadoTxt, hace } from "../lib.js";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { api, cancelado, COMPONENTES, EVIDENCIA, TEMAS, estadoTxt, hace } from "../lib.js";
+import { N_MAX, TAMANOS, fichaVigente } from "../rutas.js";
 import Ficha from "./Ficha.jsx";
 
-export default function Agenda({ corte, ficha, seccion, irAFicha }) {
-  const [items, setItems] = useState([]);
-  const [limite, setLimite] = useState(5);
-  const [sint, setSint] = useState(false);
+/** Una fila de la lista. Memoizada: al cambiar de ficha solo se repinta la que cambia, no las 30. */
+const Fila = memo(function Fila({ f, k, activa, corte, onAbrir }) {
+  return (
+    <li>
+      <button className={"item" + (activa ? " activo" : "")} onClick={() => onAbrir(f.id_caso)} aria-current={activa}>
+        <span className="rank">{k + 1}</span>
+        <span className="item-cuerpo">
+          <span className="kicker">
+            {TEMAS[f.tema] || "—"} · {hace(f.fecha_ultima, corte)}
+            {f.sintetico && <em className="sint"> · sintético</em>}
+          </span>
+          <span className="titular">{f.titulo}</span>
+          <span className="meta">
+            <i className={"punto ev-" + f.estado_evidencia} aria-hidden="true" />
+            {EVIDENCIA[f.estado_evidencia]} · {f.fuentes_independientes} fuente{f.fuentes_independientes === 1 ? "" : "s"} indep.
+            {f.registros > 1 && ` · ${f.registros} titulares`}
+            {f.estado_revision !== "nuevo" && <> · <b>{estadoTxt(f.estado_revision)}</b></>}
+          </span>
+          <span className="mini" aria-hidden="true">
+            {COMPONENTES.map(([c, , w]) => <i key={c} className={"c-" + c} style={{ width: `${f.componentes[c] * w}%` }} />)}
+          </span>
+        </span>
+        <span className={"puntaje banda-" + f.banda} title={`Puntaje de atención ${f.puntaje}/100 (${f.banda})`}>
+          {Math.round(f.puntaje)}
+        </span>
+      </button>
+    </li>
+  );
+});
+
+/**
+ * Agenda. Todo el estado de navegación (tamaño de lista, casos de prueba, ficha, sección) viene de la URL por props;
+ * aquí solo se carga datos. Cada carga cancela la anterior (AbortController), así una respuesta lenta del "10" nunca
+ * pisa a la del "5": el último clic siempre gana.
+ */
+export default function Agenda({ corte, ruta, navegar }) {
+  const { n, sint, ficha, seccion } = ruta;
+  const [lista, setLista] = useState({ items: [], total: 0 });
   const [sel, setSel] = useState(null);
   const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
-
-  const cargar = () =>
-    api(`/inbox?limit=${limite}&sinteticos=${sint}`)
-      .then((d) => { setItems(d); setCargando(false); })
-      .catch((e) => { setError(e.message); setCargando(false); });
-
-  useEffect(() => { cargar(); }, [limite, sint]);
-
+  const [errorLista, setErrorLista] = useState("");
+  const [errorFicha, setErrorFicha] = useState("");
+  const [version, setVersion] = useState(0);        // sube cuando una revisión/borrador cambia la lista
+  const clave = useRef("");
+  const [texto, setTexto] = useState("");           // contenido del campo "otro número"
+  useEffect(() => { setTexto(typeof n === "number" && !TAMANOS.includes(n) ? String(n) : ""); }, [n]);
   const detalle = useRef(null);
-  const cargarFicha = (id, desplazar = false) => api("/fichas/" + id)
-    .then((f) => {
-      setSel(f);
-      if (f.sintetico && !sint) setSint(true);  // un caso de prueba se ve junto a los demás casos de prueba
-      if (desplazar && window.innerWidth < 960) detalle.current?.scrollIntoView({ behavior: "smooth" });
-    })
-    .catch((e) => setError(e.message));
 
-  // La ficha abierta vive en la URL (#/ficha/<id>/<seccion>); sin ficha en la URL se abre la primera de la lista.
-  useEffect(() => { if (ficha) cargarFicha(ficha, true); }, [ficha]);
-  useEffect(() => { if (!ficha && items.length) cargarFicha(items[0].id_caso); }, [items, ficha]);
+  // ---- lista ----
+  useEffect(() => {
+    const ac = new AbortController();
+    const nueva = `${n}|${sint}`;
+    if (clave.current !== nueva) { setCargando(true); setLista((l) => ({ ...l, items: [] })); }  // otro filtro: no mostrar la lista vieja
+    clave.current = nueva;
+    setErrorLista("");
+    api(`/inbox?limit=${n === "max" ? N_MAX : n}&sinteticos=${sint}`, "GET", undefined, ac.signal)
+      .then((d) => { setLista({ items: d.items, total: d.total }); setCargando(false); })
+      .catch((e) => { if (cancelado(e)) return; setErrorLista(e.message); setCargando(false); });
+    return () => ac.abort();
+  }, [n, sint, version]);
 
-  const actualizar = (f) => { setSel(f); cargar(); };
+  // ---- ficha: la de la URL; si no hay, la primera de la lista ----
+  const idActivo = ficha || lista.items[0]?.id_caso || null;
+  useEffect(() => {
+    if (!idActivo) { setSel(null); return; }
+    const ac = new AbortController();
+    setErrorFicha("");
+    api("/fichas/" + idActivo, "GET", undefined, ac.signal)
+      .then((f) => {
+        setSel(f);
+        if (ficha && window.innerWidth < 960) detalle.current?.scrollIntoView({ behavior: "smooth" });
+      })
+      .catch((e) => { if (!cancelado(e)) { setSel(null); setErrorFicha(e.message); } });
+    return () => ac.abort();
+  }, [idActivo]);
+
+  const abrir = useCallback((id) => navegar({ ficha: id, seccion: "resumen" }), [navegar]);
+  // Una respuesta tardía (borrador, revisión) solo cambia la ficha abierta si ES esa ficha; la lista se refresca siempre.
+  const actualizar = useCallback((f) => { setSel((actual) => (fichaVigente(f, actual?.id_caso) ? f : actual)); setVersion((v) => v + 1); }, []);
+  const vacio = !cargando && !errorLista && lista.items.length === 0;
+  const que = sint ? "casos de prueba" : "temas";
+  const faltan = !cargando && !errorLista && typeof n === "number" && lista.total > 0 && lista.total < n;  // pidió más de los que existen
+
+  const aplicarTexto = () => {
+    const v = Math.floor(Number(texto));
+    if (!texto.trim() || !Number.isFinite(v)) return;
+    navegar({ n: Math.min(Math.max(v, 1), N_MAX), ficha, seccion });
+  };
 
   return (
     <div className="agenda">
@@ -38,59 +98,66 @@ export default function Agenda({ corte, ficha, seccion, irAFicha }) {
         <div className="lista-cab">
           <div>
             <p className="kicker">{sint ? "Casos de prueba controlados" : "Agenda de Panamá"}</p>
-            <h1>{sint ? "Casos sintéticos" : `Top ${limite} para revisar`}</h1>
-          </div>
-          <div className="segmentos" role="group" aria-label="Cantidad">
-            {[5, 10, 30].map((n) => (
-              <button key={n} className={limite === n ? "seg on" : "seg"} onClick={() => setLimite(n)}>{n}</button>
-            ))}
+            <h1>{sint ? "Casos sintéticos" : n === "max" ? `Todos los temas (${lista.total})` : `Top ${n} para revisar`}</h1>
           </div>
         </div>
+        <div className="selector-n" role="group" aria-label={`Cuántos ${que} ver`}>
+          <div className="segmentos">
+            {TAMANOS.map((t) => (
+              <button key={t} className={n === t ? "seg on" : "seg"} aria-pressed={n === t}
+                onClick={() => navegar({ n: t, ficha, seccion })}>{t}</button>
+            ))}
+          </div>
+          <form className="otro-n" onSubmit={(e) => { e.preventDefault(); aplicarTexto(); }}>
+            <label htmlFor="otro-n">Otro número</label>
+            <input id="otro-n" type="number" inputMode="numeric" min={1} max={N_MAX} placeholder="ej. 12" value={texto}
+              onChange={(e) => setTexto(e.target.value)} />
+            <button type="submit" className="seg ver" disabled={!texto.trim()}>Ver</button>
+          </form>
+          <button className={n === "max" ? "seg on max" : "seg max"} aria-pressed={n === "max"}
+            title={`Mostrar todos los ${que} disponibles`} onClick={() => navegar({ n: "max", ficha, seccion })}>Máx</button>
+        </div>
         <label className="interruptor">
-          <input type="checkbox" checked={sint} onChange={(e) => setSint(e.target.checked)} />
+          <input type="checkbox" checked={sint} onChange={(e) => navegar({ sint: e.target.checked, ficha: null })} />
           <span>Ver casos de prueba (inyección, contradicciones, recirculada, agencia replicada)</span>
         </label>
 
-        {error && <p className="error">{error}</p>}
-        {cargando && <p className="vacio">Cargando agenda…</p>}
+        {errorLista && (
+          <div className="error-caja" role="alert">
+            <p>{errorLista}</p>
+            <button onClick={() => setVersion((v) => v + 1)}>Reintentar</button>
+          </div>
+        )}
+        {cargando && !errorLista && <p className="vacio" aria-live="polite">Cargando agenda…</p>}
+        {faltan && (
+          <p className="aviso-n" role="status">
+            Solo hay {lista.total} {que} disponibles, así que no se pueden mostrar {n}. Son todos los que existen.
+          </p>
+        )}
+        {vacio && <p className="vacio">No hay temas para mostrar con este filtro.</p>}
 
-        <ol className="items">
-          {items.map((f, k) => (
-            <li key={f.id_caso}>
-              <button className={"item" + (sel?.id_caso === f.id_caso ? " activo" : "")} onClick={() => irAFicha(f.id_caso)}>
-                <span className="rank">{k + 1}</span>
-                <span className="item-cuerpo">
-                  <span className="kicker">
-                    {TEMAS[f.tema] || "—"} · {hace(f.fecha_ultima, corte)}
-                    {f.sintetico && <em className="sint"> · sintético</em>}
-                  </span>
-                  <span className="titular">{f.titulo}</span>
-                  <span className="meta">
-                    <i className={"punto ev-" + f.estado_evidencia} aria-hidden="true" />
-                    {EVIDENCIA[f.estado_evidencia]} · {f.fuentes_independientes} fuente{f.fuentes_independientes === 1 ? "" : "s"} indep.
-                    {f.registros > 1 && ` · ${f.registros} titulares`}
-                    {f.estado_revision !== "nuevo" && <> · <b>{estadoTxt(f.estado_revision)}</b></>}
-                  </span>
-                  <span className="mini" aria-hidden="true">
-                    {COMPONENTES.map(([c, , w]) => <i key={c} className={"c-" + c} style={{ width: `${f.componentes[c] * w}%` }} />)}
-                  </span>
-                </span>
-                <span className={"puntaje banda-" + f.banda} title={`Puntaje de atención ${f.puntaje}/100 (${f.banda})`}>
-                  {Math.round(f.puntaje)}
-                </span>
-              </button>
-            </li>
-          ))}
+        <ol className="items" aria-busy={cargando}>
+          {lista.items.map((f, k) => <Fila key={f.id_caso} f={f} k={k} activa={idActivo === f.id_caso} corte={corte} onAbrir={abrir} />)}
         </ol>
-        <p className="nota">
-          El puntaje ordena la atención (P = 30R + 25I + 20U + 15N + 10E); no es probabilidad de verdad.
-          La evidencia se evalúa aparte.
-        </p>
+        {lista.items.length > 0 && (
+          <p className="nota">
+            Mostrando {lista.items.length} de {lista.total} {que}. El puntaje ordena la atención (P = 30R + 25I + 20U + 15N + 10E); no es
+            probabilidad de verdad. La evidencia se evalúa aparte.
+          </p>
+        )}
       </section>
 
       <section className="detalle" aria-label="Ficha del tema" ref={detalle}>
-        {sel ? <Ficha f={sel} corte={corte} seccion={seccion} onSeccion={(s) => irAFicha(sel.id_caso, s)} onCambio={actualizar} />
-          : <p className="vacio">Selecciona un tema.</p>}
+        {errorFicha && (
+          <div className="error-caja" role="alert">
+            <p>{errorFicha}</p>
+            <button onClick={() => navegar({ ficha: null })}>Volver a la lista</button>
+          </div>
+        )}
+        {sel && sel.id_caso === idActivo && (
+          <Ficha f={sel} corte={corte} seccion={seccion} onSeccion={(s) => navegar({ ficha: sel.id_caso, seccion: s })} onCambio={actualizar} />
+        )}
+        {!sel && !errorFicha && <p className="vacio">{cargando ? "Cargando…" : "Selecciona un tema."}</p>}
       </section>
     </div>
   );

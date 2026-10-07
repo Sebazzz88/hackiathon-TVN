@@ -2,7 +2,7 @@
   "name": "tvn-copiloto-ui",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "vite", "build": "vite build" },
+  "scripts": { "dev": "vite", "build": "vite build", "test": "node --test src/rutas.test.js" },
   "dependencies": { "react": "18.3.1", "react-dom": "18.3.1" },
   "devDependencies": { "@vitejs/plugin-react": "4.3.2", "vite": "5.4.8" }
 }

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { api } from "../lib.js";
+import { generando, generarBorrador } from "../lib.js";
 import { Cita, Tipo } from "./Ficha.jsx";
 
 export default function Borrador({ f, onCambio }) {
-  const [ocupado, setOcupado] = useState(false);
+  const [ocupado, setOcupado] = useState(() => generando(f.id_caso));
   const [error, setError] = useState("");
   const b = f.borrador;
   const [seg, setSeg] = useState(0);
@@ -14,12 +14,29 @@ export default function Borrador({ f, onCambio }) {
     return () => clearInterval(t);
   }, [ocupado]);
 
+  // Cada vez que se abre esta ficha: si ya se estaba generando (otra visita), se engancha a esa misma generación.
+  useEffect(() => {
+    let vivo = true;
+    setOcupado(generando(f.id_caso));
+    setError("");
+    if (generando(f.id_caso)) {
+      generarBorrador(f.id_caso)
+        .then((x) => { if (vivo) onCambio(x); })
+        .catch((e) => { if (vivo) setError(e.message); })
+        .finally(() => { if (vivo) setOcupado(false); });
+    }
+    return () => { vivo = false; };
+  }, [f.id_caso]);
+
   const generar = () => {
+    if (generando(f.id_caso)) return;
     setOcupado(true);
     setError("");
-    api(`/fichas/${f.id_caso}/draft`, "POST")
-      .then((x) => { onCambio(x); setOcupado(false); })
-      .catch((e) => { setError(e.message); setOcupado(false); });
+    const id = f.id_caso;
+    generarBorrador(id)
+      .then((x) => onCambio(x))                       // Agenda ignora la respuesta si ya se abrió otra ficha
+      .catch((e) => setError(e.message))
+      .finally(() => setOcupado(false));
   };
 
   return (
