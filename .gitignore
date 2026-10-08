@@ -22,3 +22,4 @@ frontend/dist/
 # Resultado local del Modo jurado (se regenera con el botón)
 data/processed/jurado_ultimo.json
 logs/
+.vercel

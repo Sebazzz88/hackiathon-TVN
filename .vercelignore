@@ -1,0 +1,20 @@
+# Vercel: se sube SOLO lo necesario para servir la app (lista de permitidos). Nunca .env, la base local ni el PDF.
+/*
+!index.py
+!requirements.txt
+!vercel.json
+!backend
+!data
+!eval
+!frontend
+
+# Dentro de lo permitido: fuera entornos, dependencias de Node, fuentes del frontend y bases locales
+backend/.venv
+backend/venv
+backend/.env
+**/__pycache__
+**/.pytest_cache
+data/app.db
+data/*.db
+/frontend/*
+!/frontend/dist

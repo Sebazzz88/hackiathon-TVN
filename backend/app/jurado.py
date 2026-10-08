@@ -20,7 +20,7 @@ from .db import DATA_DIR, leer_json
 
 BACKEND = Path(__file__).resolve().parents[1]
 ARCHIVO_PRUEBAS = BACKEND / "tests" / "test_reto.py"
-ULTIMO = DATA_DIR / "processed" / "jurado_ultimo.json"
+ULTIMO = Path(os.getenv("JURADO_ULTIMO") or DATA_DIR / "processed" / "jurado_ultimo.json")  # en Vercel: /tmp
 _CANDADO = threading.Lock()
 
 # Tabla de la sección 9 del reto (docs/RETO.md): qué se prueba y qué se espera.
@@ -57,7 +57,9 @@ def correr():
         t0 = time.time()
         tmp = Path(tempfile.mkdtemp(prefix="jurado-"))
         xml = tmp / "resultado.xml"
-        env = {**os.environ, "LLM_OFFLINE": "1", "DB_PATH": str(tmp / "jurado.db"), "PYTHONIOENCODING": "utf-8"}
+        # PYTHONPATH = la misma ruta de imports de este proceso: en Vercel las dependencias no están en la ruta por defecto.
+        env = {**os.environ, "LLM_OFFLINE": "1", "DB_PATH": str(tmp / "jurado.db"), "PYTHONIOENCODING": "utf-8",
+               "PYTHONPATH": os.pathsep.join(p for p in sys.path if p)}
         flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         proc = subprocess.run([sys.executable, "-m", "pytest", str(ARCHIVO_PRUEBAS), "-q", "-p", "no:warnings", "-p", "no:cacheprovider",
                                f"--junitxml={xml}"], cwd=BACKEND, env=env, capture_output=True, text=True, timeout=300,
@@ -83,16 +85,17 @@ def correr():
                     "prueba": nombre, "comprueba": docs.get(base, ""), "segundos": round(float(tc.get("time", 0)), 2),
                     "ok": fallo is None and tc.find("skipped") is None, "omitida": tc.find("skipped") is not None,
                     "mensaje": (fallo.get("message", "") or (fallo.text or ""))[:600] if fallo is not None else ""})
+        sin_correr = "" if xml.exists() else "pytest no llegó a ejecutarse: " + ((proc.stderr or proc.stdout or "").strip()[-300:] or "sin salida")
         filas = []
         for tid, (titulo, esperado) in PRUEBAS.items():
             ps = casos.get(tid, [])
             filas.append({"id": tid, "titulo": titulo, "esperado": esperado, "pruebas": ps,
                           "estado": "verde" if ps and all(p["ok"] for p in ps) else "rojo",
-                          "motivo": "" if ps else "No se encontró ninguna prueba para este caso."})
+                          "motivo": "" if ps else (sin_correr or "No se encontró ninguna prueba para este caso.")})
         informe = {"generado_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), "segundos": round(time.time() - t0, 1),
                    "verdes": sum(f["estado"] == "verde" for f in filas), "total": len(filas), "filas": filas,
                    "comando": "cd backend; .\\.venv\\Scripts\\python -m pytest tests/test_reto.py -q",
-                   "salida_pytest": (proc.stdout or "")[-1500:]}
+                   "salida_pytest": ((proc.stdout or "") + (proc.stderr or ""))[-1500:]}
         ULTIMO.parent.mkdir(parents=True, exist_ok=True)
         ULTIMO.write_text(json.dumps(informe, ensure_ascii=False, indent=1), encoding="utf-8")
         return informe

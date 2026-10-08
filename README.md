@@ -119,6 +119,12 @@ determinista y, si no hay evidencia, una abstención que dice qué falta y qué 
 Alternativa con Docker (`docker compose up --build` → http://localhost:8000). **PENDIENTE: no probado** en el equipo de
 desarrollo (no tiene Docker); la ruta verificada es `run_demo.ps1`.
 
+**Copia en línea (respaldo): https://hackiathon-tvn.vercel.app** — la misma app en Vercel (`index.py`, `vercel.json`,
+`.vercelignore`), sin login. Diferencias con la demo local: la IA generativa funciona solo con la caché de Hermes o la
+plantilla (no hay Ollama en la nube), y las revisiones se guardan en `/tmp`, así que **no son permanentes**: se pierden
+cuando Vercel apaga la instancia. Para volver a publicar: `vercel deploy --prod` desde la raíz del repo (la función
+pesa ~300 MB, por eso el proyecto tiene `VERCEL_SUPPORT_LARGE_FUNCTIONS=1`).
+
 ### Si algo falla
 
 | Síntoma | Causa y solución |

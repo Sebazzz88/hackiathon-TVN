@@ -45,8 +45,12 @@ def guardar_cache():
         return
     keys = list(_cache)
     p = _cache_path()
-    p.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(p, keys=np.array(keys), vecs=np.stack([_cache[k] for k in keys]), modelo=np.array(EMB_MODEL))
+    try:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(p, keys=np.array(keys), vecs=np.stack([_cache[k] for k in keys]), modelo=np.array(EMB_MODEL))
+    except OSError as e:  # disco de solo lectura (p. ej. Vercel): la caché sigue en memoria
+        print(f"[embed] no se pudo guardar la caché de vectores ({type(e).__name__})", file=sys.stderr)
+        return
     _cache_dirty = False
 
 

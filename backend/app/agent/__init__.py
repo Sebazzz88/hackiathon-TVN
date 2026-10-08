@@ -5,7 +5,10 @@ from ..models import Ficha, QueryOut
 def build_candidates() -> list[Ficha]:
     from . import pipeline
     fichas = pipeline.seleccionar(pipeline.analizar()["fichas"])
-    pipeline.exportar_jsonl(fichas)
+    try:
+        pipeline.exportar_jsonl(fichas)  # copia en data/processed para Notion; no es necesaria para servir la app
+    except OSError:  # disco de solo lectura (p. ej. Vercel)
+        pass
     return fichas
 
 
