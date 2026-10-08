@@ -1,6 +1,16 @@
-<p align="center"><img src="frontend/public/nexo-logo.svg" alt="Nexo · Copiloto editorial" width="330"></p>
+<p align="center"><img src="assets/nexo_dark.png" alt="Nexo · Copiloto editorial" width="330"></p>
 
 # Nexo · Copiloto editorial para TVN — "De la señal a la decisión"
+
+<div align="center">
+
+[![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![Ollama](https://img.shields.io/badge/Ollama-Local%20AI-000000?style=flat-square)](https://ollama.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+
+</div>
 
 Prototipo para la mesa editorial de TVN, hecho para el hackIAthon Panamá 2026.
 
@@ -32,6 +42,38 @@ Todo funciona **sin internet** durante la demo.
 - **Embeddings multilingües locales** (ONNX, sin GPU). Clasifican en 6 temas, agrupan titulares del mismo hecho aunque estén en otro idioma y buscan por significado.
 - **Hermes 3, local y gratuito, vía Ollama.** Redacta respuestas a consultas y la parte editorial de los borradores (título, enfoque, preguntas y copy), siempre a partir de la evidencia recuperada y pasando por un validador de citas. Sin el modelo usa respuestas en caché o una plantilla determinista.
 - **Comparación con un baseline.** El agente se compara con una búsqueda por palabras clave y un ranking por fecha. Ver [docs/07_EVALUATION.md](docs/07_EVALUATION.md).
+
+## Demo
+
+### 1. Agenda editorial
+
+La vista principal organiza los temas detectados y prioriza la agenda según relevancia, impacto, urgencia, novedad y evidencia.
+
+![Demo - Agenda](assets/demo/01-agenda.gif)
+
+### 2. Investigación
+
+Cada tema se puede abrir para revisar qué se sabe, qué fuentes lo respaldan, qué falta comprobar y qué acciones de investigación se recomiendan.
+
+![Demo - Investigación](assets/demo/02-investigacion.gif)
+
+### 3. Consultar
+
+El editor puede hacer preguntas en lenguaje natural y recibir respuestas construidas a partir de la evidencia disponible. Cuando los datos no permiten responder con seguridad, Nexo se abstiene.
+
+![Demo - Consultar](assets/demo/03-consultar.gif)
+
+### 4. Datos
+
+La sección de datos permite consultar el snapshot utilizado por el sistema, su cobertura y la información proveniente de TVN, GDELT, Banco Mundial y USGS.
+
+![Demo - Datos](assets/demo/04-datos.gif)
+
+### 5. Evaluación
+
+El sistema permite ejecutar y revisar las pruebas de aceptación, contrastar los resultados del agente con el baseline y observar la evidencia utilizada para cada evaluación.
+
+![Demo - Evaluación](assets/demo/05-evaluacion.gif)
 
 ## Paso a paso: dejarlo funcionando desde cero
 
