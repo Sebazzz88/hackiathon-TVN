@@ -1,8 +1,8 @@
-"""PUNTO DE CONEXIÓN CON LA IA (Persona 1).
+"""PUNTO DE CONEXIÓN CON LA IA.
 
 El backend SOLO llama a estas 3 funciones. En AGENT_MODE=stub devuelven datos demo
-marcados como sintéticos. En AGENT_MODE=live se importan desde backend/app/agent/__init__.py
-(créalo tú) con las MISMAS firmas. Ver NOTA_PERSONA_1.md.
+marcados como sintéticos. En AGENT_MODE=live se importan desde backend/app/agent/__init__.py,
+que implementa el agente con las MISMAS firmas.
 """
 import os
 from .models import Componentes, Ficha, QueryOut
